@@ -1,4 +1,4 @@
-package com.jikokuj.ui.theme
+package com.jikokuj.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
