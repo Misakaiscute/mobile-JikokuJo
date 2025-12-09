@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokuj.presentation.schedule.Action
@@ -58,15 +59,6 @@ private fun ScheduleScreen(modifier: Modifier){
             state = scheduleViewModel.state.collectAsStateWithLifecycle().value,
             onAction = { action -> scheduleViewModel.onAction(action) }
         )
-    }
-}
-
-@Composable
-private fun Map(modifier: Modifier){
-    Box(
-        modifier = modifier.fillMaxSize()
-    ) {
-
     }
 }
 @Composable

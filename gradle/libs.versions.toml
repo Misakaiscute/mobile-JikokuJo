@@ -12,6 +12,7 @@ hiltVersion = "2.57.1"
 kspVersion = "2.3.3"
 retrofitVersion = "3.0.0"
 kotlinSerialization = "1.9.0"
+mapsforgeVersion = "0.26.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +35,11 @@ dagger-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-andro
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
 kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization"}
 kotlinx-serialization-converter = { group = "com.squareup.retrofit2", name = "converter-kotlinx-serialization", version.ref = "retrofitVersion"}
+mapsforge-core = { group = "org.mapsforge", name = "mapsforge-core", version.ref = "mapsforgeVersion" }
+mapsforge-map = { group = "org.mapsforge", name = "mapsforge-map", version.ref = "mapsforgeVersion" }
+mapsforge-android = { group = "org.mapsforge", name = "mapsforge-map-android", version.ref = "mapsforgeVersion" }
+mapsforge-themes = { group = "org.mapsforge", name = "mapsforge-themes", version.ref = "mapsforgeVersion" }
+mapsforge-map-reader = { group = "org.mapsforge", name = "mapsforge-map-reader", version.ref = "mapsforgeVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
