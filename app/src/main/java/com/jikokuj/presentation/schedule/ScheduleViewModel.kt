@@ -7,6 +7,7 @@ import com.jikokuj.data.remote.ApiResult
 import com.jikokuj.domain.model.Queryable
 import com.jikokuj.domain.repository.QueryableRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -17,12 +18,14 @@ data class ScheduleState(
     val queryables: List<Queryable> = listOf(),
     val selectedQueryable: Queryable? = null,
     val searchString: String = "",
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
 )
+fun ScheduleState.queryableIsSelected(): Boolean = selectedQueryable != null
+
 sealed interface Action{
     data class ChangeSearch(val qString: String): Action
     data class SelectQueryable(val queryable: Queryable): Action
-    interface Search: Action
+    data object Search: Action
 }
 @HiltViewModel
 class ScheduleViewModel @Inject constructor(
@@ -33,8 +36,8 @@ class ScheduleViewModel @Inject constructor(
 
     init {
         toggleLoading()
-        viewModelScope.launch() {
-            val req = launch { repository.getQueryables() }
+        viewModelScope.launch {
+            val req = launch(Dispatchers.IO){ repository.getQueryables() }
             req.join()
             when(repository.queryables){
                 is ApiResult.Success<List<Queryable>> -> {
