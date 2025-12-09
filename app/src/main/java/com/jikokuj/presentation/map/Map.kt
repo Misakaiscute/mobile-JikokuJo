@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import org.m
 
 @Composable
 fun DisplayMapsforgeMap(modifier: Modifier){
@@ -19,7 +20,7 @@ fun MapsforgeMap(modifier: Modifier){
     AndroidView(
         modifier = modifier,
         factory = { context ->
-            AndroidGraphic
+            AndroidGrap
         },
         update = {
 
