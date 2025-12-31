@@ -1,13 +1,24 @@
 package com.jikokuj.presentation.map
 
 import android.content.Context
+import android.graphics.drawable.shapes.Shape
 import androidx.annotation.RawRes
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,9 +32,9 @@ import org.mapsforge.map.android.view.MapView
 import org.mapsforge.map.layer.cache.TileCache
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
-import org.mapsforge.map.rendertheme.internal.MapsforgeThemes
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.math.pow
 
 fun Context.rawFile(@RawRes resId: Int): File =
     File(cacheDir, "raw_${resources.getResourceEntryName(resId)}").apply {
@@ -45,14 +56,43 @@ fun DisplayMapsforgeMap(modifier: Modifier){
             .pointerInput(Unit){
                 detectDragGestures { change, dragAmount ->
                     change.consume()
+                    val changeX = dragAmount.x / (500 / mapViewModel.state.value.zoomLevel.toDouble().pow(-2.2))
+                    val changeY = dragAmount.y / (500 / mapViewModel.state.value.zoomLevel.toDouble().pow(-2.2))
                     mapViewModel.onAction(Action.Move(Location.Anonymous(
-                        lon = mapViewModel.state.value.center.longitude - dragAmount.x / 100_000,
-                        lat = mapViewModel.state.value.center.latitude + dragAmount.y / 100_000
+                        lon = mapViewModel.state.value.center.longitude - changeX,
+                        lat = mapViewModel.state.value.center.latitude + changeY
                     )))
                 }
             }
     ) {
         MapsforgeMap(modifier, mapViewModel.state.collectAsStateWithLifecycle().value)
+    }
+    Box(
+        modifier = modifier
+            .padding(4.dp)
+            .fillMaxSize()
+    ){
+        Column(
+            modifier.fillMaxWidth(1/8f)
+        ) {
+            Spacer(modifier = modifier.weight(1f))
+            Button(
+                modifier = modifier,
+                onClick = { mapViewModel.onAction(Action.ChangeZoomLevel(
+                    zoomLevel = (mapViewModel.state.value.zoomLevel + 1).toByte()
+                )) }
+            ){
+                Text("+")
+            }
+            Button(
+                modifier = modifier,
+                onClick = { mapViewModel.onAction(Action.ChangeZoomLevel(
+                    zoomLevel = (mapViewModel.state.value.zoomLevel - 1).toByte()
+                )) }
+            ){
+                Text("-")
+            }
+        }
     }
 }
 @Composable

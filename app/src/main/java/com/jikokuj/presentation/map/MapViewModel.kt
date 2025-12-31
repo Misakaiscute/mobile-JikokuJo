@@ -30,10 +30,12 @@ class MapViewModel: ViewModel() {
         is Action.Rotate -> rotate(action.rotation)
     }
     private fun changeZoomLevel(zoomLevel: Byte){
-        _state.update {
-            it.copy(
-                zoomLevel = zoomLevel
-            )
+        if(zoomLevel in 6..25){
+            _state.update {
+                it.copy(
+                    zoomLevel = zoomLevel
+                )
+            }
         }
     }
     private fun move(location: Location.Anonymous){
