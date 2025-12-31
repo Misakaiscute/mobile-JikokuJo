@@ -8,15 +8,15 @@
     map-background-outside="#EEEEEE"
 >
     <rule e="way" k="amenity" v="*" closed="yes">
-        <area fill="#7f7f7f" />
+        <area fill="#c4c4c4" />
     </rule>
 
     <rule e="way" k="building" v="*" closed="yes">
-        <area fill="#7f7f7f" />
+        <area fill="#c4c4c4" />
     </rule>
 
     <rule e="way" k="highway" v="*">
-        <line stroke="#000000" stroke-width="0.4"/>
+        <line stroke="#afafaf" stroke-width="0.4"/>
     </rule>
 
     <rule e="way" k="natural" v="water">
