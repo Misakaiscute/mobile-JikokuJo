@@ -2,9 +2,7 @@ package com.jikokuj.presentation.map
 
 import android.content.Context
 import androidx.annotation.RawRes
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -17,12 +15,12 @@ import com.jikokuj.R
 import com.jikokuj.domain.model.Location
 import org.mapsforge.core.model.Rotation
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
+import org.mapsforge.map.android.rendertheme.AssetsRenderTheme
 import org.mapsforge.map.android.util.AndroidUtil
 import org.mapsforge.map.android.view.MapView
 import org.mapsforge.map.layer.cache.TileCache
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
-import org.mapsforge.map.rendertheme.ExternalRenderTheme
 import org.mapsforge.map.rendertheme.internal.MapsforgeThemes
 import java.io.File
 import java.io.FileOutputStream
@@ -86,8 +84,8 @@ fun MapsforgeMap(
                     AndroidGraphicFactory.INSTANCE
                 )
                 layerManager.layers.add(tileRendererLayer)
-                val mapTheme = context.rawFile(R.raw.map_theme)
-                tileRendererLayer.setXmlRenderTheme(MapsforgeThemes.DEFAULT)
+                val mapThemeFile = AssetsRenderTheme(context.assets, "", "map_theme.xml")
+                tileRendererLayer.setXmlRenderTheme(mapThemeFile)
 
                 model.mapViewPosition.apply {
                     center = state.center
