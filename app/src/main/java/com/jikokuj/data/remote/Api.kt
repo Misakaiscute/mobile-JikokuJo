@@ -15,13 +15,13 @@ sealed interface ApiResult<out T>{
 interface Api {
     @Headers("Accept: application/json")
     @GET("queryables")
-    suspend fun getQueryables(): Call<List<Queryable>>
+    fun getQueryables(): Call<List<Queryable>>
 
     @Headers("Accept: application/json")
     @GET("routes/{selectedId}/details") //TODO: double check endpoint name
-    suspend fun getRouteDetailsFromStop(@Path("selectedId") selectedId: String): Call<List<RouteDetailed>>
+    fun getRouteDetailsFromStop(@Path("selectedId") selectedId: String): Call<List<RouteDetailed>>
 
     @Headers("Accept: application/json")
     @GET("routes/{selectedId}/details") //TODO: double check endpoint name
-    suspend fun getRouteDetailsFromRoute(@Path("selectedId") selectedId: String): Call<List<RouteDetailed>>
+    fun getRouteDetailsFromRoute(@Path("selectedId") selectedId: String): Call<List<RouteDetailed>>
 }
