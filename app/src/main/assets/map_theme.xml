@@ -16,7 +16,7 @@
     </rule>
 
     <rule e="way" k="highway" v="*">
-        <line stroke="#afafaf" stroke-width="0.4"/>
+        <line stroke="#717171" stroke-width="0.4"/>
     </rule>
 
     <rule e="way" k="natural" v="water">
