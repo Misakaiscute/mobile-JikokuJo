@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,28 +73,30 @@ fun DisplayMapsforgeMap(modifier: Modifier){
     }
     Box(
         modifier = modifier
-            .padding(4.dp)
+            .padding(8.dp)
             .fillMaxSize()
     ){
         Column(
-            modifier.fillMaxWidth(1/8f)
+            modifier.fillMaxWidth(1/7f)
         ) {
             Spacer(modifier = modifier.weight(1f))
             Button(
                 modifier = modifier,
+                shape = RoundedCornerShape(5.dp),
                 onClick = { mapViewModel.onAction(Action.ChangeZoomLevel(
                     zoomLevel = (mapViewModel.state.value.zoomLevel + 1).toByte()
                 )) }
             ){
-                Text("+")
+                Text("+", style = TextStyle(textAlign = TextAlign.Center))
             }
             Button(
                 modifier = modifier,
+                shape = RoundedCornerShape(5.dp),
                 onClick = { mapViewModel.onAction(Action.ChangeZoomLevel(
                     zoomLevel = (mapViewModel.state.value.zoomLevel - 1).toByte()
                 )) }
             ){
-                Text("-")
+                Text("-", style = TextStyle(textAlign = TextAlign.Center))
             }
         }
     }
