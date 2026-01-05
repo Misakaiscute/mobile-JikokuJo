@@ -4,11 +4,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.devtools.ksp)
     alias(libs.plugins.dagger.hilt.android)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.jikokuj"
+    namespace = "com.jikokujo"
     compileSdk {
         version = release(36)
     }
@@ -54,9 +53,10 @@ dependencies {
     implementation(libs.dagger.hilt.android)
     ksp(libs.dagger.hilt.android.compiler)
     implementation(libs.retrofit)
-    implementation(libs.kotlinx.serialization)
-    implementation(libs.kotlinx.serialization.converter)
+    implementation(libs.gson.serialization)
+    implementation(libs.gson.serialization.converter)
     implementation(libs.mapsforge.core)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation(libs.mapsforge.map)
     implementation(libs.mapsforge.map.reader)
     implementation(libs.mapsforge.android)
