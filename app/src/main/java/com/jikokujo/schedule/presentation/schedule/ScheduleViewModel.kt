@@ -10,6 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,16 +22,6 @@ data class ScheduleState(
     val isLoading: Boolean = false,
 )
 fun ScheduleState.queryableIsSelected(): Boolean = selectedQueryable != null
-fun ScheduleState.filteredQueryables(): List<Queryable> = queryables.filter{ queryable ->
-    when(queryable){
-        is Queryable.Stop -> {
-            queryable.name.contains(searchString, ignoreCase = true)
-        }
-        is Queryable.Route -> {
-            queryable.name.contains(searchString, ignoreCase = true)
-        }
-    }
-}
 
 sealed interface Action{
     data class ChangeSearch(val qString: String): Action
@@ -44,6 +35,16 @@ class ScheduleViewModel @Inject constructor(
 ): ViewModel() {
     private val _state = MutableStateFlow<ScheduleState>(ScheduleState())
     val state = _state.asStateFlow()
+    val filteredQueryables: List<Queryable> = _state.value.queryables.filter { queryable ->
+        when(queryable){
+            is Queryable.Stop -> {
+                queryable.name.contains(_state.value.searchString, ignoreCase = true)
+            }
+            is Queryable.Route -> {
+                queryable.name.contains(_state.value.searchString, ignoreCase = true)
+            }
+        }
+    }
 
     init {
         toggleLoading()

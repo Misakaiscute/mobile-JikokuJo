@@ -22,6 +22,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokujo.R
+import com.jikokujo.theme.Typography
 import com.jikokujo.schedule.data.model.Location
 import org.mapsforge.core.model.Rotation
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
@@ -82,7 +83,12 @@ fun DisplayMapsforgeMap(modifier: Modifier){
                     zoomLevel = (mapViewModel.state.value.zoomLevel + 1).toByte()
                 )) }
             ){
-                Text("+", style = TextStyle(textAlign = TextAlign.Center))
+                Text(
+                    text = "+",
+                    style = Typography.labelLarge.merge(
+                        TextStyle(textAlign = TextAlign.Center)
+                    )
+                )
             }
             Button(
                 modifier = modifier,
@@ -91,7 +97,12 @@ fun DisplayMapsforgeMap(modifier: Modifier){
                     zoomLevel = (mapViewModel.state.value.zoomLevel - 1).toByte()
                 )) }
             ){
-                Text("-", style = TextStyle(textAlign = TextAlign.Center))
+                Text(
+                    text = "-",
+                    style = Typography.labelLarge.merge(
+                        TextStyle(textAlign = TextAlign.Center)
+                    )
+                )
             }
         }
     }
