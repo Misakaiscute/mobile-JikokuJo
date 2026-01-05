@@ -7,6 +7,7 @@ import com.google.gson.Strictness
 import com.jikokujo.schedule.data.remote.Api
 import com.jikokujo.schedule.data.repository.QueryablesRepositoryImpl
 import com.jikokujo.schedule.data.repository.QueryableRepository
+import com.jikokujo.schedule.data.repository.QueryablesRepositoryTestImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,6 +51,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideQueryablesRepository(): QueryableRepository {
-        return QueryablesRepositoryImpl(provideApi())
+        //return QueryablesRepositoryImpl(provideApi())
+        return QueryablesRepositoryTestImpl()
     }
 }

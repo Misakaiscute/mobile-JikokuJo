@@ -17,11 +17,11 @@ import javax.inject.Inject
 
 data class ScheduleState(
     val queryables: List<Queryable> = listOf(),
+    val filteredQueryables: List<Queryable> = listOf(),
     val selectedQueryable: Queryable? = null,
     val searchString: String = "",
     val isLoading: Boolean = false,
 )
-fun ScheduleState.queryableIsSelected(): Boolean = selectedQueryable != null
 
 sealed interface Action{
     data class ChangeSearch(val qString: String): Action
@@ -35,16 +35,6 @@ class ScheduleViewModel @Inject constructor(
 ): ViewModel() {
     private val _state = MutableStateFlow<ScheduleState>(ScheduleState())
     val state = _state.asStateFlow()
-    val filteredQueryables: List<Queryable> = _state.value.queryables.filter { queryable ->
-        when(queryable){
-            is Queryable.Stop -> {
-                queryable.name.contains(_state.value.searchString, ignoreCase = true)
-            }
-            is Queryable.Route -> {
-                queryable.name.contains(_state.value.searchString, ignoreCase = true)
-            }
-        }
-    }
 
     init {
         toggleLoading()
@@ -66,11 +56,30 @@ class ScheduleViewModel @Inject constructor(
     fun onAction(action: Action) = when(action){
         is Action.ChangeSearch -> changeSearch(action.qString)
         is Action.SelectQueryable -> selectQueryable(action.queryable)
-        is Action.Search -> viewModelScope.launch { search() }
+        is Action.Search -> viewModelScope.launch(Dispatchers.IO) { search() }
     }
 
     private fun changeSearch(value: String) = _state.update {
-        it.copy(searchString = value)
+        if (value == ""){
+            it.copy(
+                searchString = value,
+                filteredQueryables = listOf()
+            )
+        } else {
+            it.copy(
+                searchString = value,
+                filteredQueryables = _state.value.queryables.filter { queryable ->
+                    when(queryable){
+                        is Queryable.Stop -> {
+                            queryable.name.contains(value, ignoreCase = true)
+                        }
+                        is Queryable.Route -> {
+                            queryable.name.contains(value, ignoreCase = true)
+                        }
+                    }
+                }
+            )
+        }
     }
     private fun selectQueryable(queryable: Queryable) = _state.update {
         it.copy(selectedQueryable = queryable)
