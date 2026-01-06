@@ -1,6 +1,10 @@
 package com.jikokujo.schedule.data.model
 
+import android.graphics.drawable.Drawable
+import androidx.annotation.DrawableRes
+import androidx.annotation.RawRes
 import com.google.gson.annotations.SerializedName
+import com.jikokujo.R
 
 sealed interface Queryable {
     data class Route(
@@ -9,7 +13,7 @@ sealed interface Queryable {
         @SerializedName("route_short_name")
         val name: String,
         @SerializedName("type")
-        val type: String //TODO: THIS WILL BE INT
+        val type: Int //TODO: THIS WILL BE INT
     ): Queryable
     data class Stop(
         @SerializedName("ids")
@@ -18,6 +22,18 @@ sealed interface Queryable {
         val name: String,
     ): Queryable
 }
+fun Queryable.Route.getIconForType() = when(type){
+    1 -> R.drawable.bus
+    2 -> R.drawable.tram
+    3 -> R.drawable.subway
+    4 -> R.drawable.trolleybus
+    5 -> R.drawable.train
+    6 -> R.drawable.train
+    7 -> R.drawable.other_transport_types
+    8 -> R.drawable.other_transport_types
+    else -> throw Exception("Invalid type! Type must be between 1 and 8!")
+}
+
 
 data class RouteDetailed(
     val route: Queryable.Route,

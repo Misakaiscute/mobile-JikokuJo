@@ -1,5 +1,6 @@
 package com.jikokujo.schedule.data.repository
 
+import android.net.http.QuicException
 import android.util.Log
 import com.jikokujo.schedule.data.remote.Api
 import com.jikokujo.schedule.data.remote.ApiResult
@@ -24,8 +25,9 @@ class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
         }
         Log.d("ROUTES", response.data?.routes.toString())
         Log.d("STOPS", response.data?.stops.toString())
-        val res: List<Queryable> = listOf()
-        res.plus(response.data?.routes).plus(response.data?.stops)
+        val res: MutableList<Queryable> = mutableListOf()
+        res.addAll(response.data?.routes as List<Queryable>)
+        res.addAll(response.data.stops as List<Queryable>)
         this.queryables = ApiResult.Success(res)
     }
 

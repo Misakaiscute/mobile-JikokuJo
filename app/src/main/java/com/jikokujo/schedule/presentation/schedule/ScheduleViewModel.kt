@@ -10,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,13 +26,14 @@ sealed interface Action{
     data class ChangeSearch(val qString: String): Action
     data class SelectQueryable(val queryable: Queryable): Action
     data object Search: Action
+    data object UnselectQueryable: Action
 }
 
 @HiltViewModel
 class ScheduleViewModel @Inject constructor(
     private var repository: QueryableRepository
 ): ViewModel() {
-    private val _state = MutableStateFlow<ScheduleState>(ScheduleState())
+    private val _state = MutableStateFlow(ScheduleState())
     val state = _state.asStateFlow()
 
     init {
@@ -56,6 +56,7 @@ class ScheduleViewModel @Inject constructor(
     fun onAction(action: Action) = when(action){
         is Action.ChangeSearch -> changeSearch(action.qString)
         is Action.SelectQueryable -> selectQueryable(action.queryable)
+        is Action.UnselectQueryable -> selectQueryable(null)
         is Action.Search -> viewModelScope.launch(Dispatchers.IO) { search() }
     }
 
@@ -81,10 +82,10 @@ class ScheduleViewModel @Inject constructor(
             )
         }
     }
-    private fun selectQueryable(queryable: Queryable) = _state.update {
+    private fun selectQueryable(queryable: Queryable?) = _state.update {
         it.copy(selectedQueryable = queryable)
     }
-    private suspend fun search(): Unit{
+    private suspend fun search() {
 
     }
     private fun toggleLoading() = _state.update {

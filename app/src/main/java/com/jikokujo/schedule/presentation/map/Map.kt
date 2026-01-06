@@ -2,7 +2,11 @@ package com.jikokujo.schedule.presentation.map
 
 import android.content.Context
 import androidx.annotation.RawRes
+import androidx.compose.foundation.Indication
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,10 +54,16 @@ fun Context.rawFile(@RawRes resId: Int): File =
 
 @Composable
 fun DisplayMapsforgeMap(modifier: Modifier){
+    val focusManager = LocalFocusManager.current
     val mapViewModel = viewModel<MapViewModel>()
     Box(
         modifier = modifier
             .fillMaxSize()
+            .clickable(
+                onClick = { focusManager.clearFocus() },
+                indication = null,
+                interactionSource = MutableInteractionSource()
+            )
             .pointerInput(Unit){
                 detectDragGestures { change, dragAmount ->
                     change.consume()
@@ -79,9 +90,11 @@ fun DisplayMapsforgeMap(modifier: Modifier){
             Button(
                 modifier = modifier,
                 shape = RoundedCornerShape(5.dp),
-                onClick = { mapViewModel.onAction(Action.ChangeZoomLevel(
-                    zoomLevel = (mapViewModel.state.value.zoomLevel + 1).toByte()
-                )) }
+                onClick = {
+                    mapViewModel.onAction(Action.ChangeZoomLevel(
+                        zoomLevel = (mapViewModel.state.value.zoomLevel + 1).toByte()
+                    ))
+                }
             ){
                 Text(
                     text = "+",
