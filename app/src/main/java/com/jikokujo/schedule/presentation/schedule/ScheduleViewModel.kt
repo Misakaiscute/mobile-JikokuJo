@@ -21,14 +21,12 @@ data class ScheduleState(
     val searchString: String = "",
     val isLoading: Boolean = false,
 )
-
 sealed interface Action{
     data class ChangeSearch(val qString: String): Action
     data class SelectQueryable(val queryable: Queryable): Action
     data object Search: Action
     data object UnselectQueryable: Action
 }
-
 @HiltViewModel
 class ScheduleViewModel @Inject constructor(
     private var repository: QueryableRepository
@@ -40,7 +38,6 @@ class ScheduleViewModel @Inject constructor(
         toggleLoading()
         viewModelScope.launch(Dispatchers.IO) {
             repository.getQueryables()
-            Log.i("Queryables fetched: ", repository.queryables.toString())
             when(repository.queryables){
                 is ApiResult.Success<List<Queryable>> -> {
                     _state.update {
@@ -52,19 +49,18 @@ class ScheduleViewModel @Inject constructor(
             }
         }
     }
-
     fun onAction(action: Action) = when(action){
         is Action.ChangeSearch -> changeSearch(action.qString)
         is Action.SelectQueryable -> selectQueryable(action.queryable)
         is Action.UnselectQueryable -> selectQueryable(null)
         is Action.Search -> viewModelScope.launch(Dispatchers.IO) { search() }
     }
-
     private fun changeSearch(value: String) = _state.update {
         if (value == ""){
             it.copy(
                 searchString = value,
-                filteredQueryables = listOf()
+                filteredQueryables = listOf(),
+                selectedQueryable = null
             )
         } else {
             it.copy(
@@ -78,12 +74,20 @@ class ScheduleViewModel @Inject constructor(
                             queryable.name.contains(value, ignoreCase = true)
                         }
                     }
-                }
+                },
+                selectedQueryable = null
             )
         }
     }
     private fun selectQueryable(queryable: Queryable?) = _state.update {
-        it.copy(selectedQueryable = queryable)
+        it.copy(
+            selectedQueryable = queryable,
+            searchString = when(queryable){
+                is Queryable.Stop -> queryable.name
+                is Queryable.Route -> queryable.name
+                else -> ""
+            }
+        )
     }
     private suspend fun search() {
 

@@ -28,6 +28,7 @@ class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
         val res: MutableList<Queryable> = mutableListOf()
         res.addAll(response.data?.routes as List<Queryable>)
         res.addAll(response.data.stops as List<Queryable>)
+        Log.i("RES", res.toString())
         this.queryables = ApiResult.Success(res)
     }
 

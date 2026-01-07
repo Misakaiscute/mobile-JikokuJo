@@ -5,6 +5,8 @@ import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +16,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberOverscrollEffect
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -65,7 +69,7 @@ fun ScheduleSearchBar(
             state = state,
             onAction = onAction
         )
-        if (state.searchString != "" && searchBarFocused){
+        if (state.searchString != "" && state.selectedQueryable == null && searchBarFocused){
             DropdownMenu(
                 modifier = modifier,
                 state = state,
@@ -81,18 +85,24 @@ private fun DropdownMenu(
     state: ScheduleState,
     onAction: (Action) -> Unit
 ){
+    val itemHeight = 40
+    val scrollState = rememberScrollState()
     Column(
-        modifier = modifier.clip(RoundedCornerShape(percent = 30))
+        modifier = modifier
+            .clip(RoundedCornerShape(size = 5.dp))
+            .heightIn(0.dp, (itemHeight * 5).dp)
+            .scrollable(
+                state = scrollState,
+                orientation = Orientation.Vertical
+            )
     ) {
-        for (i in 0..< state.filteredQueryables.count()){
-            if (i < 5) {
-                val currentItem = state.filteredQueryables[i]
-                DropdownItem(
-                    modifier = modifier,
-                    item = currentItem,
-                    onClick = { onAction(Action.SelectQueryable(currentItem))}
-                )
-            }
+        for (queryable in state.filteredQueryables){
+            DropdownItem(
+                modifier = modifier,
+                item = queryable,
+                onClick = { onAction(Action.SelectQueryable(queryable)) },
+                itemHeight = itemHeight
+            )
         }
     }
 }
@@ -101,13 +111,14 @@ private fun DropdownMenu(
 private fun DropdownItem(
     modifier: Modifier,
     item: Queryable,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    itemHeight: Int
 ){
     val overscrollEffect = rememberOverscrollEffect()
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(40.dp)
+            .height(itemHeight.dp)
             .background(Color.White)
             .clickable(
                 onClick = { onClick.invoke() }
@@ -121,7 +132,7 @@ private fun DropdownItem(
                 Icon(
                     modifier = modifier.fillMaxWidth(1/10f),
                     painter = painterResource(R.drawable.busstop),
-                    contentDescription = "buszmegálló",
+                    contentDescription = "bus stop",
                     tint = Color.DarkGray
                 )
                 Text(
@@ -133,7 +144,7 @@ private fun DropdownItem(
                 Icon(
                     modifier = modifier.fillMaxWidth(1/10f),
                     painter = painterResource(item.getIconForType()),
-                    contentDescription = "tömegközlekedési eszköz jele",
+                    contentDescription = "other transport icon",
                     tint = Color.DarkGray
                 )
                 Text(
@@ -154,7 +165,8 @@ private fun SearchBar(
     Row(
         modifier
             .height(50.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .background(Color.White),
         verticalAlignment = Alignment.Top
     ) {
         TextField(
@@ -170,33 +182,22 @@ private fun SearchBar(
             ),
             placeholder = { Text("Megálló / járatnév") },
             trailingIcon = {
-                if (state.selectedQueryable == null) {
-                    Icon(
-                        modifier = modifier
-                            .fillMaxHeight(3/5f)
-                            .clickable(
-                                role = Role.Button,
-                                onClickLabel = "Delete search",
-                                onClick = { onAction(Action.UnselectQueryable) }
-                            ),
-                        painter = painterResource(R.drawable.trashcan),
-                        contentDescription = "trashcan icon",
-                        tint = Color.DarkGray
-                    )
-                } else {
-                    Icon(
-                        modifier = modifier
-                            .fillMaxHeight(3/5f)
-                            .clickable(
-                                role = Role.Button,
-                                onClickLabel = "Search",
-                                onClick = { onAction(Action.Search) }
-                            ),
-                        painter = painterResource(R.drawable.baseline_search_24),
-                        contentDescription = "Search icon",
-                        tint = Color.DarkGray
-                    )
-                }
+                Icon(
+                    modifier = modifier
+                        .fillMaxHeight(3/5f)
+                        .clickable(
+                            role = Role.Button,
+                            onClickLabel = if (state.selectedQueryable != null) "Delete search" else "Search",
+                            onClick = {
+                                onAction(if (state.selectedQueryable != null) Action.UnselectQueryable else Action.Search)
+                            }
+                        ),
+                    painter = painterResource(
+                        if (state.selectedQueryable != null) R.drawable.trashcan else R.drawable.baseline_search_24
+                    ),
+                    contentDescription = "button",
+                    tint = Color.DarkGray
+                )
             },
             onValueChange = { newVal: String ->
                 onAction(Action.ChangeSearch(newVal))
@@ -221,6 +222,7 @@ private fun DropdownItemPreview(){
     DropdownItem(
         modifier = Modifier,
         item = Queryable.Route("001", "M3-mas metró", 3),
-        onClick = {}
+        onClick = {},
+        itemHeight = 40
     )
 }

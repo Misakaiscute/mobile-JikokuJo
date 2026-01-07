@@ -24,34 +24,20 @@ object AppModule {
     @Provides
     @Singleton
     fun provideApi(): Api {
-//        val client = OkHttpClient.Builder()
-//            .addInterceptor { chain ->
-//                val response = chain.proceed(chain.request());
-//                val peekedBody = response.peekBody(Long.MAX_VALUE).string()
-//                val chunkSize = 3000
-//                for (i in peekedBody.indices step chunkSize) {
-//                    val end = (i + chunkSize).coerceAtMost(peekedBody.length)
-//                    Log.d("OkHttp_Part_${i / chunkSize}", peekedBody.substring(i, end))
-//                }
-//                return@addInterceptor response
-//            }
-//            .build()
-
         val gson = GsonBuilder()
             .setStrictness(Strictness.LENIENT)
             .create()
 
         return Retrofit.Builder()
-            .baseUrl("http://$EMULATOR_DEV_LOCALHOST:8000/api/")
+            .baseUrl("http://$EMULATOR_DEV_LOCALHOST/backend-JikokuJo/better_menetrendek_backend/public/index.php/api/")
             .addConverterFactory(GsonConverterFactory.create(gson))
-//            .client(client)
             .build()
             .create(Api::class.java)
     }
     @Provides
     @Singleton
     fun provideQueryablesRepository(): QueryableRepository {
-        //return QueryablesRepositoryImpl(provideApi())
-        return QueryablesRepositoryTestImpl()
+        return QueryablesRepositoryImpl(provideApi())
+        //return QueryablesRepositoryTestImpl()
     }
 }

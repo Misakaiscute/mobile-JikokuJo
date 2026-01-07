@@ -10,13 +10,13 @@ class QueryablesRepositoryTestImpl: QueryableRepository {
 
     override suspend fun getQueryables() {
         queryables = ApiResult.Success(listOf(
-            Queryable.Route(id = "001", name = "4-6-os villamos", type = "villamos"),
-            Queryable.Route(id = "002", name = "M3-mas metró", type = "metró"),
-            Queryable.Route(id = "003", name = "73-mas trolibusz", type = "trolibusz"),
-            Queryable.Route(id = "004", name = "119E busz", type = "busz"),
+            Queryable.Route(id = "001", name = "4-6-os villamos", type = 2),
+            Queryable.Route(id = "002", name = "M3-mas metró", type = 3),
+            Queryable.Route(id = "003", name = "73-mas trolibusz", type = 4),
+            Queryable.Route(id = "004", name = "119E busz", type = 1),
             Queryable.Stop(idsAssociated = listOf("001", "002"), name = "Nyugati pályaudvar"),
             Queryable.Stop(idsAssociated = listOf("003", "004"), name = "Kálvin tér"),
-            Queryable.Stop(idsAssociated = listOf("001", "002", "003", "004"), name = "Balha Lujza tér"),
+            Queryable.Stop(idsAssociated = listOf("001", "002", "003", "004"), name = "Blaha Lujza tér"),
         ))
     }
     override suspend fun getRouteDetails(selected: Queryable) {
