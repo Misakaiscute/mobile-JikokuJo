@@ -12,8 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
+import com.jikokujo.schedule.presentation.map.MapViewModel
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchBar
-import com.jikokujo.schedule.presentation.schedule.ScheduleViewModel
+import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -32,15 +33,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun ScheduleScreen(modifier: Modifier){
-    val scheduleViewModel = viewModel<ScheduleViewModel>()
+    val scheduleSearchViewModel = viewModel<ScheduleSearchViewModel>()
+    val mapViewModel = viewModel<MapViewModel>()
     Surface(
         modifier = modifier.background(MaterialTheme.colorScheme.background)
     ) {
-        DisplayMapsforgeMap(modifier)
+        DisplayMapsforgeMap(
+            modifier = modifier,
+            state = mapViewModel.state.collectAsStateWithLifecycle().value,
+            onAction = { action -> mapViewModel.onAction(action) }
+        )
         ScheduleSearchBar(
             modifier = modifier,
-            state = scheduleViewModel.state.collectAsStateWithLifecycle().value,
-            onAction = { action -> scheduleViewModel.onAction(action) }
+            state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
+            onAction = { action -> scheduleSearchViewModel.onAction(action) }
         )
     }
 }

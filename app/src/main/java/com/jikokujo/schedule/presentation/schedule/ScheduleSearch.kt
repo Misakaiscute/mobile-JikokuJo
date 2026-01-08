@@ -25,6 +25,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -220,14 +221,21 @@ private fun DropdownMenu(
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(size = 5.dp))
-            .heightIn(0.dp, (itemHeight * 5).dp)
+            .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
+            .heightIn(0.dp, (((itemHeight + 1) * 5) - 1).dp)
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
             )
     ) {
-        for (i in 0..state.filteredQueryables.count()){
+        for (i in 0 ..< state.filteredQueryables.count()){
+            if (i > 0){
+                HorizontalDivider(
+                    modifier = modifier,
+                    thickness = 1.dp,
+                    color = Color.Black
+                )
+            }
             DropdownItem(
                 modifier = modifier.background(if (i % 2 == 0) Color.LightGray else Color.White),
                 item = state.filteredQueryables[i],
@@ -305,9 +313,7 @@ private fun SearchBar(
                 .fillMaxHeight()
                 .fillMaxWidth(),
             value = state.searchString,
-            textStyle = Typography.bodyMedium.merge(
-                TextStyle(textAlign = TextAlign.Center)
-            ),
+            textStyle = Typography.bodyMedium,
             shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 0f, topStart = 20f, topEnd = 20f),
             colors = TextFieldDefaults.colors().copy(
                 unfocusedContainerColor = Color.White,
@@ -316,24 +322,22 @@ private fun SearchBar(
             placeholder = {
                 Text(
                     text = "Megálló / járatnév",
-                    style = Typography.bodyMedium.merge(
-                        TextStyle(textAlign = TextAlign.Center)
-                    )
+                    style = Typography.bodyMedium
                 )
             },
             trailingIcon = {
                 Icon(
                     modifier = modifier
-                        .fillMaxHeight(7/10f)
+                        .fillMaxHeight(3/5f)
                         .clickable(
                             role = Role.Button,
-                            onClickLabel = if (state.selectedQueryable != null) "Delete search" else "Search",
+                            onClickLabel = "Search",
                             onClick = {
-                                onAction(if (state.selectedQueryable != null) Action.UnselectQueryable else Action.Search)
+                                onAction(Action.Search)
                             }
                         ),
                     painter = painterResource(
-                        if (state.selectedQueryable != null) R.drawable.trashcan else R.drawable.baseline_search_24
+                        R.drawable.baseline_search_24
                     ),
                     contentDescription = "button",
                     tint = Color.DarkGray
@@ -359,7 +363,7 @@ private fun ScheduleSearchBarPreview(){
 private fun DropdownItemPreview(){
     DropdownItem(
         modifier = Modifier,
-        item = Queryable.Route("001", "M3-mas metró", 3),
+        item = Queryable.Route("001", "M3-mas metró", 3, "0b6324"),
         onClick = {},
         itemHeight = 40
     )

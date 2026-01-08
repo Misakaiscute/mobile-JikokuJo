@@ -1,6 +1,5 @@
 package com.jikokujo.schedule.presentation.schedule
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jikokujo.schedule.data.remote.ApiResult
@@ -9,6 +8,7 @@ import com.jikokujo.schedule.data.repository.QueryableRepository
 import com.jikokujo.schedule.data.repository.RouteResultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -28,6 +28,7 @@ data class ScheduleSearchState(
     val filteredQueryablesDropdownExpanded: Boolean = false,
     val tripsFrom: LocalDateTime = LocalDateTime.now(),
     val selectedQueryable: Queryable? = null,
+    val selectedRoute: Queryable.Route? = null,
     val searchString: String = "",
     val isLoading: Boolean = false,
 )
@@ -42,7 +43,7 @@ sealed interface Action{
     data object UnselectQueryable: Action
 }
 @HiltViewModel
-class ScheduleViewModel @Inject constructor(
+class ScheduleSearchViewModel @Inject constructor(
     private val queryableRepository: QueryableRepository,
     private val routeResultRepository: RouteResultRepository
 ): ViewModel() {
@@ -72,7 +73,7 @@ class ScheduleViewModel @Inject constructor(
         is Action.ChangeSearch -> changeSearch(action.qString)
         is Action.SelectQueryable -> selectQueryable(action.queryable)
         is Action.UnselectQueryable -> selectQueryable(null)
-        is Action.Search -> viewModelScope.launch(Dispatchers.IO) { search() }
+        is Action.Search -> search()
     }
     private fun changeDropDownState(isExpanded: Boolean) = _state.update {
         it.copy(filteredQueryablesDropdownExpanded = isExpanded)
@@ -107,6 +108,10 @@ class ScheduleViewModel @Inject constructor(
     private fun selectQueryable(queryable: Queryable?) = _state.update {
         it.copy(
             selectedQueryable = queryable,
+            selectedRoute = when(queryable){
+                is Queryable.Route -> queryable
+                else -> null
+            },
             searchString = when(queryable){
                 is Queryable.Stop -> queryable.name
                 is Queryable.Route -> queryable.name
@@ -135,8 +140,26 @@ class ScheduleViewModel @Inject constructor(
             shownDialog = null
         )
     }
-    private suspend fun search() {
+    private fun search() {
+        when(_state.value.selectedQueryable){
+            is Queryable.Route -> {
+                toggleLoading()
+                viewModelScope.launch(Dispatchers.IO) {
+                    async { routeResultRepository.getTrips(
+                        dateTime = _state.value.tripsFrom,
+                        routeId = _state.value.selectedRoute!!.id
+                    )}
+                    async { routeResultRepository.getPossibleShapes(
+                        routeId = _state.value.selectedRoute!!.id
+                    )}
+                }
+                toggleLoading()
+            }
+            is Queryable.Stop -> {
 
+            }
+            else -> return
+        }
     }
     private fun toggleLoading() = _state.update {
         it.copy(isLoading = !it.isLoading)

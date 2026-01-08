@@ -2,11 +2,10 @@ package com.jikokujo.schedule.data.repository
 
 import com.jikokujo.schedule.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
-import com.jikokujo.schedule.data.model.RouteDetailed
 
 interface QueryableRepository {
     var queryables: ApiResult<List<Queryable>>
-    var searchResult: ApiResult<List<RouteDetailed>>
+    var routesForStop: ApiResult<List<Queryable.Route>>?
     suspend fun getQueryables(): Unit
-    suspend fun getRouteDetails(selected: Queryable): Unit
+    suspend fun getRoutesForStop(stopId: String): Unit
 }

@@ -1,6 +1,7 @@
 package com.jikokujo.schedule.presentation.map
 
 import android.content.Context
+import android.view.GestureDetector
 import androidx.annotation.RawRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -16,6 +17,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -24,8 +30,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokujo.R
 import com.jikokujo.theme.Typography
 import com.jikokujo.schedule.data.model.Location
@@ -39,6 +43,7 @@ import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.div
 import kotlin.math.pow
 
 fun Context.rawFile(@RawRes resId: Int): File =
@@ -52,34 +57,18 @@ fun Context.rawFile(@RawRes resId: Int): File =
         }
     }
 @Composable
-fun DisplayMapsforgeMap(modifier: Modifier){
-    val focusManager = LocalFocusManager.current
-    val mapViewModel = viewModel<MapViewModel>()
+fun DisplayMapsforgeMap(
+    modifier: Modifier,
+    state: MapState,
+    onAction: (Action) -> Unit
+){
+    MapsforgeMap(
+        modifier = modifier,
+        state = state
+    )
     Box(
         modifier = modifier
-            .fillMaxSize()
-            .clickable(
-                onClick = { focusManager.clearFocus() },
-                indication = null,
-                interactionSource = MutableInteractionSource()
-            )
-            .pointerInput(Unit){
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    val changeX = dragAmount.x / (500 / mapViewModel.state.value.zoomLevel.toDouble().pow(-2.2))
-                    val changeY = dragAmount.y / (500 / mapViewModel.state.value.zoomLevel.toDouble().pow(-2.2))
-                    mapViewModel.onAction(Action.Move(Location.Auxiliary(
-                        lon = mapViewModel.state.value.center.longitude - changeX,
-                        lat = mapViewModel.state.value.center.latitude + changeY
-                    )))
-                }
-            }
-    ) {
-        MapsforgeMap(modifier, mapViewModel.state.collectAsStateWithLifecycle().value)
-    }
-    Box(
-        modifier = modifier
-            .padding(8.dp)
+            .padding(bottom = 30.dp, top = 0.dp, start = 6.dp, end = 6.dp)
             .fillMaxSize()
     ){
         Column(
@@ -89,15 +78,10 @@ fun DisplayMapsforgeMap(modifier: Modifier){
             Button(
                 modifier = modifier,
                 colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = Color.LightGray,
-                    contentColor = Color.DarkGray
+                    contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(5.dp),
-                onClick = {
-                    mapViewModel.onAction(Action.ChangeZoomLevel(
-                        zoomLevel = (mapViewModel.state.value.zoomLevel + 1).toByte()
-                    ))
-                }
+                onClick = { onAction(Action.ChangeZoomLevel(true)) }
             ){
                 Text(
                     text = "+",
@@ -109,13 +93,10 @@ fun DisplayMapsforgeMap(modifier: Modifier){
             Button(
                 modifier = modifier,
                 colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = Color.LightGray,
-                    contentColor = Color.DarkGray
+                    contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(5.dp),
-                onClick = { mapViewModel.onAction(Action.ChangeZoomLevel(
-                    zoomLevel = (mapViewModel.state.value.zoomLevel - 1).toByte()
-                )) }
+                onClick = { onAction(Action.ChangeZoomLevel(false)) }
             ){
                 Text(
                     text = "-",
@@ -137,9 +118,9 @@ fun MapsforgeMap(
         factory = { context ->
             AndroidGraphicFactory.createInstance(context.applicationContext)
             MapView(context).apply {
-                isClickable = false
-                mapScaleBar.isVisible = false
-                setBuiltInZoomControls(true)
+                isClickable = true
+                mapScaleBar.isVisible = true
+                setBuiltInZoomControls(false)
 
                 val tileCache: TileCache = AndroidUtil.createExternalStorageTileCache(
                     context,
@@ -158,12 +139,6 @@ fun MapsforgeMap(
                 layerManager.layers.add(tileRendererLayer)
                 val mapThemeFile = AssetsRenderTheme(context.assets, "", "map_theme.xml")
                 tileRendererLayer.setXmlRenderTheme(mapThemeFile)
-
-                model.mapViewPosition.apply {
-                    center = state.center
-                    zoomLevel = state.zoomLevel
-                    rotation = Rotation(state.rotation, 0f, 0f)
-                }
             }
         },
         update = { mapView ->

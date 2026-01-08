@@ -13,11 +13,13 @@ sealed interface Queryable {
         @SerializedName("route_short_name")
         val name: String,
         @SerializedName("type")
-        val type: Int //TODO: THIS WILL BE INT
+        val type: Int,
+        @SerializedName("color")
+        val color: String
     ): Queryable
     data class Stop(
-        @SerializedName("ids")
-        val idsAssociated: List<String> = listOf(),
+        @SerializedName("id")
+        val id: String,
         @SerializedName("name")
         val name: String,
     ): Queryable
@@ -33,9 +35,3 @@ fun Queryable.Route.getIconForType() = when(type){
     8 -> R.drawable.other_transport_types
     else -> throw Exception("Invalid type! Type must be between 1 and 8!")
 }
-
-
-data class RouteDetailed(
-    val route: Queryable.Route,
-    val location: List<Location>,
-)
