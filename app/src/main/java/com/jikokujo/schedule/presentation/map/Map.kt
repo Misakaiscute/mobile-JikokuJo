@@ -2,9 +2,7 @@ package com.jikokujo.schedule.presentation.map
 
 import android.content.Context
 import androidx.annotation.RawRes
-import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -70,7 +68,7 @@ fun DisplayMapsforgeMap(modifier: Modifier){
                     change.consume()
                     val changeX = dragAmount.x / (500 / mapViewModel.state.value.zoomLevel.toDouble().pow(-2.2))
                     val changeY = dragAmount.y / (500 / mapViewModel.state.value.zoomLevel.toDouble().pow(-2.2))
-                    mapViewModel.onAction(Action.Move(Location.Anonymous(
+                    mapViewModel.onAction(Action.Move(Location.Auxiliary(
                         lon = mapViewModel.state.value.center.longitude - changeX,
                         lat = mapViewModel.state.value.center.latitude + changeY
                     )))
@@ -90,6 +88,10 @@ fun DisplayMapsforgeMap(modifier: Modifier){
             Spacer(modifier = modifier.weight(1f))
             Button(
                 modifier = modifier,
+                colors = ButtonDefaults.buttonColors().copy(
+                    containerColor = Color.LightGray,
+                    contentColor = Color.DarkGray
+                ),
                 shape = RoundedCornerShape(5.dp),
                 onClick = {
                     mapViewModel.onAction(Action.ChangeZoomLevel(
@@ -107,7 +109,7 @@ fun DisplayMapsforgeMap(modifier: Modifier){
             Button(
                 modifier = modifier,
                 colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = Color.White,
+                    containerColor = Color.LightGray,
                     contentColor = Color.DarkGray
                 ),
                 shape = RoundedCornerShape(5.dp),

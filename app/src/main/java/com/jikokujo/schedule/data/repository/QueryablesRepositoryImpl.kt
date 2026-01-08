@@ -23,12 +23,9 @@ class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
             this.queryables = ApiResult.Error("Something went wrong: HttpException: ${e.printStackTrace()}")
             return
         }
-        Log.d("ROUTES", response.data?.routes.toString())
-        Log.d("STOPS", response.data?.stops.toString())
         val res: MutableList<Queryable> = mutableListOf()
         res.addAll(response.data?.routes as List<Queryable>)
         res.addAll(response.data.stops as List<Queryable>)
-        Log.i("RES", res.toString())
         this.queryables = ApiResult.Success(res)
     }
 
@@ -52,5 +49,24 @@ class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
 //        } else {
 //            this.queryables = ApiResult.Error("Something went wrong")
 //        }
+    }
+}
+class QueryablesRepositoryTestImpl: QueryableRepository {
+    override lateinit var queryables: ApiResult<List<Queryable>>
+    override lateinit var searchResult: ApiResult<List<RouteDetailed>>
+
+    override suspend fun getQueryables() {
+        queryables = ApiResult.Success(listOf(
+            Queryable.Route(id = "001", name = "4-6-os villamos", type = 2),
+            Queryable.Route(id = "002", name = "M3-mas metró", type = 3),
+            Queryable.Route(id = "003", name = "73-mas trolibusz", type = 4),
+            Queryable.Route(id = "004", name = "119E busz", type = 1),
+            Queryable.Stop(idsAssociated = listOf("001", "002"), name = "Nyugati pályaudvar"),
+            Queryable.Stop(idsAssociated = listOf("003", "004"), name = "Kálvin tér"),
+            Queryable.Stop(idsAssociated = listOf("001", "002", "003", "004"), name = "Blaha Lujza tér"),
+        ))
+    }
+    override suspend fun getRouteDetails(selected: Queryable) {
+        return
     }
 }
