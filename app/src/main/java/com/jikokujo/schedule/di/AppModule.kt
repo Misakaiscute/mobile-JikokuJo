@@ -8,6 +8,8 @@ import com.jikokujo.schedule.data.remote.Api
 import com.jikokujo.schedule.data.repository.QueryablesRepositoryImpl
 import com.jikokujo.schedule.data.repository.QueryableRepository
 import com.jikokujo.schedule.data.repository.QueryablesRepositoryTestImpl
+import com.jikokujo.schedule.data.repository.RouteResultRepository
+import com.jikokujo.schedule.data.repository.RouteResultRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,5 +41,10 @@ object AppModule {
     fun provideQueryablesRepository(): QueryableRepository {
         return QueryablesRepositoryImpl(provideApi())
         //return QueryablesRepositoryTestImpl()
+    }
+    @Provides
+    @Singleton
+    fun provideRouteResultRepository(): RouteResultRepository{
+        return RouteResultRepositoryImpl(provideApi())
     }
 }

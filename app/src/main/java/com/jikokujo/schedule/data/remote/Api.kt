@@ -1,8 +1,6 @@
 package com.jikokujo.schedule.data.remote
 
 import com.jikokujo.core.data.ResponseRoot
-import retrofit2.Call
-import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Path
@@ -15,13 +13,28 @@ sealed interface ApiResult<out T>{
 interface Api {
     @Headers("accept: application/json")
     @GET("queryables")
-    suspend fun getQueryables(): ResponseRoot<GetQueryablesResponseStructure>
+    suspend fun getQueryables(): ResponseRoot<GetQueryablesObj>
 
     @Headers("accept: application/json")
-    @GET("routes/{selectedId}/details") //TODO: double check endpoint name
-    suspend fun getRouteDetailsFromStop(@Path("selectedId") selectedId: String): Call<ResponseRoot<GetQueryablesResponseStructure>>
+    @GET("stop/{selectedId}/routes")
+    suspend fun getRoutesFromStop(
+        @Path("selectedId") selectedStop: String
+    ): ResponseRoot<GetRoutesFromStopObj>
 
     @Headers("accept: application/json")
-    @GET("routes/{selectedId}/details") //TODO: double check endpoint name
-    suspend fun getRouteDetailsFromRoute(@Path("selectedId") selectedId: String): Call<ResponseRoot<GetQueryablesResponseStructure>>
+    @GET("route/{selectedId}/possible-shapes")
+    suspend fun getPossibleShapesForRoute(
+        @Path("selectedId") selectedRoute: String
+    ): ResponseRoot<GetPossibleShapesForRouteObj>
+
+    @Headers("accept: application/json")
+    @GET("route/{selectedId}/from/{year}/{month}/{day}/{hour}/{minute}")
+    suspend fun getTrips(
+        @Path("selectedId") selectedRoute: String,
+        @Path("year") year: Int,
+        @Path("month") month: Int,
+        @Path("day") day: Int,
+        @Path("hour") hour: Int,
+        @Path("minute") minute: Int,
+    ): ResponseRoot<GetTripsObj>
 }

@@ -17,7 +17,7 @@ data class MapState(
 sealed interface Action{
     data class ChangeZoomLevel(val zoomLevel: Byte): Action
     data class Rotate(val rotation: Float): Action
-    data class Move(val location: Location.Anonymous): Action
+    data class Move(val location: Location.Auxiliary): Action
 }
 
 class MapViewModel: ViewModel() {
@@ -38,7 +38,7 @@ class MapViewModel: ViewModel() {
             }
         }
     }
-    private fun move(location: Location.Anonymous){
+    private fun move(location: Location.Auxiliary){
         _state.update {
             it.copy(
                 center = LatLong(location.lat, location.lon)

@@ -3,11 +3,12 @@ package com.jikokujo.schedule.data.model
 import com.google.gson.annotations.SerializedName
 
 sealed interface Location {
-    data class Anonymous(
+    data class Auxiliary(
         @SerializedName("lon") val lon: Double,
         @SerializedName("lat") val lat: Double
     ): Location
-    data class Endpoint(
+    data class RoutePathPoint(
+        @SerializedName("id") val id: String,
         @SerializedName("lon") val lon: Double,
         @SerializedName("lat") val lat: Double
     ): Location
