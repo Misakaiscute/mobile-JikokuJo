@@ -40,7 +40,6 @@ object AppModule {
     @Singleton
     fun provideQueryablesRepository(): QueryableRepository {
         return QueryablesRepositoryImpl(provideApi())
-        //return QueryablesRepositoryTestImpl()
     }
     @Provides
     @Singleton
