@@ -1,8 +1,5 @@
 package com.jikokujo.schedule.data.model
 
-import android.graphics.drawable.Drawable
-import androidx.annotation.DrawableRes
-import androidx.annotation.RawRes
 import com.google.gson.annotations.SerializedName
 import com.jikokujo.R
 

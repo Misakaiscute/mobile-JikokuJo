@@ -1,11 +1,8 @@
 package com.jikokujo.schedule.presentation.map
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.jikokujo.schedule.data.model.Location
-import com.jikokujo.schedule.data.model.Stop
-import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.data.remote.Api
+import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.remote.ApiResult
 import com.jikokujo.schedule.data.repository.RouteResultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +17,7 @@ data class MapState(
     val center: LatLong = LatLong(47.4933, 19.0533),
     val rotation: Float = 0f,
     val pathPoints: List<Location.RoutePathPoint> = listOf(),
-    val stops: List<Stop> = listOf()
+    val stops: List<StopWithLocationAndStopTime> = listOf()
 )
 
 sealed interface Action{

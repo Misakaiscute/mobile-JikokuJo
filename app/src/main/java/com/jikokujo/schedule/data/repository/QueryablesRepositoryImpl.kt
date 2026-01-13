@@ -48,23 +48,3 @@ class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
         this.routesForStop = ApiResult.Success(response.data!!.routes)
     }
 }
-class QueryablesRepositoryTestImpl: QueryableRepository {
-    override lateinit var queryables: ApiResult<List<Queryable>>
-    override var routesForStop: ApiResult<List<Queryable.Route>>? = null
-
-    override suspend fun getQueryables() {
-        queryables = ApiResult.Success(listOf(
-            Queryable.Route(id = "001", name = "4-6-os villamos", type = 2, color = "000000"),
-            Queryable.Route(id = "002", name = "M3-mas metró", type = 3, color = "8f0437"),
-            Queryable.Route(id = "003", name = "73-mas trolibusz", type = 4, color = "0e349c"),
-            Queryable.Route(id = "004", name = "119E busz", type = 1, color = "0b6324"),
-            Queryable.Stop(id = "891", name = "Nyugati pályaudvar"),
-            Queryable.Stop(id = "703", name = "Kálvin tér"),
-            Queryable.Stop(id = "055M", name = "Blaha Lujza tér"),
-        ))
-    }
-
-    override suspend fun getRoutesForStop(stopId: String) {
-        TODO("Not yet implemented")
-    }
-}

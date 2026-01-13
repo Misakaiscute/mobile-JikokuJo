@@ -13,6 +13,7 @@ kspVersion = "2.3.3"
 retrofitVersion = "3.0.0"
 gsonVersion = "2.13.2"
 mapsforgeVersion = "0.26.0"
+junitJupiter = "5.14.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,6 +41,7 @@ mapsforge-map = { group = "com.github.mapsforge.mapsforge", name = "mapsforge-ma
 mapsforge-android = { group = "com.github.mapsforge.mapsforge", name = "mapsforge-map-android", version.ref = "mapsforgeVersion" }
 mapsforge-themes = { group = "com.github.mapsforge.mapsforge", name = "mapsforge-themes", version.ref = "mapsforgeVersion" }
 mapsforge-map-reader = { group = "com.github.mapsforge.mapsforge", name = "mapsforge-map-reader", version.ref = "mapsforgeVersion" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
