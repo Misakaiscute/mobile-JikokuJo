@@ -9,11 +9,11 @@ import com.jikokujo.schedule.data.repository.QueryableRepository
 import com.jikokujo.schedule.data.repository.RouteResultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -27,15 +27,15 @@ enum class DropDowns{
 data class ScheduleSearchState(
     val queryables: List<Queryable> = listOf(),
     val searchString: String = "",
-    val selectedStop: Queryable.Stop? = null,
-    val selectedRoute: Queryable.Route? = null,
+    val selectedQueryable: Queryable? = null,
     val tripTimeConstraint: LocalDateTime = LocalDateTime.now(),
     val trips: List<Trip> = listOf(),
     val selectedTrip: Trip? = null,
     val dropDownExpanded: Boolean = false,
-    val dropDownShown: DropDowns? = null,
+    val dropDownShown: DropDowns = DropDowns.QueryableSelection,
     val shownDialog: Dialogs? = null,
     val isLoading: Boolean = false,
+    val error: String? = null
 )
 
 sealed interface Action{
@@ -62,14 +62,21 @@ class ScheduleSearchViewModel @Inject constructor(
         toggleLoading()
         viewModelScope.launch(Dispatchers.IO) {
             queryableRepository.getQueryables()
-            when(queryableRepository.queryables){
-                is ApiResult.Success<List<Queryable>> -> {
-                    _state.update {
-                        it.copy(queryables = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data)
+            _state.update {
+                when (queryableRepository.queryables) {
+                    is ApiResult.Error -> {
+                        it.copy(
+                            error = (queryableRepository.queryables as ApiResult.Error).errorMsg,
+                            isLoading = false
+                        )
                     }
-                    toggleLoading()
+                    is ApiResult.Success -> {
+                        it.copy(
+                            error = null,
+                            isLoading = false
+                        )
+                    }
                 }
-                is ApiResult.Error -> toggleLoading()
             }
         }
     }
@@ -83,7 +90,7 @@ class ScheduleSearchViewModel @Inject constructor(
         is Action.SelectRoute -> selectRoute(action.route)
         is Action.SelectTrip -> selectTrip(action.trip)
         is Action.UnselectQueryable -> unselectQueryable()
-        is Action.Search -> search()
+        is Action.Search -> runBlocking(Dispatchers.IO) { search() }
     }
     private fun changeDropDownState(isExpanded: Boolean) = _state.update {
         it.copy(dropDownExpanded = isExpanded)
@@ -95,10 +102,9 @@ class ScheduleSearchViewModel @Inject constructor(
         if (value == ""){
             it.copy(
                 queryables = listOf(),
-                selectedStop = null,
-                selectedRoute = null,
+                selectedQueryable = null,
                 searchString = value,
-                dropDownShown = null,
+                dropDownShown = DropDowns.QueryableSelection,
                 dropDownExpanded = false
             )
         } else {
@@ -113,35 +119,84 @@ class ScheduleSearchViewModel @Inject constructor(
                         }
                     }
                 },
-                selectedStop = null,
-                selectedRoute = null,
+                selectedQueryable = null,
                 searchString = value,
                 dropDownShown = DropDowns.QueryableSelection,
                 dropDownExpanded = true
             )
         }
     }
-    private fun selectStop(stop: Queryable.Stop) = _state.update {
-        it.copy(
-            selectedStop = stop,
-            searchString = stop.name
-        )
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
+    private fun selectStop(stop: Queryable.Stop) {
+        if (queryableRepository.queryables is ApiResult.Success){
+            val stopExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data.filter {
+                it is Queryable.Stop
+            }.find {
+                (it as Queryable.Stop).id == stop.id
+            } != null
+            if (stopExists) {
+                _state.update {
+                    it.copy(
+                        selectedQueryable = stop,
+                        searchString = stop.name,
+                        dropDownExpanded = false,
+                    )
+                }
+            } else {
+                throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
+            }
+        } else {
+            throw IllegalStateException("Can't select an item when the dataset has returned with an error")
+        }
     }
-    private fun selectRoute(route: Queryable.Route) = _state.update {
-        it.copy(
-            selectedRoute = route,
-            searchString = route.name
-        )
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
+    private fun selectRoute(route: Queryable.Route) {
+        if (queryableRepository.queryables is ApiResult.Success){
+            val routeExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data.filter {
+                it is Queryable.Route
+            }.find {
+                (it as Queryable.Route).id == route.id
+            } != null
+            if (routeExists) {
+                _state.update {
+                    it.copy(
+                        selectedQueryable = route,
+                        searchString = route.name,
+                        dropDownExpanded = false
+                    )
+                }
+            } else {
+                throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
+            }
+        } else {
+            throw IllegalStateException("Can't select an item when the dataset has returned with an error")
+        }
+    }
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
+    private fun selectTrip(trip: Trip) {
+        if (queryableRepository.queryables is ApiResult.Success){
+            val routeExists: Boolean = (routeResultRepository.trips as ApiResult.Success).data.find {
+                it.id == trip.id
+            } != null
+            if (routeExists) {
+                _state.update {
+                    it.copy(
+                        selectedTrip = trip,
+                        dropDownExpanded = false
+                    )
+                }
+            } else {
+                throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
+            }
+        } else {
+            throw IllegalStateException("Can't select an item when the dataset has returned with an error")
+        }
     }
     private fun unselectQueryable() = _state.update {
         it.copy(
-            selectedStop = null,
-            selectedRoute = null,
+            selectedQueryable = null,
             searchString = ""
         )
-    }
-    private fun selectTrip(trip: Trip) = _state.update {
-        it.copy(selectedTrip = trip)
     }
     private fun changeTripFromDate(year: Int, month: Int, day: Int) = _state.update {
         it.copy(
@@ -164,31 +219,33 @@ class ScheduleSearchViewModel @Inject constructor(
             shownDialog = null
         )
     }
-    private fun search() {
-        if (_state.value.selectedRoute != null){
+    @Throws(IllegalStateException::class)
+    private suspend fun search() = when(_state.value.selectedQueryable) {
+        is Queryable.Route -> {
             _state.update {
                 it.copy(
+                    isLoading = true,
                     dropDownExpanded = true,
                     dropDownShown = DropDowns.TripSelection,
-                    isLoading = true
                 )
             }
-            viewModelScope.launch(Dispatchers.IO) {
-                async { routeResultRepository.getTrips(
-                    dateTime = _state.value.tripTimeConstraint,
-                    routeId = _state.value.selectedRoute!!.id
-                )}
-                async { routeResultRepository.getPossibleShapes(
-                    routeId = _state.value.selectedRoute!!.id
-                )}
-            }
+
+            routeResultRepository.getTrips(
+                dateTime = _state.value.tripTimeConstraint,
+                routeId = (_state.value.selectedQueryable as Queryable.Route).id
+            )
+            routeResultRepository.getPossibleShapes(
+                routeId = (_state.value.selectedQueryable as Queryable.Route).id
+            )
+
             _state.update {
                 it.copy(
                     trips = (routeResultRepository.trips as ApiResult.Success).data,
                     isLoading = false
                 )
             }
-        } else if (_state.value.selectedStop != null) {
+        }
+        is Queryable.Stop -> {
             _state.update {
                 it.copy(
                     isLoading = true,
@@ -196,18 +253,19 @@ class ScheduleSearchViewModel @Inject constructor(
                     dropDownShown = DropDowns.RouteSelection
                 )
             }
-            viewModelScope.launch(Dispatchers.IO) {
-                queryableRepository.getRoutesForStop(_state.value.selectedStop!!.id)
-            }
+
+            queryableRepository.getRoutesForStop(
+                stopId = (_state.value.selectedQueryable as Queryable.Stop).id
+            )
+
             _state.update {
                 it.copy(
                     queryables = (queryableRepository.routesForStop as ApiResult.Success).data,
                     isLoading = false
                 )
             }
-        } else {
-            throw IllegalStateException("Cannot search if selectedStop and selectedRoute are both null")
         }
+        else -> throw IllegalStateException("Cannot search if no queryable is selected")
     }
     private fun toggleLoading() = _state.update {
         it.copy(isLoading = !it.isLoading)
