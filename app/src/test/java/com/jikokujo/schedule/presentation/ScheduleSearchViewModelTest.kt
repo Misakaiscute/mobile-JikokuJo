@@ -1,7 +1,7 @@
 package com.jikokujo.schedule.presentation
 
 import com.jikokujo.schedule.data.QueryablesRepositoryTestImpl
-import com.jikokujo.schedule.data.RouteResultRepositoryTestImpl
+import com.jikokujo.schedule.data.TripsRepositoryTestImpl
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.presentation.schedule.Action
 import com.jikokujo.schedule.presentation.schedule.DropDowns
@@ -16,11 +16,11 @@ class ScheduleSearchViewModelTest {
     @Before
     fun setUp() {
         val queryables = mutableListOf<Queryable>()
-        val routesForStop = mutableListOf<Queryable.Route>()
+
         (0..<(3 * 26)).forEachIndexed { index, i ->
             queryables.add(Queryable.Route(
                 id = index.toString(),
-                name = (i % 27 + 65).toChar() + index.toString(),
+                shortName = (i % 27 + 65).toChar() + index.toString(),
                 type = 1,
                 color = index.toLong().toString()
             ))
@@ -29,22 +29,14 @@ class ScheduleSearchViewModelTest {
                 name = (i % 27 + 97).toChar() + index.toString()
             ))
         }
-        ('a'..'z').forEachIndexed {  index, ch ->
-            routesForStop.add(Queryable.Route(
-                id = index.toString(),
-                name = ch + index.toString(),
-                type = 1,
-                color = index.toLong().toString()
-            ))
-        }
         val queryablesRepositoryTestImpl = QueryablesRepositoryTestImpl(
             queryablesIn = queryables,
-            routesForStopIn = routesForStop
         )
-        val routeResultRepositoryTestImpl = RouteResultRepositoryTestImpl()
+        val tripRepositoryTestImpl = TripsRepositoryTestImpl()
+
         this.viewModel = ScheduleSearchViewModel(
             queryableRepository = queryablesRepositoryTestImpl,
-            routeResultRepository = routeResultRepositoryTestImpl
+            tripsRepository = tripRepositoryTestImpl
         )
     }
     @Test
@@ -59,9 +51,9 @@ class ScheduleSearchViewModelTest {
         val searchString = "a"
         viewModel.onAction(Action.ChangeSearch(searchString))
         val expected = listOf(
-            Queryable.Route(id = "0", name = "A0", type = 1, color = 0.toLong().toString()),
-            Queryable.Route(id = "26", name = "A26", type = 1, color = 26.toLong().toString()),
-            Queryable.Route(id = "52", name = "A52", type = 1, color = 52.toLong().toString()),
+            Queryable.Route(id = "0", shortName = "A0", type = 1, color = 0.toLong().toString()),
+            Queryable.Route(id = "26", shortName = "A26", type = 1, color = 26.toLong().toString()),
+            Queryable.Route(id = "52", shortName = "A52", type = 1, color = 52.toLong().toString()),
             Queryable.Stop(id = "0", name = "a0"),
             Queryable.Stop(id = "26", name = "a26"),
             Queryable.Stop(id = "52", name = "a52")
@@ -134,7 +126,7 @@ class ScheduleSearchViewModelTest {
     }
     @Test
     fun `select EXISTING route`(){
-        val route = Queryable.Route(id = "27", name = "B27", type = 1, color = 27.toLong().toString())
+        val route = Queryable.Route(id = "27", shortName = "B27", type = 1, color = 27.toLong().toString())
         viewModel.onAction(Action.SelectRoute(route))
         assertTrue(
             "The state must contain no queryables at this point",
@@ -146,14 +138,14 @@ class ScheduleSearchViewModelTest {
         )
         assertTrue(
             "Selecting a stop must result in the searchString switching to the name of the route",
-            route.name == viewModel.state.value.searchString
+            route.shortName == viewModel.state.value.searchString
         )
     }
     @Test
     fun `select NON-EXISTENT route`(){
         val exception = assertThrows(IllegalArgumentException::class.java) {
             viewModel.onAction(Action.SelectRoute(
-                Queryable.Route(id = "asddd", name = "mindegyezbarmilehetlol", type = 1, color = "1")
+                Queryable.Route(id = "asddd", shortName = "mindegyezbarmilehetlol", type = 1, color = "1")
             ))
         }
         assertTrue(
@@ -183,7 +175,7 @@ class ScheduleSearchViewModelTest {
         )
         assertTrue(
             "Selecting a stop must result in the dropdown switching RouteSelection",
-            DropDowns.RouteSelection == viewModel.state.value.dropDownShown
+            DropDowns.TripSelection == viewModel.state.value.dropDownShown
         )
         assertFalse(
             "Search must have finished loading",
@@ -193,7 +185,7 @@ class ScheduleSearchViewModelTest {
     @Test
     fun `search with route selected`(){
         viewModel.onAction(Action.SelectRoute(
-            Queryable.Route(id = "0", name = "A0", type = 1, color = 1.toLong().toString())
+            Queryable.Route(id = "0", shortName = "A0", type = 1, color = 1.toLong().toString())
         ))
         viewModel.onAction(Action.Search)
         assertTrue(

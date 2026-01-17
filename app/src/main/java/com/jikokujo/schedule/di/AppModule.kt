@@ -5,8 +5,8 @@ import com.google.gson.Strictness
 import com.jikokujo.schedule.data.remote.Api
 import com.jikokujo.schedule.data.repository.QueryablesRepositoryImpl
 import com.jikokujo.schedule.data.repository.QueryableRepository
-import com.jikokujo.schedule.data.repository.RouteResultRepository
-import com.jikokujo.schedule.data.repository.RouteResultRepositoryImpl
+import com.jikokujo.schedule.data.repository.TripsRepository
+import com.jikokujo.schedule.data.repository.TripsRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,7 +39,7 @@ object AppModule {
     }
     @Provides
     @Singleton
-    fun provideRouteResultRepository(): RouteResultRepository{
-        return RouteResultRepositoryImpl(provideApi())
+    fun provideRouteResultRepository(): TripsRepository{
+        return TripsRepositoryImpl(provideApi())
     }
 }

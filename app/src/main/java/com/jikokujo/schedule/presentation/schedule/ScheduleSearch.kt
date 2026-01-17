@@ -25,13 +25,15 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
+import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.theme.Typography
 
 @Composable
 fun ScheduleSearchBar(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Unit
+    onAction: (Action) -> Unit,
+    displayOnMap: (Trip) -> Unit
 ){
     Column(
         modifier = modifier
@@ -60,30 +62,12 @@ fun ScheduleSearchBar(
                         onAction = onAction
                     )
                 }
-                DropDowns.RouteSelection -> {
-                    RouteSelectionDropDown(
-                        modifier = modifier,
-                        state = state,
-                        onAction = onAction
-                    )
-                    DateTimePicker(
-                        modifier = modifier,
-                        state = state,
-                        onAction = onAction
-                    )
-                }
                 DropDowns.TripSelection -> {
                     TripSelectionDropDown(
                         modifier = modifier,
                         state = state,
-                        onAction = onAction
-                    )
-                }
-                null -> {
-                    DateTimePicker(
-                        modifier = modifier,
-                        state = state,
-                        onAction = onAction
+                        onAction = onAction,
+                        displayOnMap = displayOnMap
                     )
                 }
             }
@@ -152,6 +136,7 @@ private fun ScheduleSearchBarPreview(){
     ScheduleSearchBar(
         modifier = Modifier,
         state = ScheduleSearchState(),
-        onAction = {}
+        onAction = {},
+        displayOnMap = {}
     )
 }

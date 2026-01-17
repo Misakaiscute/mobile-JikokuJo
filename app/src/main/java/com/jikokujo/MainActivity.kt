@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jikokujo.schedule.presentation.map.Action
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
 import com.jikokujo.schedule.presentation.map.MapViewModel
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchBar
@@ -46,7 +47,8 @@ private fun ScheduleScreen(modifier: Modifier){
         ScheduleSearchBar(
             modifier = modifier,
             state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
-            onAction = { action -> scheduleSearchViewModel.onAction(action) }
+            onAction = { action -> scheduleSearchViewModel.onAction(action) },
+            displayOnMap = { trip -> mapViewModel.onAction(Action.SetFetchedNodes(trip)) }
         )
     }
 }

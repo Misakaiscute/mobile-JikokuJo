@@ -3,12 +3,15 @@ package com.jikokujo.schedule.presentation.map
 import androidx.lifecycle.ViewModel
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
+import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.remote.ApiResult
-import com.jikokujo.schedule.data.repository.RouteResultRepository
+import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import org.mapsforge.core.model.LatLong
 import javax.inject.Inject
 
@@ -17,20 +20,21 @@ data class MapState(
     val center: LatLong = LatLong(47.4933, 19.0533),
     val rotation: Float = 0f,
     val pathPoints: List<Location.RoutePathPoint> = listOf(),
-    val stops: List<StopWithLocationAndStopTime> = listOf()
+    val stops: List<StopWithLocationAndStopTime> = listOf(),
+    val error: String? = null
 )
 
 sealed interface Action{
     data class ChangeZoomLevel(val zoomIn: Boolean): Action
     data class Rotate(val rotation: Float): Action
     data class Move(val location: Location.Auxiliary): Action
-    data class SetFetchedNodes(val tripId: String): Action
+    data class SetFetchedNodes(val trip: Trip): Action
     data object ResetNodes: Action
 }
 
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    private val routeResultRepository: RouteResultRepository
+    private val tripsRepository: TripsRepository
 ): ViewModel() {
     private val _state = MutableStateFlow(MapState())
     val state = _state.asStateFlow()
@@ -39,29 +43,53 @@ class MapViewModel @Inject constructor(
         is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
         is Action.Move -> move(action.location)
         is Action.Rotate -> rotate(action.rotation)
-        is Action.SetFetchedNodes -> setFetchedNodes(action.tripId)
-        is Action.ResetNodes -> setFetchedNodes(null)
+        is Action.SetFetchedNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(action.trip) }
+        is Action.ResetNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(null) }
     }
-    private fun setFetchedNodes(tripId: String?) = _state.update{
-        if (tripId == null){
-            it.copy(
-                pathPoints = listOf(),
-                stops = listOf()
-            )
-        } else {
-            if (routeResultRepository.trips is ApiResult.Success && routeResultRepository.possibleShapes is ApiResult.Success){
+    @Throws(IllegalStateException::class)
+    private suspend fun setFetchedNodes(trip: Trip?) {
+        if (trip == null){
+            _state.update {
                 it.copy(
-                    pathPoints = (routeResultRepository.possibleShapes as ApiResult.Success).data[
-                        (routeResultRepository.trips as ApiResult.Success).data.find{ trip ->
-                            trip.id == tripId
-                        }
-                    ?.shape]!!.toList(),
-                    stops = (routeResultRepository.trips as ApiResult.Success).data.find{ trip ->
-                        trip.id == tripId
-                    }!!.stops
+                    pathPoints = listOf(),
+                    stops = listOf()
                 )
+            }
+        } else {
+            if (tripsRepository.trips is ApiResult.Error){
+                throw IllegalStateException("Fetched trips can't be ApiResult.Error, if a trip was successfully selected")
+            }
+            if (!tripsRepository.storedShapes.containsKey(trip.shapeId)){
+                tripsRepository.getShapes(trip)
+            }
+            if (!tripsRepository.storedStops.containsKey(trip.shapeId)){
+                tripsRepository.getStops(trip)
+            }
+
+            if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Success && tripsRepository.storedStops[trip.shapeId] is ApiResult.Success){
+                _state.update {
+                    it.copy(
+                        pathPoints = (tripsRepository.storedShapes[trip.shapeId] as ApiResult.Success).data,
+                        stops = (tripsRepository.storedStops[trip.id] as ApiResult.Success).data,
+                        error = null
+                    )
+                }
             } else {
-                it.copy()
+                _state.update {
+                    if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Error){
+                        it.copy(
+                            pathPoints = listOf(),
+                            stops = listOf(),
+                            error = "${(tripsRepository.storedShapes[trip.shapeId] as ApiResult.Error).errorMsg} Retry?"
+                        )
+                    } else {
+                        it.copy(
+                            pathPoints = listOf(),
+                            stops = listOf(),
+                            error = "${(tripsRepository.storedStops[trip.id] as ApiResult.Error).errorMsg} Retry?"
+                        )
+                    }
+                }
             }
         }
     }

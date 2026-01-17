@@ -6,7 +6,7 @@ import com.jikokujo.schedule.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.repository.QueryableRepository
-import com.jikokujo.schedule.data.repository.RouteResultRepository
+import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +21,7 @@ enum class Dialogs{
     DatePicker, TimePicker
 }
 enum class DropDowns{
-    QueryableSelection, RouteSelection, TripSelection
+    QueryableSelection, TripSelection
 }
 
 data class ScheduleSearchState(
@@ -47,13 +47,14 @@ sealed interface Action{
     data class SelectRoute(val route: Queryable.Route): Action
     data class SelectStop(val stop: Queryable.Stop): Action
     data class SelectTrip(val trip: Trip): Action
+    data class GetRoute(val routeId: String): Action
     data object UnselectQueryable: Action
     data object Search: Action
 }
 @HiltViewModel
 class ScheduleSearchViewModel @Inject constructor(
     private val queryableRepository: QueryableRepository,
-    private val routeResultRepository: RouteResultRepository
+    private val tripsRepository: TripsRepository
 ): ViewModel() {
     private val _state = MutableStateFlow(ScheduleSearchState())
     val state = _state.asStateFlow()
@@ -88,9 +89,10 @@ class ScheduleSearchViewModel @Inject constructor(
         is Action.ChangeSearch -> changeSearch(action.qString)
         is Action.SelectStop -> selectStop(action.stop)
         is Action.SelectRoute -> selectRoute(action.route)
-        is Action.SelectTrip -> selectTrip(action.trip)
+        is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip) }
         is Action.UnselectQueryable -> unselectQueryable()
         is Action.Search -> runBlocking(Dispatchers.IO) { search() }
+        is Action.GetRoute -> getRoute(action.routeId)
     }
     private fun changeDropDownState(isExpanded: Boolean) = _state.update {
         it.copy(dropDownExpanded = isExpanded)
@@ -115,7 +117,7 @@ class ScheduleSearchViewModel @Inject constructor(
                             queryable.name.contains(value, ignoreCase = true)
                         }
                         is Queryable.Route -> {
-                            queryable.name.contains(value, ignoreCase = true)
+                            queryable.shortName.contains(value, ignoreCase = true)
                         }
                     }
                 },
@@ -143,7 +145,7 @@ class ScheduleSearchViewModel @Inject constructor(
                     )
                 }
             } else {
-                throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
+                throw IllegalArgumentException("Selecting a stop not in the dataset is impossible")
             }
         } else {
             throw IllegalStateException("Can't select an item when the dataset has returned with an error")
@@ -161,30 +163,39 @@ class ScheduleSearchViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         selectedQueryable = route,
-                        searchString = route.name,
+                        searchString = route.shortName,
                         dropDownExpanded = false
                     )
                 }
             } else {
-                throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
+                throw IllegalArgumentException("Selecting a route not in the dataset is impossible")
             }
         } else {
             throw IllegalStateException("Can't select an item when the dataset has returned with an error")
         }
     }
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
-    private fun selectTrip(trip: Trip) {
+    private suspend fun selectTrip(trip: Trip) {
         if (queryableRepository.queryables is ApiResult.Success){
-            val routeExists: Boolean = (routeResultRepository.trips as ApiResult.Success).data.find {
+            val tripExists: Boolean = (tripsRepository.trips as ApiResult.Success).data.find {
                 it.id == trip.id
             } != null
-            if (routeExists) {
+            if (tripExists) {
                 _state.update {
                     it.copy(
                         selectedTrip = trip,
-                        dropDownExpanded = false
+                        dropDownExpanded = false,
+                        isLoading = true
                     )
                 }
+
+                tripsRepository.getShapes(trip = trip)
+                tripsRepository.getStops(trip = trip)
+
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+
             } else {
                 throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
             }
@@ -221,7 +232,8 @@ class ScheduleSearchViewModel @Inject constructor(
     }
     @Throws(IllegalStateException::class)
     private suspend fun search() = when(_state.value.selectedQueryable) {
-        is Queryable.Route -> {
+        null -> throw IllegalStateException("Cannot search if no queryable is selected")
+        else -> {
             _state.update {
                 it.copy(
                     isLoading = true,
@@ -230,42 +242,27 @@ class ScheduleSearchViewModel @Inject constructor(
                 )
             }
 
-            routeResultRepository.getTrips(
+            tripsRepository.getTrips(
                 dateTime = _state.value.tripTimeConstraint,
-                routeId = (_state.value.selectedQueryable as Queryable.Route).id
-            )
-            routeResultRepository.getPossibleShapes(
-                routeId = (_state.value.selectedQueryable as Queryable.Route).id
+                selected = _state.value.selectedQueryable!!
             )
 
             _state.update {
                 it.copy(
-                    trips = (routeResultRepository.trips as ApiResult.Success).data,
+                    trips = (tripsRepository.trips as ApiResult.Success).data,
                     isLoading = false
                 )
             }
         }
-        is Queryable.Stop -> {
-            _state.update {
-                it.copy(
-                    isLoading = true,
-                    dropDownExpanded = true,
-                    dropDownShown = DropDowns.RouteSelection
-                )
-            }
-
-            queryableRepository.getRoutesForStop(
-                stopId = (_state.value.selectedQueryable as Queryable.Stop).id
-            )
-
-            _state.update {
-                it.copy(
-                    queryables = (queryableRepository.routesForStop as ApiResult.Success).data,
-                    isLoading = false
-                )
+    }
+    @Throws(NoSuchElementException::class)
+    private fun getRoute(routeId: String): Queryable.Route{
+        (queryableRepository.queryables as ApiResult.Success).data.forEach { queryable ->
+            if (queryable is Queryable.Route && queryable.id == routeId) {
+                return queryable
             }
         }
-        else -> throw IllegalStateException("Cannot search if no queryable is selected")
+        throw NoSuchElementException("Item not found")
     }
     private fun toggleLoading() = _state.update {
         it.copy(isLoading = !it.isLoading)

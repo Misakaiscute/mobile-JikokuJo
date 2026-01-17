@@ -16,25 +16,36 @@ interface Api {
     suspend fun getQueryables(): ResponseRoot<GetQueryablesObj>
 
     @Headers("accept: application/json")
-    @GET("stop/{selectedId}/routes")
-    suspend fun getRoutesFromStop(
-        @Path("selectedId") selectedStop: String
-    ): ResponseRoot<GetRoutesFromStopObj>
-
-    @Headers("accept: application/json")
-    @GET("route/{selectedId}/possible-shapes")
-    suspend fun getPossibleShapesForRoute(
-        @Path("selectedId") selectedRoute: String
-    ): ResponseRoot<GetPossibleShapesForRouteObj>
-
-    @Headers("accept: application/json")
-    @GET("route/{selectedId}/from/{year}/{month}/{day}/{hour}/{minute}")
-    suspend fun getTrips(
-        @Path("selectedId") selectedRoute: String,
-        @Path("year") year: Int,
-        @Path("month") month: Int,
-        @Path("day") day: Int,
-        @Path("hour") hour: Int,
-        @Path("minute") minute: Int,
+    @GET("route/{routeId}/time/{year}{month}{day}/{hour}{minute}")
+    suspend fun getTripsFromRoute(
+        @Path("selectedId") routeId: String,
+        @Path("year") year: String,
+        @Path("month") month: String,
+        @Path("day") day: String,
+        @Path("hour") hour: String,
+        @Path("minute") minute: String,
     ): ResponseRoot<GetTripsObj>
+
+    @Headers("accept: application/json")
+    @GET("stop/{stopId}/time/{year}{month}{day}/{hour}{minute}")
+    suspend fun getTripsFromStop(
+        @Path("stopId") stopId: String,
+        @Path("year") year: String,
+        @Path("month") month: String,
+        @Path("day") day: String,
+        @Path("hour") hour: String,
+        @Path("minute") minute: String,
+    ): ResponseRoot<GetTripsObj>
+
+    @Headers("accept: application/json")
+    @GET("route/{tripId}/possible-shapes")
+    suspend fun getShapesForTrip(
+        @Path("tripId") tripId: String
+    ): ResponseRoot<GetShapeForTripObj>
+
+    @Headers("accept: application/json")
+    @GET("route/{tripId}/possible-shapes")
+    suspend fun getStopsForTrip(
+        @Path("tripId") tripId: String
+    ): ResponseRoot<GetStopsForTripObj>
 }

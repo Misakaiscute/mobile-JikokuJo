@@ -7,9 +7,11 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.rememberScrollState
@@ -27,7 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
 import com.jikokujo.schedule.data.model.Queryable
-import com.jikokujo.schedule.data.model.getIconForType
+import com.jikokujo.schedule.data.model.getIcon
+import com.jikokujo.theme.Typography
 
 @Composable
 fun QueryableDropDown(
@@ -41,7 +44,7 @@ fun QueryableDropDown(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
-            .heightIn(0.dp, (((itemHeight + 1) * maxItems) - 1).dp)
+            .height((((itemHeight + 1) * maxItems) - 1).dp)
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
@@ -56,14 +59,18 @@ fun QueryableDropDown(
                 )
             }
             QueryableDropDownItem(
-                modifier = modifier.background(if (i % 2 == 0) Color.LightGray else Color.White),
+                modifier = modifier
+                    .background(if (i % 2 == 0) Color.LightGray else Color.White)
+                    .clickable(
+                        enabled = !state.isLoading,
+                        onClick = {
+                            when (state.queryables[i]){
+                                is Queryable.Route -> onAction(Action.SelectRoute(state.queryables[i] as Queryable.Route))
+                                is Queryable.Stop -> onAction(Action.SelectStop(state.queryables[i] as Queryable.Stop))
+                            }
+                        }
+                    ),
                 item = state.queryables[i],
-                onClick = {
-                    when (state.queryables[i]){
-                        is Queryable.Route -> onAction(Action.SelectRoute(state.queryables[i] as Queryable.Route))
-                        is Queryable.Stop -> onAction(Action.SelectStop(state.queryables[i] as Queryable.Stop))
-                    }
-                },
                 itemHeight = itemHeight
             )
         }
@@ -73,7 +80,6 @@ fun QueryableDropDown(
 private fun QueryableDropDownItem(
     modifier: Modifier,
     item: Queryable,
-    onClick: () -> Unit,
     itemHeight: Int
 ){
     val overscrollEffect = rememberOverscrollEffect()
@@ -81,9 +87,6 @@ private fun QueryableDropDownItem(
         modifier = modifier
             .fillMaxWidth()
             .height(itemHeight.dp)
-            .clickable(
-                onClick = { onClick.invoke() }
-            )
             .overscroll(overscrollEffect),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -91,27 +94,36 @@ private fun QueryableDropDownItem(
         when (item){
             is Queryable.Stop -> {
                 Icon(
-                    modifier = Modifier.fillMaxWidth(1/10f),
+                    modifier = Modifier
+                        .fillMaxWidth(1/10f)
+                        .aspectRatio(1f),
                     painter = painterResource(R.drawable.busstop),
-                    contentDescription = "bus stop",
+                    contentDescription = "stop",
                     tint = Color.Black
                 )
+                Spacer(modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
                     text = item.name,
+                    style = Typography.bodyLarge,
+                    color = Color.Black
                 )
             }
             is Queryable.Route -> {
                 Icon(
-                    modifier = Modifier.fillMaxWidth(1/10f),
-                    painter = painterResource(item.getIconForType()),
-                    contentDescription = "other transport icon",
-                    tint = Color(item.color.hexToLong())
+                    modifier = Modifier
+                        .fillMaxWidth(1/10f)
+                        .aspectRatio(1f),
+                    painter = painterResource(item.getIcon()),
+                    contentDescription = "transport icon",
+                    tint = Color("FF${item.color}".toLong(16))
                 )
+                Spacer(modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = item.name,
-                    color = Color(item.color.hexToLong())
+                    text = item.shortName,
+                    style = Typography.bodyLarge,
+                    color = Color("FF${item.color}".toLong(16))
                 )
             }
         }
@@ -119,11 +131,19 @@ private fun QueryableDropDownItem(
 }
 @Preview(showBackground = true)
 @Composable
-private fun DropdownItemPreview(){
+private fun DropdownItemWithRoutePreview(){
     QueryableDropDownItem(
         modifier = Modifier,
-        item = Queryable.Route("001", "M3-mas metró", 3, "0b6324"),
-        onClick = {},
+        item = Queryable.Route("001", "M3-mas metró", "0b6324", 3),
+        itemHeight = 40
+    )
+}
+@Preview(showBackground = true)
+@Composable
+private fun DropdownItemWithStopPreview(){
+    QueryableDropDownItem(
+        modifier = Modifier,
+        item = Queryable.Stop("001", "Kálvin tér"),
         itemHeight = 40
     )
 }
