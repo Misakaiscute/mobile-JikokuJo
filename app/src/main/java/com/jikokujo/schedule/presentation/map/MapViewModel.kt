@@ -2,6 +2,7 @@ package com.jikokujo.schedule.presentation.map
 
 import androidx.lifecycle.ViewModel
 import com.jikokujo.schedule.data.model.Location
+import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.remote.ApiResult
@@ -18,6 +19,7 @@ import javax.inject.Inject
 data class MapState(
     val zoomLevel: Byte = 15,
     val rotation: Float = 0f,
+    val routeAssociated: Queryable.Route? = null,
     val pathPoints: List<Location.RoutePathPoint> = listOf(),
     val stops: List<StopWithLocationAndStopTime> = listOf(),
     val error: String? = null
@@ -26,7 +28,7 @@ data class MapState(
 sealed interface Action{
     data class ChangeZoomLevel(val zoomIn: Boolean): Action
     data class Rotate(val rotation: Float): Action
-    data class SetFetchedNodes(val trip: Trip): Action
+    data class SetFetchedNodes(val trip: Trip, val routeAssociated: Queryable.Route): Action
     data object ResetNodes: Action
 }
 
@@ -40,14 +42,15 @@ class MapViewModel @Inject constructor(
     fun onAction(action: Action) = when(action){
         is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
         is Action.Rotate -> rotate(action.rotation)
-        is Action.SetFetchedNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(action.trip) }
-        is Action.ResetNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(null) }
+        is Action.SetFetchedNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(action.trip, action.routeAssociated) }
+        is Action.ResetNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes() }
     }
     @Throws(IllegalStateException::class)
-    private suspend fun setFetchedNodes(trip: Trip?) {
+    private suspend fun setFetchedNodes(trip: Trip? = null, routeAssociated: Queryable.Route? = null) {
         if (trip == null){
             _state.update {
                 it.copy(
+                    routeAssociated = null,
                     pathPoints = listOf(),
                     stops = listOf()
                 )
@@ -66,6 +69,7 @@ class MapViewModel @Inject constructor(
             if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Success && tripsRepository.storedStops[trip.shapeId] is ApiResult.Success){
                 _state.update {
                     it.copy(
+                        routeAssociated = routeAssociated,
                         pathPoints = (tripsRepository.storedShapes[trip.shapeId] as ApiResult.Success).data,
                         stops = (tripsRepository.storedStops[trip.id] as ApiResult.Success).data,
                         error = null
@@ -75,12 +79,14 @@ class MapViewModel @Inject constructor(
                 _state.update {
                     if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Error){
                         it.copy(
+                            routeAssociated = null,
                             pathPoints = listOf(),
                             stops = listOf(),
                             error = "${(tripsRepository.storedShapes[trip.shapeId] as ApiResult.Error).errorMsg} Retry?"
                         )
                     } else {
                         it.copy(
+                            routeAssociated = null,
                             pathPoints = listOf(),
                             stops = listOf(),
                             error = "${(tripsRepository.storedStops[trip.id] as ApiResult.Error).errorMsg} Retry?"

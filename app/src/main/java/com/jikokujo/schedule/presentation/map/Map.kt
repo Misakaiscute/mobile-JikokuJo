@@ -13,13 +13,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.jikokujo.R
 import com.jikokujo.core.utils.rawFile
+import com.jikokujo.schedule.data.model.getColor
 import com.jikokujo.theme.Typography
+import org.mapsforge.core.graphics.Cap
+import org.mapsforge.core.graphics.Join
+import org.mapsforge.core.graphics.Paint
+import org.mapsforge.core.graphics.Style
 import org.mapsforge.core.model.LatLong
 import org.mapsforge.core.model.Rotation
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
@@ -27,6 +33,7 @@ import org.mapsforge.map.android.rendertheme.AssetsRenderTheme
 import org.mapsforge.map.android.util.AndroidUtil
 import org.mapsforge.map.android.view.MapView
 import org.mapsforge.map.layer.cache.TileCache
+import org.mapsforge.map.layer.overlay.Polyline
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
 
@@ -113,14 +120,41 @@ fun MapsforgeMap(
                 layerManager.layers.add(tileRendererLayer)
                 val mapThemeFile = AssetsRenderTheme(context.assets, "", "map_theme.xml")
                 tileRendererLayer.setXmlRenderTheme(mapThemeFile)
+
+                val boundingBox = mapData.mapFileInfo.boundingBox
+                model.mapViewPosition.mapLimit = boundingBox
                 model.mapViewPosition.center = LatLong(47.4933, 19.0533)
             }
         },
         update = { mapView ->
+            //Handle zooming in and out
             if (mapView.model.mapViewPosition.zoomLevel < state.zoomLevel){
                 mapView.model.mapViewPosition.zoomIn(true)
             } else if (mapView.model.mapViewPosition.zoomLevel > state.zoomLevel){
                 mapView.model.mapViewPosition.zoomOut(true)
+            }
+
+            //Placing & clearing line of a trip
+            if (state.pathPoints.count() > 1) {
+                val paint: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
+                    color = state.routeAssociated!!.getColor().toArgb()
+                    strokeWidth = 8f
+                    setStyle(Style.STROKE)
+                    setStrokeCap(Cap.ROUND)
+                    setStrokeJoin(Join.ROUND)
+                }
+                val route: List<LatLong> = state.pathPoints.map { pathPoint ->
+                    LatLong(pathPoint.lat, pathPoint.lon)
+                }.toList()
+                val polyline: Polyline = Polyline(
+                    paint,
+                    AndroidGraphicFactory.INSTANCE
+                )
+
+                polyline.setPoints(route)
+                mapView.layerManager.layers.add(polyline)
+            } else {
+                mapView.layerManager.layers.clear()
             }
 
             mapView.model.mapViewPosition.apply {
