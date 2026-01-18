@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
 import com.jikokujo.schedule.data.model.Queryable
+import com.jikokujo.schedule.data.model.getColor
 import com.jikokujo.schedule.data.model.getIcon
 import com.jikokujo.theme.Typography
 
@@ -116,14 +117,14 @@ private fun QueryableDropDownItem(
                         .aspectRatio(1f),
                     painter = painterResource(item.getIcon()),
                     contentDescription = "transport icon",
-                    tint = Color("FF${item.color}".toLong(16))
+                    tint = item.getColor()
                 )
                 Spacer(modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
                     text = item.shortName,
                     style = Typography.bodyLarge,
-                    color = Color("FF${item.color}".toLong(16))
+                    color = item.getColor()
                 )
             }
         }

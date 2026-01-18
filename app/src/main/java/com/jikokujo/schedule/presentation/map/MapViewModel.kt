@@ -17,7 +17,6 @@ import javax.inject.Inject
 
 data class MapState(
     val zoomLevel: Byte = 15,
-    val center: LatLong = LatLong(47.4933, 19.0533),
     val rotation: Float = 0f,
     val pathPoints: List<Location.RoutePathPoint> = listOf(),
     val stops: List<StopWithLocationAndStopTime> = listOf(),
@@ -27,7 +26,6 @@ data class MapState(
 sealed interface Action{
     data class ChangeZoomLevel(val zoomIn: Boolean): Action
     data class Rotate(val rotation: Float): Action
-    data class Move(val location: Location.Auxiliary): Action
     data class SetFetchedNodes(val trip: Trip): Action
     data object ResetNodes: Action
 }
@@ -41,7 +39,6 @@ class MapViewModel @Inject constructor(
 
     fun onAction(action: Action) = when(action){
         is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
-        is Action.Move -> move(action.location)
         is Action.Rotate -> rotate(action.rotation)
         is Action.SetFetchedNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(action.trip) }
         is Action.ResetNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(null) }
@@ -101,11 +98,6 @@ class MapViewModel @Inject constructor(
                 )
             }
         }
-    }
-    private fun move(location: Location.Auxiliary) = _state.update {
-        it.copy(
-            center = LatLong(location.lat, location.lon)
-        )
     }
     private fun rotate(rotation: Float) = _state.update {
         it.copy(
