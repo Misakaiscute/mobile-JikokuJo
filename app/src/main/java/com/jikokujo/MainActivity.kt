@@ -14,7 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokujo.schedule.presentation.map.Action
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
 import com.jikokujo.schedule.presentation.map.MapViewModel
-import com.jikokujo.schedule.presentation.schedule.ScheduleSearchBar
+import com.jikokujo.schedule.presentation.schedule.ScheduleSearch
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,11 +44,12 @@ private fun ScheduleScreen(modifier: Modifier){
             state = mapViewModel.state.collectAsStateWithLifecycle().value,
             onAction = { action -> mapViewModel.onAction(action) }
         )
-        ScheduleSearchBar(
+        ScheduleSearch(
             modifier = modifier,
             state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
             onAction = { action -> scheduleSearchViewModel.onAction(action) },
-            displayOnMap = { trip -> mapViewModel.onAction(Action.SetFetchedNodes(trip)) }
+            displayTripOnMap = { trip, routeAssoc -> mapViewModel.onAction(Action.SelectTrip(trip, routeAssoc)) },
+            removeTripFromMap = { mapViewModel.onAction(Action.UnselectTrip) }
         )
     }
 }

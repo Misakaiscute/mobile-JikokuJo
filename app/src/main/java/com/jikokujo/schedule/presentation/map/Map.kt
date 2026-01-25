@@ -133,6 +133,7 @@ fun MapsforgeMap(
             } else if (mapView.model.mapViewPosition.zoomLevel > state.zoomLevel){
                 mapView.model.mapViewPosition.zoomOut(true)
             }
+            mapView.model.mapViewPosition.rotation = Rotation(state.rotation, 0f, 0f)
 
             //Placing & clearing line of a trip
             if (state.pathPoints.count() > 1) {
@@ -154,11 +155,10 @@ fun MapsforgeMap(
                 polyline.setPoints(route)
                 mapView.layerManager.layers.add(polyline)
             } else {
-                mapView.layerManager.layers.clear()
-            }
-
-            mapView.model.mapViewPosition.apply {
-                rotation = Rotation(state.rotation, 0f, 0f)
+                mapView.layerManager.layers.remove(
+                    mapView.layerManager.layers.count() - 1,
+                    true
+                )
             }
         }
     )

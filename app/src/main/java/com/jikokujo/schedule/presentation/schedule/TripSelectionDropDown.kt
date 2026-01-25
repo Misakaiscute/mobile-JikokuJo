@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.core.graphics.rotationMatrix
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
@@ -40,7 +41,7 @@ fun TripSelectionDropDown(
     modifier: Modifier,
     state: ScheduleSearchState,
     onAction: (Action) -> Any,
-    displayOnMap: (Trip) -> Unit
+    displayOnMap: (Trip, Queryable.Route) -> Unit
 ){
     val itemHeight = 40
     val maxItems = 5
@@ -48,43 +49,60 @@ fun TripSelectionDropDown(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
+            .clip(RoundedCornerShape(20))
             .heightIn((((itemHeight + 1) * maxItems) - 1).dp)
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
             )
     ) {
-        for (i in 0 ..< state.trips.count()){
-            val itemBackgroundColor: Color = if (state.selectedTrip?.id == state.trips[i].id){
-                Color.Cyan
-            } else if (i % 2 == 0) {
-                Color.LightGray
-            } else {
-                Color.White
-            }
-            if (i > 0){
-                HorizontalDivider(
-                    modifier = modifier,
-                    thickness = 1.dp,
-                    color = Color.Black
-                )
-            }
+        if (!state.dropDownExpanded) {
             TripSelectionDropDownItem(
                 modifier = modifier
-                    .background(itemBackgroundColor)
                     .clickable(
-                        enabled = !state.isLoading,
-                        onClick = {
-                            onAction(Action.SelectTrip(state.trips[i]))
-                            displayOnMap(state.selectedTrip!!)
-                        }
+                        onClick = { onAction(Action.ChangeDropDownState(true)) }
                     ),
                 state = state,
-                item = state.trips[i],
-                route = onAction(Action.GetRoute(state.trips[i].routeId)) as Queryable.Route,
+                trip = state.selectedTrip,
+                getRoute = { routeId -> onAction(Action.GetRoute(routeId)) as Queryable.Route },
                 itemHeight = itemHeight
             )
+        } else {
+            for (i in 0 ..< state.trips.count()){
+                val itemBackgroundColor: Color = if (state.selectedTrip?.id == state.trips[i].id){
+                    Color.Cyan
+                } else if (i % 2 == 0) {
+                    Color.LightGray
+                } else {
+                    Color.White
+                }
+
+                if (i > 0){
+                    HorizontalDivider(
+                        modifier = modifier,
+                        thickness = 1.dp,
+                        color = Color.Black
+                    )
+                }
+                TripSelectionDropDownItem(
+                    modifier = modifier
+                        .background(itemBackgroundColor)
+                        .clickable(
+                            enabled = !state.isLoading,
+                            onClick = {
+                                onAction(Action.SelectTrip(state.trips[i]))
+                                displayOnMap(
+                                    state.selectedTrip!!,
+                                    onAction(Action.GetRoute(state.selectedTrip.routeId)) as Queryable.Route
+                                )
+                            }
+                        ),
+                    state = state,
+                    trip = state.trips[i],
+                    getRoute = { routeId -> onAction(Action.GetRoute(routeId)) as Queryable.Route },
+                    itemHeight = itemHeight
+                )
+            }
         }
     }
 }
@@ -92,51 +110,63 @@ fun TripSelectionDropDown(
 private fun TripSelectionDropDownItem(
     modifier: Modifier,
     state: ScheduleSearchState,
-    route: Queryable.Route,
-    item: Trip,
+    trip: Trip?,
+    getRoute: (String) -> Queryable.Route,
     itemHeight: Int
 ){
     val overscrollEffect = rememberOverscrollEffect()
-    val firstStopIdx: Int = when(state.selectedQueryable!!){
-        is Queryable.Stop -> {
-            var returnIdx = 0
-            item.stops.fastForEachIndexed { idx, stop ->
-                if (state.selectedQueryable.id == stop.id){
-                    returnIdx = idx
-                }
-            }
-            returnIdx
-        }
-        is Queryable.Route -> 0
-    }
+    val route: Queryable.Route? = if (trip != null) getRoute(trip.routeId) else null
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(itemHeight.dp)
-            .background(route.getColor("80"))
+            .background(route?.getColor("80") ?: Color.White)
             .overscroll(overscrollEffect),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            modifier = Modifier.padding(horizontal = 7.dp),
-            text = item.stops[firstStopIdx].arrivalTimeFormatted() + " - " + item.stops.last().arrivalTimeFormatted(),
-            style = Typography.bodyLarge.merge(
-                textAlign = TextAlign.Center
+        if (trip == null){
+            Text(
+                modifier = Modifier.padding(horizontal = 7.dp),
+                text = "Nincs indulás kiválasztva!",
+                style = Typography.bodyLarge.merge(
+                    textAlign = TextAlign.Center
+                )
             )
-        )
-        VerticalDivider(
-            modifier = Modifier.padding(vertical = 3.dp),
-            thickness = 1.dp,
-            color = Color.Black
-        )
-        Text(
-            modifier = Modifier
-                .padding(horizontal = 7.dp)
-                .weight(1f),
-            text = route.shortName + " – " + item.headSign,
-            style = Typography.bodyLarge
-        )
+        } else {
+            val firstStopIdx: Int = when(state.selectedQueryable!!){
+                is Queryable.Stop -> {
+                    var returnIdx = 0
+                    trip.stops.fastForEachIndexed { idx, stop ->
+                        if (state.selectedQueryable.id == stop.id){
+                            returnIdx = idx
+                        }
+                    }
+                    returnIdx
+                }
+                is Queryable.Route -> 0
+            }
+            Text(
+                modifier = Modifier.padding(horizontal = 7.dp),
+                text = trip.stops[firstStopIdx].arrivalTimeFormatted() + " - " + trip.stops.last().arrivalTimeFormatted(),
+                style = Typography.bodyLarge.merge(
+                    textAlign = TextAlign.Center
+                )
+            )
+            VerticalDivider(
+                modifier = Modifier.padding(vertical = 3.dp),
+                thickness = 1.dp,
+                color = Color.Black
+            )
+            Text(
+                modifier = Modifier
+                    .padding(horizontal = 7.dp)
+                    .weight(1f),
+                text = route!!.shortName + " – " + trip.headSign,
+                style = Typography.bodyLarge
+            )
+        }
     }
 }
 @Preview(showBackground = true)
@@ -147,7 +177,7 @@ private fun TripSelectionDropDownItemPreview(){
         state = ScheduleSearchState(
             selectedQueryable = Queryable.Stop("0", "Zodony utca")
         ),
-        item = Trip(
+        trip = Trip(
             id = "TRIP_ID",
             headSign = "Gubacsi út / Határ út",
             routeId = "CM542536",
@@ -176,7 +206,7 @@ private fun TripSelectionDropDownItemPreview(){
             bikesAllowed = 1,
             directionId = 1
         ),
-        route = Queryable.Route(id = "CM542536", shortName = "119", color = "E3A4FF", type = 1),
+        getRoute = { _ -> Queryable.Route(id = "CM542536", shortName = "119", color = "E3A4FF", type = 1) },
         itemHeight = 40
     )
 }

@@ -25,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.jikokujo.schedule.presentation.schedule.DateTimePicker
 import com.jikokujo.theme.Typography
 import java.time.LocalDate
 
@@ -49,17 +51,15 @@ fun DateTimePicker(
         )
     )
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(30.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End
     ) {
         Text(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth(1/4f)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(bottomStart = 50f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
+                .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
                 .background(Color.White)
                 .wrapContentSize(Alignment.Center),
             text = "Utazás:",
@@ -67,7 +67,7 @@ fun DateTimePicker(
             textAlign = TextAlign.Center
         )
         Button(
-            modifier = modifier,
+            modifier = Modifier.fillMaxHeight(),
             shape = RoundedCornerShape(size = 0.dp),
             colors = ButtonDefaults.buttonColors().copy(
                 containerColor = Color.White,
@@ -76,16 +76,16 @@ fun DateTimePicker(
             onClick = { onAction(Action.ShowDialog(Dialogs.DatePicker)) }
         ) {
             Text(
-                modifier = modifier.fillMaxHeight(),
+                modifier = Modifier.fillMaxHeight(),
                 text = state.tripTimeConstraint.year.toString() + '.' +
-                        state.tripTimeConstraint.monthValue.toString().padStart(2, '0') + '.' +
-                        state.tripTimeConstraint.dayOfMonth.toString().padStart(2, '0'),
+                    state.tripTimeConstraint.monthValue.toString().padStart(2, '0') + '.' +
+                    state.tripTimeConstraint.dayOfMonth.toString().padStart(2, '0'),
                 style = Typography.bodyMedium,
             )
         }
         Button(
-            modifier = modifier.fillMaxHeight(),
-            shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 50f, topStart = 0f, topEnd = 0f),
+            modifier = Modifier.fillMaxHeight(),
+            shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 20f, topStart = 0f, topEnd = 0f),
             colors = ButtonDefaults.buttonColors().copy(
                 containerColor = Color.White,
                 contentColor = Color.Black
@@ -93,9 +93,9 @@ fun DateTimePicker(
             onClick = { onAction(Action.ShowDialog(Dialogs.TimePicker)) }
         ) {
             Text(
-                modifier = modifier.fillMaxHeight(),
+                modifier = Modifier.fillMaxHeight(),
                 text = state.tripTimeConstraint.hour.toString().padStart(2, '0') + ':' +
-                        state.tripTimeConstraint.minute.toString().padStart(2, '0'),
+                    state.tripTimeConstraint.minute.toString().padStart(2, '0'),
                 style = Typography.bodyMedium,
             )
         }
@@ -146,5 +146,17 @@ private fun PickerDialog(
             }
         },
         text = { content() }
+    )
+}
+@Preview(showBackground = true)
+@Composable
+private fun DateTimePickerPreview(){
+    DateTimePicker(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(30.dp)
+            .background(Color.Magenta),
+        state = ScheduleSearchState(),
+        onAction = {}
     )
 }

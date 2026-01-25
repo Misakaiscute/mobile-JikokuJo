@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
-import org.mapsforge.core.model.LatLong
 import javax.inject.Inject
 
 data class MapState(
@@ -28,8 +27,8 @@ data class MapState(
 sealed interface Action{
     data class ChangeZoomLevel(val zoomIn: Boolean): Action
     data class Rotate(val rotation: Float): Action
-    data class SetFetchedNodes(val trip: Trip, val routeAssociated: Queryable.Route): Action
-    data object ResetNodes: Action
+    data class SelectTrip(val trip: Trip, val routeAssociated: Queryable.Route): Action
+    data object UnselectTrip: Action
 }
 
 @HiltViewModel
@@ -42,22 +41,25 @@ class MapViewModel @Inject constructor(
     fun onAction(action: Action) = when(action){
         is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
         is Action.Rotate -> rotate(action.rotation)
-        is Action.SetFetchedNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes(action.trip, action.routeAssociated) }
-        is Action.ResetNodes -> runBlocking(Dispatchers.IO) { setFetchedNodes() }
+        is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip, action.routeAssociated) }
+        is Action.UnselectTrip -> runBlocking(Dispatchers.IO) { selectTrip() }
     }
-    @Throws(IllegalStateException::class)
-    private suspend fun setFetchedNodes(trip: Trip? = null, routeAssociated: Queryable.Route? = null) {
+    @Throws(IllegalStateException::class, IllegalArgumentException::class)
+    private suspend fun selectTrip(trip: Trip? = null, routeAssociated: Queryable.Route? = null) {
         if (trip == null){
             _state.update {
                 it.copy(
                     routeAssociated = null,
                     pathPoints = listOf(),
-                    stops = listOf()
+                    stops = listOf(),
+                    error = null
                 )
             }
         } else {
             if (tripsRepository.trips is ApiResult.Error){
-                throw IllegalStateException("Fetched trips can't be ApiResult.Error, if a trip was successfully selected")
+                throw IllegalStateException("Fetched trips can't be ApiResult.Error, if a trip was selected")
+            } else if ((tripsRepository.trips as ApiResult.Success).data.find { t -> t.id == trip.id} == null) {
+                throw IllegalArgumentException("Can't select a trip that's not in the dataset")
             }
             if (!tripsRepository.storedShapes.containsKey(trip.shapeId)){
                 tripsRepository.getShapes(trip)
@@ -66,7 +68,7 @@ class MapViewModel @Inject constructor(
                 tripsRepository.getStops(trip)
             }
 
-            if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Success && tripsRepository.storedStops[trip.shapeId] is ApiResult.Success){
+            if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Success && tripsRepository.storedStops[trip.id] is ApiResult.Success){
                 _state.update {
                     it.copy(
                         routeAssociated = routeAssociated,

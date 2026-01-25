@@ -39,7 +39,7 @@ data class ScheduleSearchState(
 )
 
 sealed interface Action{
-    data class ChangeDropDownState(val isExpanded: Boolean): Action
+    data class ChangeDropDownState(val isExpanded: Boolean, val dropDownShown: DropDowns? = null): Action
     data class ShowDialog(val dialog: Dialogs?): Action
     data class ChangeFromDate(val year: Int, val month: Int, val day: Int): Action
     data class ChangeFromTime(val hour: Int, val minute: Int): Action
@@ -49,6 +49,7 @@ sealed interface Action{
     data class SelectTrip(val trip: Trip): Action
     data class GetRoute(val routeId: String): Action
     data object UnselectQueryable: Action
+    data object UnselectTrip: Action
     data object Search: Action
 }
 @HiltViewModel
@@ -82,20 +83,24 @@ class ScheduleSearchViewModel @Inject constructor(
         }
     }
     fun onAction(action: Action) = when(action){
-        is Action.ChangeDropDownState -> changeDropDownState(action.isExpanded)
+        is Action.ChangeDropDownState -> changeDropDownState(action.isExpanded, action.dropDownShown)
         is Action.ShowDialog -> showDialog(action.dialog)
         is Action.ChangeFromTime -> changeTripFromTime(action.hour, action.minute)
         is Action.ChangeFromDate -> changeTripFromDate(action.year, action.month, action.day)
         is Action.ChangeSearch -> changeSearch(action.qString)
         is Action.SelectStop -> selectStop(action.stop)
         is Action.SelectRoute -> selectRoute(action.route)
-        is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip) }
         is Action.UnselectQueryable -> unselectQueryable()
+        is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip) }
+        is Action.UnselectTrip -> unselectTrip()
         is Action.Search -> runBlocking(Dispatchers.IO) { search() }
         is Action.GetRoute -> getRoute(action.routeId)
     }
-    private fun changeDropDownState(isExpanded: Boolean) = _state.update {
-        it.copy(dropDownExpanded = isExpanded)
+    private fun changeDropDownState(isExpanded: Boolean, dropDownShown: DropDowns?) = _state.update {
+        it.copy(
+            dropDownExpanded = isExpanded,
+            dropDownShown = dropDownShown ?: _state.value.dropDownShown
+        )
     }
     private fun showDialog(dialog: Dialogs?) = _state.update {
         it.copy(shownDialog = dialog)
@@ -207,6 +212,13 @@ class ScheduleSearchViewModel @Inject constructor(
         it.copy(
             selectedQueryable = null,
             searchString = ""
+        )
+    }
+    private fun unselectTrip() = _state.update {
+        it.copy(
+            selectedTrip = null,
+            dropDownShown = DropDowns.TripSelection,
+            dropDownExpanded = true
         )
     }
     private fun changeTripFromDate(year: Int, month: Int, day: Int) = _state.update {
