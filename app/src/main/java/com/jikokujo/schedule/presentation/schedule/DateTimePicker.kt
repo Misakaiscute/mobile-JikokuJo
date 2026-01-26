@@ -13,6 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
@@ -27,7 +28,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.jikokujo.schedule.presentation.schedule.DateTimePicker
 import com.jikokujo.theme.Typography
 import java.time.LocalDate
 
@@ -60,18 +60,20 @@ fun DateTimePicker(
                 .fillMaxWidth(1/4f)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
                 .wrapContentSize(Alignment.Center),
             text = "Utazás:",
-            style = Typography.bodyLarge,
-            textAlign = TextAlign.Center
+            style = Typography.bodyMedium.merge(
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
         )
         Button(
             modifier = Modifier.fillMaxHeight(),
             shape = RoundedCornerShape(size = 0.dp),
             colors = ButtonDefaults.buttonColors().copy(
-                containerColor = Color.White,
-                contentColor = Color.Black
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ),
             onClick = { onAction(Action.ShowDialog(Dialogs.DatePicker)) }
         ) {
@@ -87,8 +89,8 @@ fun DateTimePicker(
             modifier = Modifier.fillMaxHeight(),
             shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 20f, topStart = 0f, topEnd = 0f),
             colors = ButtonDefaults.buttonColors().copy(
-                containerColor = Color.White,
-                contentColor = Color.Black
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ),
             onClick = { onAction(Action.ShowDialog(Dialogs.TimePicker)) }
         ) {

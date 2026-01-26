@@ -1,6 +1,5 @@
 package com.jikokujo.schedule.presentation.schedule
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -19,12 +18,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,12 +56,12 @@ fun QueryableDropDown(
                 HorizontalDivider(
                     modifier = modifier,
                     thickness = 1.dp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             QueryableDropDownItem(
                 modifier = modifier
-                    .background(if (i % 2 == 0) Color.LightGray else Color.White)
+                    .background(if (i % 2 == 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
                     .clickable(
                         enabled = !state.isLoading,
                         onClick = {
@@ -101,14 +100,15 @@ private fun QueryableDropDownItem(
                         .aspectRatio(1f),
                     painter = painterResource(R.drawable.busstop),
                     contentDescription = "stop",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
                     text = item.name,
-                    style = Typography.bodyLarge,
-                    color = Color.Black
+                    style = Typography.bodyMedium.merge(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
                 )
             }
             is Queryable.Route -> {
@@ -124,8 +124,9 @@ private fun QueryableDropDownItem(
                 Text(
                     modifier = Modifier.weight(1f),
                     text = item.shortName,
-                    style = Typography.bodyLarge,
-                    color = item.getColor()
+                    style = Typography.bodyLarge.merge(
+                        color = item.getColor()
+                    )
                 )
             }
         }

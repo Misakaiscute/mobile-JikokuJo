@@ -1,8 +1,6 @@
 package com.jikokujo.schedule.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,11 +25,11 @@ import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
 import com.jikokujo.theme.Typography
 
 @Composable
-fun ScheduleScreen(modifier: Modifier){
+fun SchedulePage(modifier: Modifier){
     val scheduleSearchViewModel = viewModel<ScheduleSearchViewModel>()
     val mapViewModel = viewModel<MapViewModel>()
     Surface(
-        modifier = modifier.background(MaterialTheme.colorScheme.background)
+        color = MaterialTheme.colorScheme.background
     ) {
         if (scheduleSearchViewModel.state.collectAsStateWithLifecycle().value.error != null){
             OnError(
@@ -68,12 +65,11 @@ private fun OnError(
         Button(
             shape = RoundedCornerShape(10),
             colors = ButtonDefaults.buttonColors().copy(
-                containerColor = Color.LightGray,
-                contentColor = Color.Black
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ),
             modifier = modifier
                 .fillMaxWidth(2/3f)
-                .fillMaxHeight(1/15f)
                 .align(Alignment.Center),
             onClick = { onAction(ScheduleAction.RetryFetchInitialData) }
         ) {

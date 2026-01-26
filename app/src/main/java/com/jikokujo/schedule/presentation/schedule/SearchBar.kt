@@ -5,13 +5,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -24,7 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
-import com.jikokujo.core.utils.loadingShimmer
 import com.jikokujo.theme.Typography
 
 @Composable
@@ -40,26 +38,31 @@ fun SearchBar(
             .focusable()
             .height(height)
             .fillMaxWidth()
-            .background(Color.White),
+            .background(MaterialTheme.colorScheme.surface),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.Center
     ) {
         TextField(
             modifier = modifier
-                .background(color = Color.Transparent)
+                .background(Color.Transparent)
                 .fillMaxHeight()
                 .fillMaxWidth(),
             value = state.searchString,
-            textStyle = Typography.bodyMedium,
+            singleLine = true,
+            textStyle = Typography.bodyMedium.merge(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
             shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 0f, topStart = 20f, topEnd = 20f),
             colors = TextFieldDefaults.colors().copy(
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             placeholder = {
                 Text(
                     text = "Megálló / járatnév",
-                    style = Typography.bodyMedium
+                    style = Typography.bodyMedium.merge(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 )
             },
             trailingIcon = {
@@ -77,7 +80,7 @@ fun SearchBar(
                         R.drawable.baseline_search_24
                     ),
                     contentDescription = "button",
-                    tint = Color.DarkGray
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             },
             onValueChange = { newVal: String ->

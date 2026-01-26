@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -27,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.core.graphics.rotationMatrix
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
@@ -65,23 +65,24 @@ fun TripSelectionDropDown(
                 state = state,
                 trip = state.selectedTrip,
                 getRoute = { routeId -> onAction(Action.GetRoute(routeId)) as Queryable.Route },
-                itemHeight = itemHeight
+                itemHeight = itemHeight,
+                itemTextColor = MaterialTheme.colorScheme.onSurface
             )
         } else {
             for (i in 0 ..< state.trips.count()){
                 val itemBackgroundColor: Color = if (state.selectedTrip?.id == state.trips[i].id){
-                    Color.Cyan
+                    MaterialTheme.colorScheme.primary
                 } else if (i % 2 == 0) {
-                    Color.LightGray
+                    MaterialTheme.colorScheme.surface
                 } else {
-                    Color.White
+                    MaterialTheme.colorScheme.surfaceVariant
                 }
 
                 if (i > 0){
                     HorizontalDivider(
                         modifier = modifier,
                         thickness = 1.dp,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 TripSelectionDropDownItem(
@@ -100,7 +101,8 @@ fun TripSelectionDropDown(
                     state = state,
                     trip = state.trips[i],
                     getRoute = { routeId -> onAction(Action.GetRoute(routeId)) as Queryable.Route },
-                    itemHeight = itemHeight
+                    itemHeight = itemHeight,
+                    itemTextColor = if (state.selectedTrip?.id == state.trips[i].id) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -112,7 +114,8 @@ private fun TripSelectionDropDownItem(
     state: ScheduleSearchState,
     trip: Trip?,
     getRoute: (String) -> Queryable.Route,
-    itemHeight: Int
+    itemHeight: Int,
+    itemTextColor: Color
 ){
     val overscrollEffect = rememberOverscrollEffect()
     val route: Queryable.Route? = if (trip != null) getRoute(trip.routeId) else null
@@ -121,7 +124,7 @@ private fun TripSelectionDropDownItem(
         modifier = modifier
             .fillMaxWidth()
             .height(itemHeight.dp)
-            .background(route?.getColor("80") ?: Color.White)
+            .background(route?.getColor("80") ?: Color.Transparent)
             .overscroll(overscrollEffect),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -130,7 +133,8 @@ private fun TripSelectionDropDownItem(
             Text(
                 modifier = Modifier.padding(horizontal = 7.dp),
                 text = "Nincs indulás kiválasztva!",
-                style = Typography.bodyLarge.merge(
+                style = Typography.bodyMedium.merge(
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
             )
@@ -150,21 +154,24 @@ private fun TripSelectionDropDownItem(
             Text(
                 modifier = Modifier.padding(horizontal = 7.dp),
                 text = trip.stops[firstStopIdx].arrivalTimeFormatted() + " - " + trip.stops.last().arrivalTimeFormatted(),
-                style = Typography.bodyLarge.merge(
+                style = Typography.bodyMedium.merge(
+                    color = itemTextColor,
                     textAlign = TextAlign.Center
                 )
             )
             VerticalDivider(
                 modifier = Modifier.padding(vertical = 3.dp),
                 thickness = 1.dp,
-                color = Color.Black
+                color = itemTextColor
             )
             Text(
                 modifier = Modifier
                     .padding(horizontal = 7.dp)
                     .weight(1f),
                 text = route!!.shortName + " – " + trip.headSign,
-                style = Typography.bodyLarge
+                style = Typography.bodyMedium.merge(
+                    color = itemTextColor
+                )
             )
         }
     }
@@ -207,6 +214,7 @@ private fun TripSelectionDropDownItemPreview(){
             directionId = 1
         ),
         getRoute = { _ -> Queryable.Route(id = "CM542536", shortName = "119", color = "E3A4FF", type = 1) },
-        itemHeight = 40
+        itemHeight = 40,
+        itemTextColor = Color.Black
     )
 }
