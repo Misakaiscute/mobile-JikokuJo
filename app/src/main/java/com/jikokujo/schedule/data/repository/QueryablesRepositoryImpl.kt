@@ -13,14 +13,9 @@ class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
     override suspend fun getQueryables() {
         val response = try {
              api.getQueryables()
-        } catch (e: IOException) {
-            this.queryables = ApiResult.Error("Something went wrong")
+        } catch (e: Exception) {
+            this.queryables = ApiResult.Error("Something went wrong.")
             Log.e("IO_EXCEPTION", e.message.toString())
-            e.printStackTrace()
-            return
-        } catch (e: HttpException) {
-            this.queryables = ApiResult.Error("Something went wrong")
-            Log.e("HTTP_EXCEPTION", e.message.toString())
             e.printStackTrace()
             return
         }

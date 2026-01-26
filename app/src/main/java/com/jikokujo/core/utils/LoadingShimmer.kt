@@ -16,12 +16,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun Modifier.loadingShimmer(durationMillis: Int): Modifier{
+fun Modifier.loadingShimmer(
+    durationMillis: Int,
+    background: Color
+): Modifier{
     val transition = rememberInfiniteTransition("")
 
     val transitionAnimation by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 500f,
+        initialValue = -50f,
+        targetValue = 600f,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = durationMillis,
@@ -30,14 +33,16 @@ fun Modifier.loadingShimmer(durationMillis: Int): Modifier{
             repeatMode = RepeatMode.Restart
         )
     )
-
     return drawBehind {
         drawRect(
             brush = Brush.linearGradient(
                 colors = listOf(
-                    Color.LightGray.copy(0.2f),
+                    background,
+                    Color.LightGray.copy(0.5f),
                     Color.LightGray.copy(1f),
-                    Color.LightGray.copy(0.2f)
+                    Color.LightGray.copy(1f),
+                    Color.LightGray.copy(0.5f),
+                    background
                 ),
                 start = Offset(x = transitionAnimation, y = transitionAnimation),
                 end = Offset(x = transitionAnimation + 100f, y = transitionAnimation + 100f)

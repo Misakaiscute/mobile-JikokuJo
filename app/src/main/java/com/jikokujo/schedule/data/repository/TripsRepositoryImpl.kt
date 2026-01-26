@@ -9,6 +9,7 @@ import com.jikokujo.schedule.data.remote.Api
 import com.jikokujo.schedule.data.remote.ApiResult
 import okio.IOException
 import retrofit2.HttpException
+import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import kotlin.collections.mutableListOf
 
@@ -21,14 +22,9 @@ class TripsRepositoryImpl(private val api: Api): TripsRepository {
         if (!this.storedShapes.containsKey(trip.shapeId)){
             val response = try {
                 api.getShapesForTrip(trip.id)
-            } catch (e: IOException){
-                this.storedShapes[trip.shapeId] = ApiResult.Error("Something went wrong")
-                Log.e("IO_EXCEPTION", e.toString())
-                e.printStackTrace()
-                return
-            } catch (e: HttpException){
-                this.storedShapes[trip.shapeId] = ApiResult.Error("Something went wrong")
-                Log.e("HTTP_EXCEPTION", e.toString())
+            } catch (e: Exception) {
+                this.storedShapes[trip.shapeId] = ApiResult.Error("Something went wrong.")
+                Log.e("EXCEPTION", e.toString())
                 e.printStackTrace()
                 return
             }
@@ -46,14 +42,9 @@ class TripsRepositoryImpl(private val api: Api): TripsRepository {
         if (!this.storedStops.containsKey(trip.id)){
             val response = try {
                 api.getStopsForTrip(tripId = trip.id)
-            } catch (e: IOException){
-                this.storedStops[trip.id] = ApiResult.Error("Something went wrong")
+            } catch (e: Exception){
+                this.storedStops[trip.id] = ApiResult.Error("Something went wrong.")
                 Log.e("IO_EXCEPTION", e.toString())
-                e.printStackTrace()
-                return
-            } catch (e: HttpException){
-                this.storedStops[trip.id] = ApiResult.Error("Something went wrong")
-                Log.e("HTTP_EXCEPTION", e.toString())
                 e.printStackTrace()
                 return
             }
@@ -88,14 +79,9 @@ class TripsRepositoryImpl(private val api: Api): TripsRepository {
                 }
             }
 
-        } catch (e: IOException){
-            this.trips = ApiResult.Error("Something went wrong")
+        } catch (e: Exception){
+            this.trips = ApiResult.Error("Something went wrong.")
             Log.e("IO_EXCEPTION", e.toString())
-            e.printStackTrace()
-            return
-        } catch (e: HttpException){
-            this.trips = ApiResult.Error("Something went wrong")
-            Log.e("HTTP_EXCEPTION", e.toString())
             e.printStackTrace()
             return
         }

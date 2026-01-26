@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jikokujo.schedule.presentation.ScheduleScreen
 import com.jikokujo.schedule.presentation.map.Action
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
 import com.jikokujo.schedule.presentation.map.MapViewModel
@@ -29,27 +30,5 @@ class MainActivity : ComponentActivity() {
                 ScheduleScreen(Modifier)
             }
         }
-    }
-}
-
-@Composable
-private fun ScheduleScreen(modifier: Modifier){
-    val scheduleSearchViewModel = viewModel<ScheduleSearchViewModel>()
-    val mapViewModel = viewModel<MapViewModel>()
-    Surface(
-        modifier = modifier.background(MaterialTheme.colorScheme.background)
-    ) {
-        DisplayMapsforgeMap(
-            modifier = modifier,
-            state = mapViewModel.state.collectAsStateWithLifecycle().value,
-            onAction = { action -> mapViewModel.onAction(action) }
-        )
-        ScheduleSearch(
-            modifier = modifier,
-            state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
-            onAction = { action -> scheduleSearchViewModel.onAction(action) },
-            displayTripOnMap = { trip, routeAssoc -> mapViewModel.onAction(Action.SelectTrip(trip, routeAssoc)) },
-            removeTripFromMap = { mapViewModel.onAction(Action.UnselectTrip) }
-        )
     }
 }

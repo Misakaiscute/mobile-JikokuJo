@@ -2,9 +2,12 @@ package com.jikokujo.schedule.presentation.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,11 +18,13 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
+import com.jikokujo.core.utils.loadingShimmer
 import com.jikokujo.theme.Typography
 
 @Composable
@@ -28,9 +33,12 @@ fun SearchBar(
     state: ScheduleSearchState,
     onAction: (Action) -> Unit
 ){
+    val height = 50.dp
     Row(
-        modifier
-            .height(50.dp)
+        modifier = modifier
+            .onFocusChanged { onAction(Action.ChangeDropDownState(it.hasFocus)) }
+            .focusable()
+            .height(height)
             .fillMaxWidth()
             .background(Color.White),
         verticalAlignment = Alignment.Top,

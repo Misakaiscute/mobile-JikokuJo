@@ -51,6 +51,7 @@ sealed interface Action{
     data object UnselectQueryable: Action
     data object UnselectTrip: Action
     data object Search: Action
+    data object RetryFetchInitialData: Action
 }
 @HiltViewModel
 class ScheduleSearchViewModel @Inject constructor(
@@ -61,25 +62,8 @@ class ScheduleSearchViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        toggleLoading()
         viewModelScope.launch(Dispatchers.IO) {
-            queryableRepository.getQueryables()
-            _state.update {
-                when (queryableRepository.queryables) {
-                    is ApiResult.Error -> {
-                        it.copy(
-                            error = (queryableRepository.queryables as ApiResult.Error).errorMsg,
-                            isLoading = false
-                        )
-                    }
-                    is ApiResult.Success -> {
-                        it.copy(
-                            error = null,
-                            isLoading = false
-                        )
-                    }
-                }
-            }
+            fetchQueryables()
         }
     }
     fun onAction(action: Action) = when(action){
@@ -94,6 +78,7 @@ class ScheduleSearchViewModel @Inject constructor(
         is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip) }
         is Action.UnselectTrip -> unselectTrip()
         is Action.Search -> runBlocking(Dispatchers.IO) { search() }
+        is Action.RetryFetchInitialData -> viewModelScope.launch(Dispatchers.IO) { fetchQueryables() }
         is Action.GetRoute -> getRoute(action.routeId)
     }
     private fun changeDropDownState(isExpanded: Boolean, dropDownShown: DropDowns?) = _state.update {
@@ -267,6 +252,27 @@ class ScheduleSearchViewModel @Inject constructor(
             }
         }
     }
+    private suspend fun fetchQueryables() {
+        resetErrors()
+        toggleLoading()
+        queryableRepository.getQueryables()
+        _state.update {
+            when (queryableRepository.queryables) {
+                is ApiResult.Error -> {
+                    it.copy(
+                        error = "${(queryableRepository.queryables as ApiResult.Error).errorMsg} Retry?",
+                        isLoading = false
+                    )
+                }
+                is ApiResult.Success -> {
+                    it.copy(
+                        error = null,
+                        isLoading = false
+                    )
+                }
+            }
+        }
+    }
     @Throws(NoSuchElementException::class)
     private fun getRoute(routeId: String): Queryable.Route{
         (queryableRepository.queryables as ApiResult.Success).data.forEach { queryable ->
@@ -278,5 +284,8 @@ class ScheduleSearchViewModel @Inject constructor(
     }
     private fun toggleLoading() = _state.update {
         it.copy(isLoading = !it.isLoading)
+    }
+    private fun resetErrors() = _state.update {
+        it.copy(error = null)
     }
 }

@@ -39,7 +39,7 @@ object AppModule {
     }
     @Provides
     @Singleton
-    fun provideRouteResultRepository(): TripsRepository{
+    fun provideTripsRepository(): TripsRepository {
         return TripsRepositoryImpl(provideApi())
     }
 }
