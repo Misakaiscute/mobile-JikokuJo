@@ -54,14 +54,20 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.jupiter)
     ksp(libs.dagger.hilt.android.compiler)
+
     implementation(libs.retrofit)
+
     implementation(libs.gson.serialization)
     implementation(libs.gson.serialization.converter)
+
     implementation(libs.mapsforge.core)
     implementation(libs.mapsforge.map)
     implementation(libs.mapsforge.map.reader)
     implementation(libs.mapsforge.android)
     implementation(libs.mapsforge.themes)
+
+    implementation(libs.navigation.ui)
+    implementation(libs.navigation.runtime)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
