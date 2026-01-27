@@ -23,10 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jikokujo.schedule.presentation.map.MapViewModel
-import com.jikokujo.schedule.presentation.map.MapsforgeMap
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
