@@ -6,6 +6,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,7 +35,9 @@ fun SearchBar(
     val height = 50.dp
     Row(
         modifier = modifier
-            .onFocusChanged { onAction(Action.ChangeDropDownState(it.hasFocus)) }
+            .onFocusChanged {
+                onAction(Action.ChangeDropDownState(it.hasFocus && state.queryables.count() > 0))
+            }
             .focusable()
             .height(height)
             .fillMaxWidth()
@@ -43,10 +46,7 @@ fun SearchBar(
         horizontalArrangement = Arrangement.Center
     ) {
         TextField(
-            modifier = modifier
-                .background(Color.Transparent)
-                .fillMaxHeight()
-                .fillMaxWidth(),
+            modifier = modifier.fillMaxSize(),
             value = state.searchString,
             singleLine = true,
             textStyle = Typography.bodyMedium.merge(
@@ -59,6 +59,7 @@ fun SearchBar(
             ),
             placeholder = {
                 Text(
+                    modifier = modifier.fillMaxHeight(),
                     text = "Megálló / járatnév",
                     style = Typography.bodyMedium.merge(
                         color = MaterialTheme.colorScheme.onSurface

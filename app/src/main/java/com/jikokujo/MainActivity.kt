@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,6 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jikokujo.schedule.presentation.map.MapViewModel
+import com.jikokujo.schedule.presentation.map.MapsforgeMap
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -63,6 +68,7 @@ class MainActivity : ComponentActivity() {
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
                                 IconButton(
+                                    shape = RoundedCornerShape(0),
                                     onClick = { backstack.add(Page.Schedule) }
                                 ) {
                                     Icon(
@@ -72,6 +78,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                                 IconButton(
+                                    shape = RoundedCornerShape(0),
                                     onClick = { backstack.add(Page.Profile) }
                                 ) {
                                     Icon(

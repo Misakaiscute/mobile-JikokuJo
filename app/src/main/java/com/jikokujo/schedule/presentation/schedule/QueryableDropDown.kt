@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -86,6 +87,7 @@ private fun QueryableDropDownItem(
     val overscrollEffect = rememberOverscrollEffect()
     Row(
         modifier = modifier
+            .background(if (item is Queryable.Route) item.getColor("80") else Color.Transparent)
             .fillMaxWidth()
             .height(itemHeight.dp)
             .overscroll(overscrollEffect),
@@ -96,8 +98,8 @@ private fun QueryableDropDownItem(
             is Queryable.Stop -> {
                 Icon(
                     modifier = Modifier
-                        .fillMaxWidth(1/10f)
-                        .aspectRatio(1f),
+                        .aspectRatio(1f)
+                        .fillMaxWidth(1/8f),
                     painter = painterResource(R.drawable.busstop),
                     contentDescription = "stop",
                     tint = MaterialTheme.colorScheme.onSurface
@@ -114,18 +116,18 @@ private fun QueryableDropDownItem(
             is Queryable.Route -> {
                 Icon(
                     modifier = Modifier
-                        .fillMaxWidth(1/10f)
-                        .aspectRatio(1f),
+                        .aspectRatio(1f)
+                        .fillMaxWidth(1/8f),
                     painter = painterResource(item.getIcon()),
                     contentDescription = "transport icon",
-                    tint = item.getColor()
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
                     text = item.shortName,
-                    style = Typography.bodyLarge.merge(
-                        color = item.getColor()
+                    style = Typography.bodyMedium.merge(
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }

@@ -93,13 +93,11 @@ fun ScheduleSearch(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        if (state.queryables.count() > 0) {
-                            ExpanderArrow(
-                                modifier = modifier,
-                                isExpanded = state.dropDownExpanded,
-                                onClick = { onAction(Action.ChangeDropDownState(!state.dropDownExpanded)) }
-                            )
-                        }
+                        ExpanderArrow(
+                            modifier = modifier.fillMaxHeight(),
+                            isExpanded = state.dropDownExpanded,
+                            onClick = { onAction(Action.ChangeDropDownState(!state.dropDownExpanded)) }
+                        )
                         Spacer(modifier.weight(1f))
                         DateTimePicker(
                             modifier = modifier.fillMaxHeight(),

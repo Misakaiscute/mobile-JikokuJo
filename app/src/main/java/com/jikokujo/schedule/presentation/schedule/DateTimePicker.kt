@@ -2,10 +2,14 @@ package com.jikokujo.schedule.presentation.schedule
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -55,19 +59,28 @@ fun DateTimePicker(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End
     ) {
-        Text(
+        Row(
             modifier = Modifier
-                .fillMaxWidth(1/4f)
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
-                .background(MaterialTheme.colorScheme.surface)
-                .wrapContentSize(Alignment.Center),
-            text = "Utazás:",
-            style = Typography.bodyMedium.merge(
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center
+                .clip(RoundedCornerShape(bottomStart = 30f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
+                .background(MaterialTheme.colorScheme.surface),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentSize(Alignment.Center),
+                text = "Utazás:",
+                style = Typography.bodyMedium.merge(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
             )
-        )
+            Spacer(modifier = Modifier.width(10.dp))
+        }
+
         Button(
             modifier = Modifier.fillMaxHeight(),
             shape = RoundedCornerShape(size = 0.dp),
@@ -75,30 +88,37 @@ fun DateTimePicker(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
+            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 0.dp),
             onClick = { onAction(Action.ShowDialog(Dialogs.DatePicker)) }
         ) {
             Text(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentSize(Alignment.Center),
                 text = state.tripTimeConstraint.year.toString() + '.' +
                     state.tripTimeConstraint.monthValue.toString().padStart(2, '0') + '.' +
                     state.tripTimeConstraint.dayOfMonth.toString().padStart(2, '0'),
-                style = Typography.bodyMedium,
+                style = Typography.bodySmall,
             )
         }
+
         Button(
             modifier = Modifier.fillMaxHeight(),
-            shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 20f, topStart = 0f, topEnd = 0f),
+            shape = RoundedCornerShape(bottomStart = 0f, bottomEnd = 30f, topStart = 0f, topEnd = 0f),
             colors = ButtonDefaults.buttonColors().copy(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
+            contentPadding = PaddingValues(all = 0.dp),
             onClick = { onAction(Action.ShowDialog(Dialogs.TimePicker)) }
         ) {
             Text(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .wrapContentSize(Alignment.Center),
                 text = state.tripTimeConstraint.hour.toString().padStart(2, '0') + ':' +
                     state.tripTimeConstraint.minute.toString().padStart(2, '0'),
-                style = Typography.bodyMedium,
+                style = Typography.bodySmall,
             )
         }
     }

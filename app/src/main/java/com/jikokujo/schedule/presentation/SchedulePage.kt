@@ -29,22 +29,23 @@ fun SchedulePage(modifier: Modifier){
     val scheduleSearchViewModel = viewModel<ScheduleSearchViewModel>()
     val mapViewModel = viewModel<MapViewModel>()
     Surface(
+        modifier = modifier,
         color = MaterialTheme.colorScheme.background
     ) {
         if (scheduleSearchViewModel.state.collectAsStateWithLifecycle().value.error != null){
             OnError(
-                modifier = modifier,
+                modifier = Modifier,
                 state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
                 onAction = { action -> scheduleSearchViewModel.onAction(action) }
             )
         } else {
             DisplayMapsforgeMap(
-                modifier = modifier,
+                modifier = Modifier,
                 state = mapViewModel.state.collectAsStateWithLifecycle().value,
                 onAction = { action -> mapViewModel.onAction(action) }
             )
             ScheduleSearch(
-                modifier = modifier,
+                modifier = Modifier,
                 state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
                 onAction = { action -> scheduleSearchViewModel.onAction(action) },
                 displayTripOnMap = { trip, routeAssoc -> mapViewModel.onAction(MapAction.SelectTrip(trip, routeAssoc)) },

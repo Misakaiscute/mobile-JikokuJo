@@ -253,8 +253,12 @@ class ScheduleSearchViewModel @Inject constructor(
         }
     }
     private suspend fun fetchQueryables() {
-        resetErrors()
-        toggleLoading()
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = null
+            )
+        }
         queryableRepository.getQueryables()
         _state.update {
             when (queryableRepository.queryables) {
@@ -281,11 +285,5 @@ class ScheduleSearchViewModel @Inject constructor(
             }
         }
         throw NoSuchElementException("Item not found")
-    }
-    private fun toggleLoading() = _state.update {
-        it.copy(isLoading = !it.isLoading)
-    }
-    private fun resetErrors() = _state.update {
-        it.copy(error = null)
     }
 }
