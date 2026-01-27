@@ -27,7 +27,7 @@ object AppModule {
             .create()
 
         return Retrofit.Builder()
-            .baseUrl("http://$EMULATOR_DEV_LOCALHOST/backend-JikokuJo/better_menetrendek_backend/public/index.php/api/")
+            .baseUrl("http://$EMULATOR_DEV_LOCALHOST/backend-JikokuJo/public/index.php/api/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(Api::class.java)

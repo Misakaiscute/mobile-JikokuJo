@@ -18,15 +18,15 @@ val Typography = Typography(
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 20.sp,
-        lineHeight = 20.sp,
+        fontSize = 18.sp,
+        lineHeight = 18.sp,
         letterSpacing = 0.3.sp
     ),
     bodySmall = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 16.sp,
+        fontSize = 14.sp,
+        lineHeight = 14.sp,
         letterSpacing = 0.2.sp
     ),
     labelLarge = TextStyle(
