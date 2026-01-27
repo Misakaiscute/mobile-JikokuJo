@@ -1,5 +1,7 @@
 package com.jikokujo.schedule.presentation.map
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +15,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -48,6 +52,7 @@ fun DisplayMapsforgeMap(
     )
     Box(
         modifier = modifier
+            .background(Color.Transparent)
             .padding(bottom = 35.dp, top = 0.dp, start = 6.dp, end = 6.dp)
             .fillMaxSize()
     ){
@@ -95,39 +100,48 @@ fun MapsforgeMap(
     modifier: Modifier,
     state: MapState
 ){
+    val localContext = LocalContext.current
+    val mapData = MapFile(localContext.rawFile(R.raw.budapest))
+
     AndroidView(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         factory = { context ->
             AndroidGraphicFactory.createInstance(context.applicationContext)
             MapView(context).apply {
                 isClickable = true
                 mapScaleBar.isVisible = true
                 setBuiltInZoomControls(false)
-
-                val tileCache: TileCache = AndroidUtil.createExternalStorageTileCache(
-                    context,
-                    "mapcache",
-                    256,
-                    24,
-                    false
-                )
-                val mapData = MapFile(context.rawFile(R.raw.budapest))
-                val tileRendererLayer = TileRendererLayer(
-                    tileCache,
-                    mapData,
-                    model.mapViewPosition,
-                    AndroidGraphicFactory.INSTANCE
-                )
-                layerManager.layers.add(tileRendererLayer)
-                val mapThemeFile = AssetsRenderTheme(context.assets, "", "map_theme.xml")
-                tileRendererLayer.setXmlRenderTheme(mapThemeFile)
-
-                val boundingBox = mapData.mapFileInfo.boundingBox
-                model.mapViewPosition.mapLimit = boundingBox
-                model.mapViewPosition.center = LatLong(47.4933, 19.0533)
             }
         },
         update = { mapView ->
+            if (mapView.layerManager.layers.isEmpty){
+                try {
+                    val tileCache: TileCache = AndroidUtil.createExternalStorageTileCache(
+                        localContext,
+                        "mapcache",
+                        64,
+                        mapView.model.displayModel.tileSize,
+                        false
+                    )
+                    val tileRendererLayer = TileRendererLayer(
+                        tileCache,
+                        mapData,
+                        mapView.model.mapViewPosition,
+                        AndroidGraphicFactory.INSTANCE
+                    )
+                    val mapThemeFile = AssetsRenderTheme(localContext.assets, "", "map_theme.xml")
+                    tileRendererLayer.setXmlRenderTheme(mapThemeFile)
+                    mapView.layerManager.layers.add(tileRendererLayer)
+
+                    val boundingBox = mapData.mapFileInfo.boundingBox
+                    mapView.model.mapViewPosition.mapLimit = boundingBox
+                    mapView.model.mapViewPosition.center = LatLong(47.4933, 19.0533)
+                    mapView.model.mapViewPosition.zoomLevel = state.zoomLevel
+                } catch(e: Exception) {
+                    Log.e("MAPSFORGE_MAP", "Mapsforge map failed to load: ${e.message}")
+                }
+            }
+
             //Handle zooming in and out
             if (mapView.model.mapViewPosition.zoomLevel < state.zoomLevel){
                 mapView.model.mapViewPosition.zoomIn(true)
@@ -137,7 +151,7 @@ fun MapsforgeMap(
             mapView.model.mapViewPosition.rotation = Rotation(state.rotation, 0f, 0f)
 
             //Placing & clearing line of a trip
-            if (state.pathPoints.count() > 1) {
+            if (state.pathPoints.count() > 1 && state.stops.count() > 1) {
                 val paint: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
                     color = state.routeAssociated!!.getColor().toArgb()
                     strokeWidth = 8f
@@ -156,10 +170,12 @@ fun MapsforgeMap(
                 polyline.setPoints(route)
                 mapView.layerManager.layers.add(polyline)
             } else {
-                mapView.layerManager.layers.remove(
-                    mapView.layerManager.layers.count() - 1,
-                    true
-                )
+                if (mapView.layerManager.layers.count() > 1){
+                    mapView.layerManager.layers.remove(
+                        mapView.layerManager.layers.count() - 1,
+                        true
+                    )
+                }
             }
         }
     )
