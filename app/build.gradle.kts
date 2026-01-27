@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationExtension
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,7 +8,7 @@ plugins {
     alias(libs.plugins.dagger.hilt.android)
 }
 
-android {
+project.extensions.configure<ApplicationExtension>("android") {
     namespace = "com.jikokujo"
     compileSdk {
         version = release(36)
