@@ -44,7 +44,7 @@ class TripsRepositoryImpl(private val api: Api): TripsRepository {
                 api.getStopsForTrip(tripId = trip.id)
             } catch (e: Exception){
                 this.storedStops[trip.id] = ApiResult.Error("Something went wrong.")
-                Log.e("IO_EXCEPTION", e.toString())
+                Log.e("EXCEPTION", e.toString())
                 e.printStackTrace()
                 return
             }
@@ -78,7 +78,6 @@ class TripsRepositoryImpl(private val api: Api): TripsRepository {
                     )
                 }
             }
-
         } catch (e: Exception){
             this.trips = ApiResult.Error("Something went wrong.")
             Log.e("IO_EXCEPTION", e.toString())
