@@ -43,11 +43,10 @@ sealed interface Action{
     data class ShowDialog(val dialog: Dialogs?): Action
     data class ChangeFromDate(val year: Int, val month: Int, val day: Int): Action
     data class ChangeFromTime(val hour: Int, val minute: Int): Action
-    data class ChangeSearch(val qString: String): Action
+    data class ChangeSearch(val string: String): Action
     data class SelectRoute(val route: Queryable.Route): Action
     data class SelectStop(val stop: Queryable.Stop): Action
     data class SelectTrip(val trip: Trip): Action
-    data class GetRoute(val routeId: String): Action
     data object UnselectQueryable: Action
     data object UnselectTrip: Action
     data object Search: Action
@@ -71,15 +70,14 @@ class ScheduleSearchViewModel @Inject constructor(
         is Action.ShowDialog -> showDialog(action.dialog)
         is Action.ChangeFromTime -> changeTripFromTime(action.hour, action.minute)
         is Action.ChangeFromDate -> changeTripFromDate(action.year, action.month, action.day)
-        is Action.ChangeSearch -> changeSearch(action.qString)
+        is Action.ChangeSearch -> viewModelScope.launch(Dispatchers.Default) { changeSearch(action.string) }
         is Action.SelectStop -> selectStop(action.stop)
         is Action.SelectRoute -> selectRoute(action.route)
         is Action.UnselectQueryable -> unselectQueryable()
-        is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip) }
+        is Action.SelectTrip -> viewModelScope.launch(Dispatchers.IO) { selectTrip(action.trip) }
         is Action.UnselectTrip -> unselectTrip()
-        is Action.Search -> runBlocking(Dispatchers.IO) { search() }
+        is Action.Search -> viewModelScope.launch(Dispatchers.IO) { search() }
         is Action.RetryFetchInitialData -> viewModelScope.launch(Dispatchers.IO) { fetchQueryables() }
-        is Action.GetRoute -> getRoute(action.routeId)
     }
     private fun changeDropDownState(isExpanded: Boolean, dropDownShown: DropDowns?) = _state.update {
         it.copy(
@@ -91,7 +89,7 @@ class ScheduleSearchViewModel @Inject constructor(
         it.copy(shownDialog = dialog)
     }
     private fun changeSearch(value: String) = _state.update {
-        if (value == ""){
+        if (value.isBlank()){
             it.copy(
                 queryables = listOf(),
                 selectedQueryable = null,
@@ -100,21 +98,18 @@ class ScheduleSearchViewModel @Inject constructor(
                 dropDownExpanded = false
             )
         } else {
+            val filteredItems = (queryableRepository.queryables as ApiResult.Success).data.filter { queryable ->
+                when(queryable){
+                    is Queryable.Stop -> queryable.name.contains(value, ignoreCase = true)
+                    is Queryable.Route -> queryable.shortName.contains(value, ignoreCase = true)
+                }
+            }.take(100)
             it.copy(
-                queryables = (queryableRepository.queryables as ApiResult.Success).data.filter { queryable ->
-                    when(queryable){
-                        is Queryable.Stop -> {
-                            queryable.name.contains(value, ignoreCase = true)
-                        }
-                        is Queryable.Route -> {
-                            queryable.shortName.contains(value, ignoreCase = true)
-                        }
-                    }
-                },
+                queryables = filteredItems,
                 selectedQueryable = null,
                 searchString = value,
                 dropDownShown = DropDowns.QueryableSelection,
-                dropDownExpanded = true
+                dropDownExpanded = !filteredItems.isEmpty()
             )
         }
     }
@@ -233,9 +228,10 @@ class ScheduleSearchViewModel @Inject constructor(
         else -> {
             _state.update {
                 it.copy(
-                    isLoading = true,
-                    dropDownExpanded = true,
+                    dropDownExpanded = false,
                     dropDownShown = DropDowns.TripSelection,
+                    error = null,
+                    isLoading = true,
                 )
             }
 
@@ -245,18 +241,30 @@ class ScheduleSearchViewModel @Inject constructor(
             )
 
             _state.update {
-                it.copy(
-                    trips = (tripsRepository.trips as ApiResult.Success).data,
-                    isLoading = false
-                )
+                when(tripsRepository.trips){
+                    is ApiResult.Error -> {
+                        it.copy(
+                            trips = listOf(),
+                            error = "${(tripsRepository.trips as ApiResult.Error).errorMsg} Retry?",
+                            isLoading = false
+                        )
+                    }
+                    is ApiResult.Success -> {
+                        it.copy(
+                            trips = (tripsRepository.trips as ApiResult.Success).data,
+                            dropDownExpanded = true,
+                            isLoading = false
+                        )
+                    }
+                }
             }
         }
     }
     private suspend fun fetchQueryables() {
         _state.update {
             it.copy(
-                isLoading = true,
-                error = null
+                error = null,
+                isLoading = true
             )
         }
         queryableRepository.getQueryables()
@@ -278,7 +286,7 @@ class ScheduleSearchViewModel @Inject constructor(
         }
     }
     @Throws(NoSuchElementException::class)
-    private fun getRoute(routeId: String): Queryable.Route{
+    fun getRoute(routeId: String): Queryable.Route{
         (queryableRepository.queryables as ApiResult.Success).data.forEach { queryable ->
             if (queryable is Queryable.Route && queryable.id == routeId) {
                 return queryable

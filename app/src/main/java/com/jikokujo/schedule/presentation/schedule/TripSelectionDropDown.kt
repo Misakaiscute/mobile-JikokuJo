@@ -41,6 +41,7 @@ fun TripSelectionDropDown(
     modifier: Modifier,
     state: ScheduleSearchState,
     onAction: (Action) -> Any,
+    getRoute: (String) -> Queryable.Route,
     displayOnMap: (Trip, Queryable.Route) -> Unit
 ){
     val itemHeight = 40
@@ -49,8 +50,8 @@ fun TripSelectionDropDown(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(20))
-            .heightIn((((itemHeight + 1) * maxItems) - 1).dp)
+            .clip(RoundedCornerShape(topEnd = 20f, topStart = 20f, bottomStart = 0f, bottomEnd = 20f))
+            .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
@@ -59,12 +60,13 @@ fun TripSelectionDropDown(
         if (!state.dropDownExpanded) {
             TripSelectionDropDownItem(
                 modifier = modifier
+                    .background(MaterialTheme.colorScheme.surface)
                     .clickable(
                         onClick = { onAction(Action.ChangeDropDownState(true)) }
                     ),
                 state = state,
                 trip = state.selectedTrip,
-                getRoute = { routeId -> onAction(Action.GetRoute(routeId)) as Queryable.Route },
+                getRoute = getRoute,
                 itemHeight = itemHeight,
                 itemTextColor = MaterialTheme.colorScheme.onSurface
             )
@@ -81,8 +83,8 @@ fun TripSelectionDropDown(
                 if (i > 0){
                     HorizontalDivider(
                         modifier = modifier,
-                        thickness = 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface
+                        thickness = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 TripSelectionDropDownItem(
@@ -94,13 +96,13 @@ fun TripSelectionDropDown(
                                 onAction(Action.SelectTrip(state.trips[i]))
                                 displayOnMap(
                                     state.selectedTrip!!,
-                                    onAction(Action.GetRoute(state.selectedTrip.routeId)) as Queryable.Route
+                                    getRoute(state.selectedTrip.routeId)
                                 )
                             }
                         ),
                     state = state,
                     trip = state.trips[i],
-                    getRoute = { routeId -> onAction(Action.GetRoute(routeId)) as Queryable.Route },
+                    getRoute = getRoute,
                     itemHeight = itemHeight,
                     itemTextColor = if (state.selectedTrip?.id == state.trips[i].id) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                 )
@@ -117,21 +119,19 @@ private fun TripSelectionDropDownItem(
     itemHeight: Int,
     itemTextColor: Color
 ){
-    val overscrollEffect = rememberOverscrollEffect()
     val route: Queryable.Route? = if (trip != null) getRoute(trip.routeId) else null
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(itemHeight.dp)
-            .background(route?.getColor("80") ?: Color.Transparent)
-            .overscroll(overscrollEffect),
+            .background(route?.getColor("80") ?: Color.Transparent),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (trip == null){
             Text(
-                modifier = Modifier.padding(horizontal = 7.dp),
+                //modifier = Modifier.padding(horizontal = 7.dp),
                 text = "Nincs indulás kiválasztva!",
                 style = Typography.bodyMedium.merge(
                     color = MaterialTheme.colorScheme.onSurface,
@@ -194,19 +194,22 @@ private fun TripSelectionDropDownItemPreview(){
                     id = "0",
                     name = "Zodony utca",
                     location = Location.Stop(1.1, 1.1),
-                    arrivalTime = 765
+                    arrivalTime = 765,
+                    order = 1
                 ),
                 StopWithLocationAndStopTime(
                     id = "1",
                     name = "Gubacsi út",
                     location = Location.Stop(1.2, 1.2),
-                    arrivalTime = 769
+                    arrivalTime = 769,
+                    order = 2
                 ),
                 StopWithLocationAndStopTime(
                     id = "2",
                     name = "Határ út",
                     location = Location.Stop(1.3, 1.3),
-                    arrivalTime = 777
+                    arrivalTime = 777,
+                    order = 3
                 ),
             ),
             wheelchairAccessible = 1,
