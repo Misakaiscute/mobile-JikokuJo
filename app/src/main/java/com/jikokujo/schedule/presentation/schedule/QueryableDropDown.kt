@@ -91,7 +91,7 @@ private fun QueryableDropDownItem(
 ){
     Row(
         modifier = modifier
-            .background(if (item is Queryable.Route) item.getColor("80") else Color.Transparent)
+            .background(if (item is Queryable.Route) item.getColor("50") else Color.Transparent)
             .fillMaxWidth()
             .height(itemHeight.dp)
             .padding(horizontal = 5.dp),

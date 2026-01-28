@@ -125,7 +125,7 @@ private fun TripSelectionDropDownItem(
         modifier = modifier
             .fillMaxWidth()
             .height(itemHeight.dp)
-            .background(route?.getColor("80") ?: Color.Transparent),
+            .background(route?.getColor("50") ?: Color.Transparent),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
