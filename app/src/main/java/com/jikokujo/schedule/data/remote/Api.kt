@@ -18,7 +18,7 @@ interface Api {
     @Headers("accept: application/json")
     @GET("route/{routeId}/time/{year}{month}{day}/{hour}{minute}")
     suspend fun getTripsFromRoute(
-        @Path("selectedId") routeId: String,
+        @Path("routeId") routeId: String,
         @Path("year") year: String,
         @Path("month") month: String,
         @Path("day") day: String,
