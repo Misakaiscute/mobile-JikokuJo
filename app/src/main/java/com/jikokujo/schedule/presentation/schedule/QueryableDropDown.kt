@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.rememberOverscrollEffect
@@ -26,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
@@ -46,7 +51,7 @@ fun QueryableDropDown(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
-            .height((((itemHeight + 1) * maxItems) - 1).dp)
+            .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
             .scrollable(
                 state = scrollState,
                 orientation = Orientation.Vertical
@@ -56,8 +61,8 @@ fun QueryableDropDown(
             if (i > 0){
                 HorizontalDivider(
                     modifier = modifier,
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    thickness = 2.dp,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
             QueryableDropDownItem(
@@ -84,13 +89,12 @@ private fun QueryableDropDownItem(
     item: Queryable,
     itemHeight: Int
 ){
-    val overscrollEffect = rememberOverscrollEffect()
     Row(
         modifier = modifier
             .background(if (item is Queryable.Route) item.getColor("80") else Color.Transparent)
             .fillMaxWidth()
             .height(itemHeight.dp)
-            .overscroll(overscrollEffect),
+            .padding(horizontal = 5.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -98,8 +102,8 @@ private fun QueryableDropDownItem(
             is Queryable.Stop -> {
                 Icon(
                     modifier = Modifier
-                        .aspectRatio(1f)
-                        .fillMaxWidth(1/8f),
+                        .height((itemHeight - 5).dp)
+                        .width((itemHeight - 5).dp),
                     painter = painterResource(R.drawable.busstop),
                     contentDescription = "stop",
                     tint = MaterialTheme.colorScheme.onSurface
@@ -109,15 +113,17 @@ private fun QueryableDropDownItem(
                     modifier = Modifier.weight(1f),
                     text = item.name,
                     style = Typography.bodyMedium.merge(
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     ),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
             is Queryable.Route -> {
                 Icon(
                     modifier = Modifier
-                        .aspectRatio(1f)
-                        .fillMaxWidth(1/8f),
+                        .height((itemHeight - 5).dp)
+                        .width((itemHeight - 5).dp),
                     painter = painterResource(item.getIcon()),
                     contentDescription = "transport icon",
                     tint = MaterialTheme.colorScheme.onSurface
@@ -128,7 +134,9 @@ private fun QueryableDropDownItem(
                     text = item.shortName,
                     style = Typography.bodyMedium.merge(
                         color = MaterialTheme.colorScheme.onSurface
-                    )
+                    ),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
         }
