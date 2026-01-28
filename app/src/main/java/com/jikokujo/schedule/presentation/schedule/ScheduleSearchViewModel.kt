@@ -89,7 +89,10 @@ class ScheduleSearchViewModel @Inject constructor(
         it.copy(shownDialog = dialog)
     }
     private fun changeSearch(value: String) = _state.update {
-        if (value.isBlank()){
+        if (value == _state.value.searchString) {
+            it.copy()
+        }
+        else if (value.isBlank()){
             it.copy(
                 queryables = listOf(),
                 selectedQueryable = null,

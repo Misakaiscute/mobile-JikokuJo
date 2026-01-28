@@ -38,6 +38,7 @@ fun SearchBar(
     state: ScheduleSearchState,
     onAction: (Action) -> Unit
 ){
+    val height = 50.dp
     val searchString = remember { MutableStateFlow(state.searchString) }
 
     LaunchedEffect(searchString) {
@@ -47,13 +48,12 @@ fun SearchBar(
                 onAction(Action.ChangeSearch(s))
             }
     }
-    LaunchedEffect(state.searchString) {
+    LaunchedEffect(state.selectedQueryable) {
         if (searchString.value != state.searchString){
             searchString.value = state.searchString
         }
     }
 
-    val height = 50.dp
     Row(
         modifier = modifier
             .onFocusChanged {
@@ -88,24 +88,33 @@ fun SearchBar(
                 )
             },
             trailingIcon = {
-                Icon(
-                    modifier = modifier
-                        .fillMaxHeight(3/5f)
-                        .clickable(
-                            role = Role.Button,
-                            onClickLabel = "Search",
-                            onClick = {
-                                if (state.selectedQueryable != null){
-                                    onAction(Action.Search)
-                                }
-                            }
-                        ),
-                    painter = painterResource(
-                        R.drawable.baseline_search_24
-                    ),
-                    contentDescription = "button",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+                if (state.selectedQueryable != null){
+                    Icon(
+                        modifier = modifier
+                            .fillMaxHeight(4/5f)
+                            .clickable(
+                                role = Role.Button,
+                                onClickLabel = "Search",
+                                onClick = { onAction(Action.Search) }
+                            ),
+                        painter = painterResource(R.drawable.baseline_search_24),
+                        contentDescription = "select",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                } else {
+                    Icon(
+                        modifier = modifier
+                            .fillMaxHeight(4/5f)
+                            .clickable(
+                                role = Role.Button,
+                                onClickLabel = "Unselect queryable",
+                                onClick = { onAction(Action.UnselectQueryable) }
+                            ),
+                        painter = painterResource(R.drawable.trashcan),
+                        contentDescription = "unselect",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             },
             onValueChange = { newVal: String -> searchString.value = newVal },
         )
