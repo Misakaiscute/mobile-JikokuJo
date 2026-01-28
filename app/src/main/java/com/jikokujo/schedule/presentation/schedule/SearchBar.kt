@@ -16,21 +16,43 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jikokujo.R
 import com.jikokujo.theme.Typography
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 
+@OptIn(FlowPreview::class)
 @Composable
 fun SearchBar(
     modifier: Modifier,
     state: ScheduleSearchState,
     onAction: (Action) -> Unit
 ){
+    val searchString = remember { MutableStateFlow(state.searchString) }
+
+    LaunchedEffect(searchString) {
+        searchString
+            .debounce(300)
+            .collect { s ->
+                onAction(Action.ChangeSearch(s))
+            }
+    }
+    LaunchedEffect(state.searchString) {
+        if (searchString.value != state.searchString){
+            searchString.value = state.searchString
+        }
+    }
+
     val height = 50.dp
     Row(
         modifier = modifier
@@ -46,7 +68,7 @@ fun SearchBar(
     ) {
         TextField(
             modifier = modifier.fillMaxSize(),
-            value = state.searchString,
+            value = searchString.collectAsStateWithLifecycle().value,
             singleLine = true,
             textStyle = Typography.bodyMedium.merge(
                 color = MaterialTheme.colorScheme.onSurface
@@ -73,7 +95,9 @@ fun SearchBar(
                             role = Role.Button,
                             onClickLabel = "Search",
                             onClick = {
-                                onAction(Action.Search)
+                                if (state.selectedQueryable != null){
+                                    onAction(Action.Search)
+                                }
                             }
                         ),
                     painter = painterResource(
@@ -83,9 +107,7 @@ fun SearchBar(
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             },
-            onValueChange = { newVal: String ->
-                onAction(Action.ChangeSearch(newVal))
-            },
+            onValueChange = { newVal: String -> searchString.value = newVal },
         )
     }
 }
