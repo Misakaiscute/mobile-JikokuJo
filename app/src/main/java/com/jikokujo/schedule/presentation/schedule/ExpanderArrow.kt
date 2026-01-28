@@ -1,6 +1,7 @@
 package com.jikokujo.schedule.presentation.schedule
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,7 +33,7 @@ fun ExpanderArrow(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        contentPadding = PaddingValues(all = 1.dp),
+        contentPadding = PaddingValues(all = 0.dp),
         onClick = onClick
     ) {
         Icon(

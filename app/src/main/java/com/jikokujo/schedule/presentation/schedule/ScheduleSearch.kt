@@ -25,6 +25,7 @@ fun ScheduleSearch(
     modifier: Modifier,
     state: ScheduleSearchState,
     onAction: (Action) -> Unit,
+    getRoute: (String) -> Queryable.Route,
     displayTripOnMap: (Trip, Queryable.Route) -> Unit,
     removeTripFromMap: () -> Unit
 ){
@@ -111,6 +112,7 @@ fun ScheduleSearch(
                         modifier = modifier,
                         state = state,
                         onAction = onAction,
+                        getRoute = getRoute,
                         displayOnMap = displayTripOnMap
                     )
                     Row(
@@ -138,6 +140,7 @@ private fun ScheduleSearchPreview(){
         modifier = Modifier,
         state = ScheduleSearchState(),
         onAction = {},
+        getRoute = { _ -> Queryable.Route("001", "M3-mas metró", "0b6324", 3) },
         displayTripOnMap = { _, _ -> },
         removeTripFromMap = {}
     )
