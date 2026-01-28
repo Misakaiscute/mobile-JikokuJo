@@ -4,14 +4,16 @@ import android.annotation.SuppressLint
 import com.google.gson.annotations.SerializedName
 
 data class StopWithLocationAndStopTime(
-    @SerializedName("id")
+    @SerializedName("stop_id")
     val id: String,
-    @SerializedName("name")
+    @SerializedName("stop_name")
     val name: String,
     @SerializedName("location")
     val location: Location.Stop,
     @SerializedName("arrival_time")
-    val arrivalTime: Int
+    val arrivalTime: Int,
+    @SerializedName("stop_sequence")
+    val order: Int
 )
 
 @SuppressLint("DefaultLocale")
