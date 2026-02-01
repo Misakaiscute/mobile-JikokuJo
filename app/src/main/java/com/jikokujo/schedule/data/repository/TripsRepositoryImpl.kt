@@ -5,15 +5,12 @@ import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.data.remote.Api
+import com.jikokujo.schedule.data.remote.QueryablesApi
 import com.jikokujo.schedule.data.remote.ApiResult
-import okio.IOException
-import retrofit2.HttpException
-import java.net.SocketTimeoutException
 import java.time.LocalDateTime
 import kotlin.collections.mutableListOf
 
-class TripsRepositoryImpl(private val api: Api): TripsRepository {
+class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
     override var storedStops: MutableMap<String, ApiResult<List<StopWithLocationAndStopTime>>> = mutableMapOf()
     override var storedShapes: MutableMap<String, ApiResult<List<Location.RoutePathPoint>>> = mutableMapOf()
     override lateinit var trips: ApiResult<List<Trip>>

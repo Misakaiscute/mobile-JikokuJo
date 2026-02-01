@@ -71,6 +71,8 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.navigation.runtime)
 
+    implementation(libs.datastore)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

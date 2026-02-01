@@ -5,12 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Path
 
-sealed interface ApiResult<out T>{
-    data class Success<T>(val data: T) : ApiResult<T>
-    data class Error(val errorMsg: String) : ApiResult<Nothing>
-}
-
-interface Api {
+interface QueryablesApi {
     @Headers("accept: application/json")
     @GET("queryables")
     suspend fun getQueryables(): ResponseRoot<GetQueryablesObj>

@@ -2,10 +2,10 @@ package com.jikokujo.schedule.presentation.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jikokujo.schedule.data.remote.ApiResult
+import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.data.repository.QueryableRepository
+import com.jikokujo.schedule.data.repository.QueryablesRepository
 import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -54,7 +53,7 @@ sealed interface Action{
 }
 @HiltViewModel
 class ScheduleSearchViewModel @Inject constructor(
-    private val queryableRepository: QueryableRepository,
+    private val queryableRepository: QueryablesRepository,
     private val tripsRepository: TripsRepository
 ): ViewModel() {
     private val _state = MutableStateFlow(ScheduleSearchState())
@@ -65,6 +64,7 @@ class ScheduleSearchViewModel @Inject constructor(
             fetchQueryables()
         }
     }
+
     fun onAction(action: Action) = when(action){
         is Action.ChangeDropDownState -> changeDropDownState(action.isExpanded, action.dropDownShown)
         is Action.ShowDialog -> showDialog(action.dialog)
@@ -141,7 +141,7 @@ class ScheduleSearchViewModel @Inject constructor(
     }
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun selectRoute(route: Queryable.Route) {
-        if (queryableRepository.queryables is ApiResult.Success){
+        if (queryableRepository.queryables is ApiResult.Success<*>){
             val routeExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data.filter {
                 it is Queryable.Route
             }.find {

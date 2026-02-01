@@ -3,6 +3,9 @@ package com.jikokujo.core.data
 import com.google.gson.annotations.SerializedName
 
 interface Payload
+
+object EmptyPayload: Payload
+
 data class ResponseRoot<T: Payload>(
     @SerializedName("data")
     val data: T? = null,

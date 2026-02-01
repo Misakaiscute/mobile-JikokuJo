@@ -1,12 +1,8 @@
-package com.jikokujo.schedule.di
+package com.jikokujo.profile.di
 
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
-import com.jikokujo.schedule.data.remote.QueryablesApi
-import com.jikokujo.schedule.data.repository.QueryablesRepositoryImpl
-import com.jikokujo.schedule.data.repository.QueryablesRepository
-import com.jikokujo.schedule.data.repository.TripsRepository
-import com.jikokujo.schedule.data.repository.TripsRepositoryImpl
+import com.jikokujo.profile.data.remote.UserApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +17,7 @@ object AppModule {
     const val EMULATOR_DEV_LOCALHOST = "10.0.2.2"
     @Provides
     @Singleton
-    fun provideQueryablesApi(): QueryablesApi {
+    fun provideUserApi(): UserApi {
         val gson = GsonBuilder()
             .setStrictness(Strictness.LENIENT)
             .create()
@@ -30,16 +26,6 @@ object AppModule {
             .baseUrl("http://$EMULATOR_DEV_LOCALHOST/backend-JikokuJo/public/index.php/api/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
-            .create(QueryablesApi::class.java)
-    }
-    @Provides
-    @Singleton
-    fun provideQueryablesRepository(): QueryablesRepository {
-        return QueryablesRepositoryImpl(provideQueryablesApi())
-    }
-    @Provides
-    @Singleton
-    fun provideTripsRepository(): TripsRepository {
-        return TripsRepositoryImpl(provideQueryablesApi())
+            .create(UserApi::class.java)
     }
 }

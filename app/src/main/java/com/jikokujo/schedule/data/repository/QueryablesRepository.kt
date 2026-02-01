@@ -1,9 +1,10 @@
 package com.jikokujo.schedule.data.repository
 
-import com.jikokujo.schedule.data.remote.ApiResult
+import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
 
-interface QueryableRepository {
+interface QueryablesRepository {
     var queryables: ApiResult<List<Queryable>>
-    suspend fun getQueryables(): Unit
+
+    suspend fun getQueryables()
 }

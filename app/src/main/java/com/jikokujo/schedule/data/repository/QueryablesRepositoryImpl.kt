@@ -1,13 +1,14 @@
 package com.jikokujo.schedule.data.repository
 
 import android.util.Log
-import com.jikokujo.schedule.data.remote.Api
-import com.jikokujo.schedule.data.remote.ApiResult
+import com.jikokujo.schedule.data.remote.QueryablesApi
+import com.jikokujo.schedule.data.repository.QueryablesRepository
+import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
-import okio.IOException
-import retrofit2.HttpException
 
-class QueryablesRepositoryImpl(private val api: Api): QueryableRepository {
+class QueryablesRepositoryImpl(
+    private val api: QueryablesApi
+): QueryablesRepository {
     override lateinit var queryables: ApiResult<List<Queryable>>
 
     override suspend fun getQueryables() {
