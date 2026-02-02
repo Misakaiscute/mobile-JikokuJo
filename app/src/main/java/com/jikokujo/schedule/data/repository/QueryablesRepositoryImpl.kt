@@ -16,7 +16,7 @@ class QueryablesRepositoryImpl(
              api.getQueryables()
         } catch (e: Exception) {
             this.queryables = ApiResult.Error("Something went wrong.")
-            Log.e("IO_EXCEPTION", e.message.toString())
+            Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
             return
         }

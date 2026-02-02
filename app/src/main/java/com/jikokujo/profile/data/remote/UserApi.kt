@@ -22,7 +22,8 @@ interface UserApi {
     @Headers("accept: application/json")
     @POST("user/login/{remember}")
     suspend fun login(
-        @Body user: User,
+        @Field("email") email: String,
+        @Field("password") password: String,
         @Path("remember") remember: Boolean = false
     ): ResponseRoot<UserLoginObj>
 
@@ -30,7 +31,7 @@ interface UserApi {
     @POST("user")
     suspend fun getUser(
         @Header("Authorization") authToken: String
-    ): ResponseRoot<EmptyPayload> //TODO: Add the proper return type
+    ): ResponseRoot<GetUserObj>
 
     @Headers("accept: application/json")
     @PUT("user/update")
