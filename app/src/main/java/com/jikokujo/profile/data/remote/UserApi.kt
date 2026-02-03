@@ -16,7 +16,11 @@ interface UserApi {
     @Headers("accept: application/json")
     @POST("user/register")
     suspend fun register(
-        @Body user: User
+        @Field("first_name") firstName: String,
+        @Field("last_name") lastName: String,
+        @Field("email") email: String,
+        @Field("password") password: String,
+        @Field("password_confirmation") passwordConfirmation: String,
     ): ResponseRoot<EmptyPayload>
 
     @Headers("accept: application/json")

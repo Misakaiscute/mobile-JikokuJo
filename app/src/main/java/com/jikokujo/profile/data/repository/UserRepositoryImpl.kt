@@ -24,18 +24,30 @@ class UserRepositoryImpl @Inject constructor(
         val userAccessTokenKey: Preferences.Key<String> = stringPreferencesKey("user_access_token")
     }
 
-    override suspend fun register(user: User): ApiResult<Nothing?> {
+    override suspend fun register(
+        firstName: String,
+        lastName: String,
+        email: String,
+        password: String,
+        passwordConfirmation: String,
+    ): ApiResult<Nothing?> {
         val response = try {
-            api.register(user)
+            api.register(
+                firstName = firstName,
+                lastName = lastName,
+                email = email,
+                password = password,
+                passwordConfirmation = passwordConfirmation
+            )
         } catch (e: Exception) {
             Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
-            return ApiResult.Error("Registration failed")
+            return ApiResult.Error("Sikertelen regisztráció.")
         }
         return if (response.errors.isEmpty()){
             ApiResult.Success(null)
         } else {
-            ApiResult.Error(response.errors.firstOrNull() ?: "Something went wrong")
+            ApiResult.Error(response.errors.firstOrNull() ?: "Valami hiba történt.")
         }
     }
 
@@ -65,22 +77,26 @@ class UserRepositoryImpl @Inject constructor(
         deleteAccessToken()
     }
 
-    override suspend fun getSignedInUser() {
+    override suspend fun checkAuth() {
         if (this.userAccessToken == null){
             getAccessToken()
         }
+    }
+
+    override suspend fun getSignedInUser() {
+        checkAuth()
         this.userAccessToken?.let { token ->
             val response = try {
                 api.getUser(token)
             } catch (e: Exception) {
-                this.loggedInUser = ApiResult.Error("User not logged in yet")
+                this.loggedInUser = ApiResult.Error("Nincs még bejelentkezett felhasználó.")
                 Log.e("EXCEPTION", e.message.toString())
                 e.printStackTrace()
                 return
             }
             this.loggedInUser = ApiResult.Success(response.data!!.user)
         }
-        this.loggedInUser = ApiResult.Error("User not logged in yet")
+        this.loggedInUser = ApiResult.Error("Nincs még bejelentkezett felhasználó.")
     }
 
     private suspend fun storeAccessToken() {
