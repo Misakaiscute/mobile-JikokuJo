@@ -5,7 +5,7 @@ import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.data.remote.ApiResult
+import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
