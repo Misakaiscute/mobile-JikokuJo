@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -65,19 +66,19 @@ class ScheduleSearchViewModel @Inject constructor(
         }
     }
 
-    fun onAction(action: Action) = when(action){
+    suspend fun onAction(action: Action) = when(action){
         is Action.ChangeDropDownState -> changeDropDownState(action.isExpanded, action.dropDownShown)
         is Action.ShowDialog -> showDialog(action.dialog)
         is Action.ChangeFromTime -> changeTripFromTime(action.hour, action.minute)
         is Action.ChangeFromDate -> changeTripFromDate(action.year, action.month, action.day)
-        is Action.ChangeSearch -> viewModelScope.launch(Dispatchers.Default) { changeSearch(action.string) }
+        is Action.ChangeSearch -> withContext(Dispatchers.Default) { changeSearch(action.string) }
         is Action.SelectStop -> selectStop(action.stop)
         is Action.SelectRoute -> selectRoute(action.route)
         is Action.UnselectQueryable -> unselectQueryable()
-        is Action.SelectTrip -> viewModelScope.launch(Dispatchers.IO) { selectTrip(action.trip) }
+        is Action.SelectTrip -> withContext(Dispatchers.IO) { selectTrip(action.trip) }
         is Action.UnselectTrip -> unselectTrip()
-        is Action.Search -> viewModelScope.launch(Dispatchers.IO) { search() }
-        is Action.RetryFetchInitialData -> viewModelScope.launch(Dispatchers.IO) { fetchQueryables() }
+        is Action.Search -> withContext(Dispatchers.IO) { search() }
+        is Action.RetryFetchInitialData -> withContext(Dispatchers.IO) { fetchQueryables() }
     }
     private fun changeDropDownState(isExpanded: Boolean, dropDownShown: DropDowns?) = _state.update {
         it.copy(

@@ -1,17 +1,14 @@
 package com.jikokujo.schedule.data
 
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.ui.platform.LocalAutofill
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.data.remote.ApiResult
+import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.repository.TripsRepository
-import org.apiguardian.api.API
 import java.time.LocalDateTime
 
-class TripsRepositoryTestImpl: TripsRepository {
+class MockTripsRepositoryImpl: TripsRepository {
     override var storedStops: MutableMap<String, ApiResult<List<StopWithLocationAndStopTime>>> = mutableMapOf()
     override var storedShapes: MutableMap<String, ApiResult<List<Location.RoutePathPoint>>> = mutableMapOf()
     override lateinit var trips: ApiResult<List<Trip>>
@@ -42,25 +39,29 @@ class TripsRepositoryTestImpl: TripsRepository {
                     id = "STOP_1",
                     name = "STOP NUMBER 1",
                     location = Location.Stop(11.0, 11.0),
-                    arrivalTime = 710
+                    arrivalTime = 710,
+                    order = 1
                 ),
                 StopWithLocationAndStopTime(
                     id = "STOP_2",
                     name = "STOP NUMBER 2",
                     location = Location.Stop(12.0, 12.0),
-                    arrivalTime = 720
+                    arrivalTime = 720,
+                    order = 2
                 ),
                 StopWithLocationAndStopTime(
                     id = "STOP_3",
                     name = "STOP NUMBER 3",
                     location = Location.Stop(13.0, 13.0),
-                    arrivalTime = 730
+                    arrivalTime = 730,
+                    order = 3,
                 ),
                 StopWithLocationAndStopTime(
                     id = "STOP_4",
                     name = "STOP NUMBER 4",
                     location = Location.Stop(14.0, 14.0),
-                    arrivalTime = 740
+                    arrivalTime = 740,
+                    order = 3
                 ),
             )
         )
@@ -78,13 +79,15 @@ class TripsRepositoryTestImpl: TripsRepository {
                         id = "STOP_1",
                         name = "STOP NUMBER 1",
                         location = Location.Stop(11.0, 11.0),
-                        arrivalTime = 710
+                        arrivalTime = 710,
+                        order = 1
                     ),
                     StopWithLocationAndStopTime(
                         id = "STOP_4",
                         name = "STOP NUMBER 4",
                         location = Location.Stop(14.0, 14.0),
-                        arrivalTime = 740
+                        arrivalTime = 740,
+                        order = 4
                     ),
                 ),
                 wheelchairAccessible = 1,

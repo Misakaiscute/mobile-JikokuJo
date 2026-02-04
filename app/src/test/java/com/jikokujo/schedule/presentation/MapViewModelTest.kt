@@ -1,6 +1,6 @@
 package com.jikokujo.schedule.presentation
 
-import com.jikokujo.schedule.data.TripsRepositoryTestImpl
+import com.jikokujo.schedule.data.MockTripsRepositoryImpl
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
@@ -17,7 +17,7 @@ class MapViewModelTest {
     private lateinit var viewModel: MapViewModel
     @Before
     fun setUp() {
-        val tripsRepository = TripsRepositoryTestImpl()
+        val tripsRepository = MockTripsRepositoryImpl()
         this.viewModel = MapViewModel(tripsRepository)
 
         runBlocking {
@@ -50,23 +50,27 @@ class MapViewModelTest {
                     id = "STOP_1",
                     name = "STOP NUMBER 1",
                     location = Location.Stop(11.0, 11.0),
-                    arrivalTime = 710
+                    arrivalTime = 710,
+                    order = 1
                 ),
                 StopWithLocationAndStopTime(
                     id = "STOP_4",
                     name = "STOP NUMBER 4",
                     location = Location.Stop(14.0, 14.0),
-                    arrivalTime = 740
+                    arrivalTime = 740,
+                    order = 4
                 ),
             ),
             wheelchairAccessible = 1,
             bikesAllowed = 1,
             directionId = 1
         )
-        viewModel.onAction(Action.SelectTrip(
-            trip = trip,
-            routeAssociated = route
-        ))
+        runBlocking {
+            viewModel.onAction(Action.SelectTrip(
+                trip = trip,
+                routeAssociated = route
+            ))
+        }
         assertTrue(
             "Stops must be set after selecting a trip",
             viewModel.state.value.stops.count() > 1
@@ -102,13 +106,15 @@ class MapViewModelTest {
                     id = "STOP_1",
                     name = "STOP NUMBER 1",
                     location = Location.Stop(11.0, 11.0),
-                    arrivalTime = 710
+                    arrivalTime = 710,
+                    order = 1
                 ),
                 StopWithLocationAndStopTime(
                     id = "STOP_4",
                     name = "STOP NUMBER 4",
                     location = Location.Stop(14.0, 14.0),
-                    arrivalTime = 740
+                    arrivalTime = 740,
+                    order = 4
                 ),
             ),
             wheelchairAccessible = 1,
@@ -117,10 +123,12 @@ class MapViewModelTest {
         )
 
         val exception = assertThrows(IllegalArgumentException::class.java){
-            viewModel.onAction(Action.SelectTrip(
-                trip = trip,
-                routeAssociated = route
-            ))
+            runBlocking {
+                viewModel.onAction(Action.SelectTrip(
+                    trip = trip,
+                    routeAssociated = route
+                ))
+            }
         }
         assertTrue(
             "IllegalArgumentException must be thrown",
@@ -145,24 +153,28 @@ class MapViewModelTest {
                     id = "STOP_1",
                     name = "STOP NUMBER 1",
                     location = Location.Stop(11.0, 11.0),
-                    arrivalTime = 710
+                    arrivalTime = 710,
+                    order = 1
                 ),
                 StopWithLocationAndStopTime(
                     id = "STOP_4",
                     name = "STOP NUMBER 4",
                     location = Location.Stop(14.0, 14.0),
-                    arrivalTime = 740
+                    arrivalTime = 740,
+                    order = 4
                 ),
             ),
             wheelchairAccessible = 1,
             bikesAllowed = 1,
             directionId = 1
         )
-        viewModel.onAction(Action.SelectTrip(
-            trip = trip,
-            routeAssociated = route
-        ))
-        viewModel.onAction(Action.UnselectTrip)
+        runBlocking {
+            viewModel.onAction(Action.SelectTrip(
+                trip = trip,
+                routeAssociated = route
+            ))
+            viewModel.onAction(Action.UnselectTrip)
+        }
 
         assertNull(
             "No error must remain when no trip is selected",

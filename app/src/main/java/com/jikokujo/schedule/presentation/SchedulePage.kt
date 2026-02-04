@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokujo.schedule.presentation.map.Action as MapAction
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
@@ -23,6 +24,7 @@ import com.jikokujo.schedule.presentation.schedule.ScheduleSearch
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchState
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
 import com.jikokujo.theme.Typography
+import kotlinx.coroutines.launch
 
 @Composable
 fun SchedulePage(modifier: Modifier){
@@ -36,21 +38,43 @@ fun SchedulePage(modifier: Modifier){
             OnError(
                 modifier = Modifier,
                 state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
-                onAction = { action -> scheduleSearchViewModel.onAction(action) }
+                onAction = { action ->
+                    scheduleSearchViewModel.viewModelScope.launch{
+                        scheduleSearchViewModel.onAction(action)
+                    }
+                }
             )
         } else {
             DisplayMapsforgeMap(
                 modifier = Modifier,
                 state = mapViewModel.state.collectAsStateWithLifecycle().value,
-                onAction = { action -> mapViewModel.onAction(action) }
+                onAction = { action ->
+                    mapViewModel.viewModelScope.launch {
+                        mapViewModel.onAction(action)
+                    }
+                }
             )
             ScheduleSearch(
                 modifier = Modifier,
                 state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
-                onAction = { action -> scheduleSearchViewModel.onAction(action) },
-                getRoute = { routeId -> scheduleSearchViewModel.getRoute(routeId) },
-                displayTripOnMap = { trip, routeAssoc -> mapViewModel.onAction(MapAction.SelectTrip(trip, routeAssoc)) },
-                removeTripFromMap = { mapViewModel.onAction(MapAction.UnselectTrip) }
+                onAction = { action ->
+                    scheduleSearchViewModel.viewModelScope.launch {
+                        scheduleSearchViewModel.onAction(action)
+                    }
+                },
+                getRoute = { routeId ->
+                    scheduleSearchViewModel.getRoute(routeId)
+                },
+                displayTripOnMap = { trip, routeAssoc ->
+                    mapViewModel.viewModelScope.launch {
+                        mapViewModel.onAction(MapAction.SelectTrip(trip, routeAssoc))
+                    }
+                },
+                removeTripFromMap = {
+                    mapViewModel.viewModelScope.launch {
+                        mapViewModel.onAction(MapAction.UnselectTrip)
+                    }
+                }
             )
         }
     }
@@ -73,7 +97,9 @@ private fun OnError(
             modifier = modifier
                 .fillMaxWidth(2/3f)
                 .align(Alignment.Center),
-            onClick = { onAction(ScheduleAction.RetryFetchInitialData) }
+            onClick = {
+                onAction(ScheduleAction.RetryFetchInitialData)
+            }
         ) {
             Text(
                 text = state.error!!,

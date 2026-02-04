@@ -1,11 +1,13 @@
 package com.jikokujo.schedule.presentation
 
-import com.jikokujo.schedule.data.QueryablesRepositoryTestImpl
-import com.jikokujo.schedule.data.TripsRepositoryTestImpl
+import com.jikokujo.schedule.data.MockQueryablesRepositoryImpl
+import com.jikokujo.schedule.data.MockTripsRepositoryImpl
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.presentation.schedule.Action
 import com.jikokujo.schedule.presentation.schedule.DropDowns
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
@@ -29,10 +31,10 @@ class ScheduleSearchViewModelTest {
                 name = (i % 27 + 97).toChar() + index.toString()
             ))
         }
-        val queryablesRepositoryTestImpl = QueryablesRepositoryTestImpl(
+        val queryablesRepositoryTestImpl = MockQueryablesRepositoryImpl(
             queryablesIn = queryables,
         )
-        val tripRepositoryTestImpl = TripsRepositoryTestImpl()
+        val tripRepositoryTestImpl = MockTripsRepositoryImpl()
 
         this.viewModel = ScheduleSearchViewModel(
             queryableRepository = queryablesRepositoryTestImpl,
@@ -49,7 +51,9 @@ class ScheduleSearchViewModelTest {
     @Test
     fun `filtering empty string to anything`(){
         val searchString = "a"
-        viewModel.onAction(Action.ChangeSearch(searchString))
+        runBlocking {
+            viewModel.onAction(Action.ChangeSearch(searchString))
+        }
         val expected = listOf(
             Queryable.Route(id = "0", shortName = "A0", type = 1, color = 0.toLong().toString()),
             Queryable.Route(id = "26", shortName = "A26", type = 1, color = 26.toLong().toString()),
@@ -59,7 +63,9 @@ class ScheduleSearchViewModelTest {
             Queryable.Stop(id = "52", name = "a52")
         )
         assertTrue(
-            "The state must contain the same (amount of) items as manually specified",
+            "The state must contain the same (amount of) items as manually specified.\n" +
+                    "Expected: ${expected.count()}\n" +
+                    "Actual: ${viewModel.state.value.queryables.count()}",
             viewModel.state.value.queryables.count() == expected.count()
         )
         assertTrue(
@@ -77,7 +83,9 @@ class ScheduleSearchViewModelTest {
     }
     @Test
     fun `filtering anything to empty string`(){
-        viewModel.onAction(Action.ChangeSearch(""))
+        runBlocking {
+            viewModel.onAction(Action.ChangeSearch(""))
+        }
         assertTrue(
             "The state must contain no queryables at this point",
             viewModel.state.value.queryables.count() == 0
@@ -98,7 +106,9 @@ class ScheduleSearchViewModelTest {
     @Test
     fun `select EXISTING stop`(){
         val stop = Queryable.Stop("26", "a26")
-        viewModel.onAction(Action.SelectStop(stop))
+        runBlocking {
+            viewModel.onAction(Action.SelectStop(stop))
+        }
         assertTrue(
             "The state must contain the correct stop",
             (viewModel.state.value.selectedQueryable as Queryable.Stop).id == stop.id
@@ -115,9 +125,11 @@ class ScheduleSearchViewModelTest {
     @Test
     fun `select NON-EXISTENT stop`(){
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            viewModel.onAction(Action.SelectStop(
-                Queryable.Stop(id = "asddd", name = "mindegyezbarmilehetlol")
-            ))
+            runBlocking {
+                viewModel.onAction(Action.SelectStop(
+                    Queryable.Stop(id = "asddd", name = "mindegyezbarmilehetlol")
+                ))
+            }
         }
         assertTrue(
             "Function must throw IllegalStateException when a non-existent stop is selected",
@@ -127,7 +139,9 @@ class ScheduleSearchViewModelTest {
     @Test
     fun `select EXISTING route`(){
         val route = Queryable.Route(id = "27", shortName = "B27", type = 1, color = 27.toLong().toString())
-        viewModel.onAction(Action.SelectRoute(route))
+        runBlocking {
+            viewModel.onAction(Action.SelectRoute(route))
+        }
         assertTrue(
             "The state must contain no queryables at this point",
             (viewModel.state.value.selectedQueryable as Queryable.Route).id == route.id
@@ -144,19 +158,22 @@ class ScheduleSearchViewModelTest {
     @Test
     fun `select NON-EXISTENT route`(){
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            viewModel.onAction(Action.SelectRoute(
-                Queryable.Route(id = "asddd", shortName = "mindegyezbarmilehetlol", type = 1, color = "1")
-            ))
+            runBlocking {
+                viewModel.onAction(Action.SelectRoute(
+                    Queryable.Route(id = "asddd", shortName = "mindegyezbarmilehetlol", type = 1, color = "1")
+                ))
+            }
         }
         assertTrue(
             "Function must throw IllegalArgumentException when a non-existent route is selected",
             exception is IllegalArgumentException
         )
     }
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `search with no queryable selected`(){
         val exception = assertThrows(IllegalStateException::class.java){
-            viewModel.onAction(Action.Search)
+            runBlocking { viewModel.onAction(Action.Search) }
         }
         assertTrue(
             "Function must throw IllegalStateException when no stop or route is selected",
@@ -165,10 +182,12 @@ class ScheduleSearchViewModelTest {
     }
     @Test
     fun `search with stop selected`(){
-        viewModel.onAction(Action.SelectStop(
-            Queryable.Stop(id = "4", name = "e4")
-        ))
-        viewModel.onAction(Action.Search)
+        runBlocking {
+            viewModel.onAction(Action.SelectStop(
+                Queryable.Stop(id = "4", name = "e4")
+            ))
+            viewModel.onAction(Action.Search)
+        }
         assertTrue(
             "Dropdown must be expanded after selecting a stop",
             viewModel.state.value.dropDownExpanded
@@ -184,10 +203,12 @@ class ScheduleSearchViewModelTest {
     }
     @Test
     fun `search with route selected`(){
-        viewModel.onAction(Action.SelectRoute(
-            Queryable.Route(id = "0", shortName = "A0", type = 1, color = 1.toLong().toString())
-        ))
-        viewModel.onAction(Action.Search)
+        runBlocking {
+            viewModel.onAction(Action.SelectRoute(
+                Queryable.Route(id = "0", shortName = "A0", type = 1, color = 1.toLong().toString())
+            ))
+            viewModel.onAction(Action.Search)
+        }
         assertTrue(
             "Dropdown must be expanded after selecting a route",
             viewModel.state.value.dropDownExpanded

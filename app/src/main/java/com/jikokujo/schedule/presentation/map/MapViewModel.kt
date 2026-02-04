@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class MapState(
@@ -38,11 +39,11 @@ class MapViewModel @Inject constructor(
     private val _state = MutableStateFlow(MapState())
     val state = _state.asStateFlow()
 
-    fun onAction(action: Action) = when(action){
+    suspend fun onAction(action: Action) = when(action){
         is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
         is Action.Rotate -> rotate(action.rotation)
-        is Action.SelectTrip -> runBlocking(Dispatchers.IO) { selectTrip(action.trip, action.routeAssociated) }
-        is Action.UnselectTrip -> runBlocking(Dispatchers.IO) { selectTrip() }
+        is Action.SelectTrip -> withContext(Dispatchers.IO) { selectTrip(action.trip, action.routeAssociated) }
+        is Action.UnselectTrip -> withContext(Dispatchers.IO) { selectTrip() }
     }
     @Throws(IllegalStateException::class, IllegalArgumentException::class)
     private suspend fun selectTrip(trip: Trip? = null, routeAssociated: Queryable.Route? = null) {
