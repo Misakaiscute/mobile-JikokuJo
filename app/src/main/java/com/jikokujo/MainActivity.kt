@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme(dynamicColor = false) {
-                val backstack = rememberSaveable { mutableStateListOf<Page>(Page.Schedule) }
+                val backstack = rememberSaveable { mutableStateListOf<MainPage>(MainPage.Schedule) }
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -65,22 +65,22 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 IconButton(
                                     shape = RoundedCornerShape(0),
-                                    onClick = { backstack.add(Page.Schedule) }
+                                    onClick = { backstack.add(MainPage.Schedule) }
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.schedule_icon),
                                         contentDescription = "transportation navigation button",
-                                        tint = if (backstack.last() == Page.Schedule) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        tint = if (backstack.last() == MainPage.Schedule) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                                 IconButton(
                                     shape = RoundedCornerShape(0),
-                                    onClick = { backstack.add(Page.Profile) }
+                                    onClick = { backstack.add(MainPage.Profile) }
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.profile_icon),
                                         contentDescription = "profile navigation button",
-                                        tint = if (backstack.last() == Page.Profile) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        tint = if (backstack.last() == MainPage.Profile) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                             }

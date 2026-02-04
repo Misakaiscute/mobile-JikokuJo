@@ -1,0 +1,60 @@
+package com.jikokujo.profile.presentation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.jikokujo.profile.presentation.auth.AuthPage
+import kotlinx.coroutines.launch
+
+@Composable
+fun ProfileNavRoot(modifier: Modifier){
+    val profileViewModel = viewModel<ProfileViewModel>()
+    Surface(
+        modifier = modifier.padding(horizontal = 10.dp),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        if (!profileViewModel.state.collectAsStateWithLifecycle().value.isUserLoggedIn) {
+            AuthPage(
+                modifier = Modifier,
+                onAuthSuccess = {
+                    profileViewModel.viewModelScope.launch {
+                        profileViewModel.onAction(ProfileAction.SuccessfulAuth)
+                    }
+                }
+            )
+        } else {
+            NavDisplay(
+                backStack = profileViewModel.state.collectAsStateWithLifecycle().value.backStack!!,
+                onBack = {
+                    profileViewModel.viewModelScope.launch {
+                        profileViewModel.onAction(ProfileAction.NavigateBack)
+                    }
+                },
+                entryProvider = entryProvider {
+                    entry<ProfilePage.Main> {
+                        Box(
+                            Modifier.fillMaxSize().background(Color.Red)
+                        ) { }
+                    }
+                    entry<ProfilePage.Favourites> {
+                        Box(
+                            Modifier.fillMaxSize().background(Color.Blue)
+                        ) { }
+                    }
+                }
+            )
+        }
+    }
+}

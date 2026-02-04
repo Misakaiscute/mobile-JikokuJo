@@ -47,7 +47,7 @@ fun Register(modifier: Modifier){
 private fun RegisterContent(
     modifier: Modifier,
     state: RegisterState,
-    onAction: (Action) -> Unit
+    onAction: (RegisterAction) -> Unit
 ){
     val focusManager = LocalFocusManager.current
 
@@ -75,71 +75,75 @@ private fun RegisterContent(
                     .fillMaxHeight()
                     .weight(1f),
                 text = state.firstName,
-                name = "Keresztnév",
+                label = "Keresztnév",
                 hasError = state.inputError is InputException.MissingFieldException && state.firstName.isBlank(),
                 onValueChange = { value ->
-                    onAction(Action.ChangeValue(
+                    onAction(RegisterAction.ChangeValue(
                         state.copy(firstName = value)
                     ))
                 },
-                imeAction = { focusManager.moveFocus(FocusDirection.Right) },
+                onImeAction = { focusManager.moveFocus(FocusDirection.Right) },
             )
             Spacer(modifier = Modifier.width(6.dp))
             TextFieldContainer(
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f),
-                text = state.firstName,
-                name = "Vezetéknév",
+                text = state.lastName,
+                label = "Vezetéknév",
                 hasError = state.inputError is InputException.MissingFieldException && state.lastName.isBlank(),
                 onValueChange = { value ->
-                    onAction(Action.ChangeValue(
+                    onAction(RegisterAction.ChangeValue(
                         state.copy(lastName = value)
                     ))
                 },
-                imeAction = { focusManager.moveFocus(FocusDirection.Down) },
+                onImeAction = { focusManager.moveFocus(FocusDirection.Down) },
             )
         }
 
         TextFieldContainer(
             modifier = modifier,
             text = state.email,
-            name = "Email cím",
+            label = "Email cím",
             hasError = state.inputError is InputException.InvalidEmailException || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
             onValueChange = { value ->
-                onAction(Action.ChangeValue(
+                onAction(RegisterAction.ChangeValue(
                     state.copy(email = value)
                 ))
             },
-            imeAction = { focusManager.moveFocus(FocusDirection.Down) }
+            onImeAction = { focusManager.moveFocus(FocusDirection.Down) }
         )
 
         val passwordHasError = state.inputError is InputException.InvalidPasswordException || state.inputError is InputException.PasswordsNotMatchingException
         TextFieldContainer(
             modifier = modifier,
             text = state.password,
-            name = "Jelszó",
+            label = "Jelszó",
             hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
             isPasswordField = true,
             onValueChange = { value ->
-                onAction(Action.ChangeValue(
+                onAction(RegisterAction.ChangeValue(
                     state.copy(password = value)
                 ))
             },
-            imeAction = { focusManager.moveFocus(FocusDirection.Down) },
+            onImeAction = {
+                focusManager.moveFocus(FocusDirection.Down)
+            },
         )
         TextFieldContainer(
             modifier = modifier,
             text = state.passwordConfirmation,
-            name = "Jelszó újra",
+            label = "Jelszó újra",
             hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
             isPasswordField = true,
             onValueChange = { value ->
-                onAction(Action.ChangeValue(
+                onAction(RegisterAction.ChangeValue(
                     state.copy(password = value)
                 ))
             },
-            imeAction = { focusManager.moveFocus(FocusDirection.Down) },
+            onImeAction = {
+                focusManager.moveFocus(FocusDirection.Down)
+            },
         )
         InfoText(
             modifier = Modifier,
@@ -160,7 +164,9 @@ private fun RegisterContent(
                     contentColor = MaterialTheme.colorScheme.onSecondary
                 ),
                 enabled = !state.isLoading,
-                onClick = { onAction(Action.Submit) }
+                onClick = {
+                    onAction(RegisterAction.Submit)
+                }
             ){
                 Text(
                     text = "Regisztráció",

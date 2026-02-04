@@ -2,6 +2,9 @@ package com.jikokujo.profile.presentation.auth
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -13,15 +16,17 @@ import com.jikokujo.profile.presentation.ProfileState
 @Composable
 fun AuthPage(
     modifier: Modifier,
-    state: ProfileState,
     onAuthSuccess: () -> Unit
 ) {
+    Spacer(modifier = modifier.height(10.dp))
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Register(modifier = modifier)
+        Register(
+            modifier = modifier
+        )
         HorizontalDivider(
             modifier = modifier,
             thickness = 3.dp,
@@ -32,4 +37,5 @@ fun AuthPage(
             onAuthSuccess = onAuthSuccess
         )
     }
+    Spacer(modifier = modifier.height(10.dp))
 }

@@ -7,27 +7,27 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.jikokujo.schedule.presentation.SchedulePage
-import com.jikokujo.profile.presentation.ProfilePage
+import com.jikokujo.profile.presentation.ProfileNavRoot
 
-sealed interface Page : NavKey{
-    data object Schedule : Page
-    data object Profile : Page
+sealed interface MainPage : NavKey{
+    data object Schedule : MainPage
+    data object Profile : MainPage
 }
 
 @Composable
 fun NavigationRoot(
-    backstack: SnapshotStateList<Page>,
+    backstack: SnapshotStateList<MainPage>,
     modifier: Modifier
 ){
     NavDisplay(
         backStack = backstack,
         onBack = { backstack.removeLastOrNull() },
         entryProvider = entryProvider {
-            entry<Page.Schedule> {
+            entry<MainPage.Schedule> {
                 SchedulePage(modifier)
             }
-            entry<Page.Profile> {
-                ProfilePage(modifier)
+            entry<MainPage.Profile> {
+                ProfileNavRoot(modifier)
             }
         },
         //TODO: TRANSITION SPEC TO ADD
