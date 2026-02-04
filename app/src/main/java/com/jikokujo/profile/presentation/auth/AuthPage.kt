@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jikokujo.profile.presentation.ProfileState
-import com.jikokujo.profile.presentation.Action as ProfileAction
 
 @Composable
 fun AuthPage(

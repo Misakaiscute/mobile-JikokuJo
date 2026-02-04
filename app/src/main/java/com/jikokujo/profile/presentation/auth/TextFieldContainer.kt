@@ -4,7 +4,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,20 +26,35 @@ fun TextFieldContainer(
     imeAction: () -> Unit,
     isLastAction: Boolean = false
 ){
-    TextField(
+    OutlinedTextField(
         modifier = modifier,
         value = text,
         label = @Composable {
-            Text(name)
+            Text(
+                text = name,
+                style = Typography.bodyMedium.merge(
+                    color = Color.DarkGray
+                ),
+                maxLines = 1
+            )
         },
         placeholder = @Composable {
-            Text(name)
+            Text(
+                text = name,
+                style = Typography.bodyMedium.merge(
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                maxLines = 1
+            )
         },
         textStyle = Typography.bodyMedium,
-        colors = TextFieldDefaults.colors().copy(
-            focusedContainerColor = Color.Blue,
-            unfocusedContainerColor = MaterialTheme.colorScheme.primary,
-            errorContainerColor = MaterialTheme.colorScheme.error,
+        colors = OutlinedTextFieldDefaults.colors().copy(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            errorContainerColor = MaterialTheme.colorScheme.surface,
+            focusedIndicatorColor = MaterialTheme.colorScheme.tertiary,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.primary,
+            errorIndicatorColor = MaterialTheme.colorScheme.error,
             focusedTextColor = MaterialTheme.colorScheme.onSurface,
             unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             errorTextColor = MaterialTheme.colorScheme.error

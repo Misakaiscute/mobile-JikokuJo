@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jikokujo.core.data.ApiResult
 import com.jikokujo.profile.data.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class RegisterState(
@@ -28,15 +30,16 @@ sealed interface Action{
     data object Submit: Action
 }
 
+@HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val userRepository: UserRepository
 ): ViewModel() {
     private val _state = MutableStateFlow(RegisterState())
     val state = _state.asStateFlow()
 
-    fun onAction(action: Action) = when(action){
+    suspend fun onAction(action: Action) = when(action){
         is Action.ChangeValue -> changeValue(action.newState)
-        is Action.Submit -> viewModelScope.launch(Dispatchers.IO) { submit() }
+        is Action.Submit -> withContext(Dispatchers.IO) { submit() }
     }
 
     private fun changeValue(newState: RegisterState) = _state.update {

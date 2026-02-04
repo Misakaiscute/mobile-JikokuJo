@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -21,58 +22,78 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jikokujo.theme.AppTheme
 import com.jikokujo.theme.Typography
+import kotlinx.coroutines.launch
 
 @Composable
 fun Register(modifier: Modifier){
     val registerViewModel = viewModel<RegisterViewModel>()
+
+    RegisterContent(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp),
+        state = registerViewModel.state.collectAsStateWithLifecycle().value,
+        onAction = { action ->
+            registerViewModel.viewModelScope.launch { registerViewModel.onAction(action) }
+        }
+    )
+}
+
+@Composable
+private fun RegisterContent(
+    modifier: Modifier,
+    state: RegisterState,
+    onAction: (Action) -> Unit
+){
     val focusManager = LocalFocusManager.current
 
-    val state = registerViewModel.state.collectAsStateWithLifecycle().value
-    val heightModifier = modifier
-        .fillMaxWidth()
-        .height(50.dp)
-
     Column(
-        modifier = heightModifier,
+        modifier = Modifier,
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             text = "Regisztráció",
             style = Typography.titleLarge.merge(
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
         )
-        Spacer(modifier = modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
-            modifier = heightModifier,
+            modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
             TextFieldContainer(
-                modifier = modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f),
                 text = state.firstName,
                 name = "Keresztnév",
                 hasError = state.inputError is InputException.MissingFieldException && state.firstName.isBlank(),
                 onValueChange = { value ->
-                    registerViewModel.onAction(Action.ChangeValue(
+                    onAction(Action.ChangeValue(
                         state.copy(firstName = value)
                     ))
                 },
                 imeAction = { focusManager.moveFocus(FocusDirection.Right) },
             )
-            Spacer(modifier = modifier.weight(1f))
+            Spacer(modifier = Modifier.width(6.dp))
             TextFieldContainer(
-                modifier = modifier.fillMaxHeight(),
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f),
                 text = state.firstName,
                 name = "Vezetéknév",
                 hasError = state.inputError is InputException.MissingFieldException && state.lastName.isBlank(),
                 onValueChange = { value ->
-                    registerViewModel.onAction(Action.ChangeValue(
+                    onAction(Action.ChangeValue(
                         state.copy(lastName = value)
                     ))
                 },
@@ -81,12 +102,12 @@ fun Register(modifier: Modifier){
         }
 
         TextFieldContainer(
-            modifier = heightModifier,
+            modifier = modifier,
             text = state.email,
             name = "Email cím",
             hasError = state.inputError is InputException.InvalidEmailException || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
             onValueChange = { value ->
-                registerViewModel.onAction(Action.ChangeValue(
+                onAction(Action.ChangeValue(
                     state.copy(email = value)
                 ))
             },
@@ -101,36 +122,36 @@ fun Register(modifier: Modifier){
             hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
             isPasswordField = true,
             onValueChange = { value ->
-                registerViewModel.onAction(Action.ChangeValue(
+                onAction(Action.ChangeValue(
                     state.copy(password = value)
                 ))
             },
             imeAction = { focusManager.moveFocus(FocusDirection.Down) },
         )
         TextFieldContainer(
-            modifier = heightModifier,
+            modifier = modifier,
             text = state.passwordConfirmation,
             name = "Jelszó újra",
             hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
             isPasswordField = true,
             onValueChange = { value ->
-                registerViewModel.onAction(Action.ChangeValue(
+                onAction(Action.ChangeValue(
                     state.copy(password = value)
                 ))
             },
             imeAction = { focusManager.moveFocus(FocusDirection.Down) },
         )
         InfoText(
-            modifier = modifier,
+            modifier = Modifier,
             state = state
         )
         Row(
-            modifier = heightModifier,
+            modifier = modifier,
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxHeight()
                     .fillMaxWidth(4/5f),
                 shape = RoundedCornerShape(10),
@@ -139,7 +160,7 @@ fun Register(modifier: Modifier){
                     contentColor = MaterialTheme.colorScheme.onSecondary
                 ),
                 enabled = !state.isLoading,
-                onClick = { registerViewModel.onAction(Action.Submit) }
+                onClick = { onAction(Action.Submit) }
             ){
                 Text(
                     text = "Regisztráció",
@@ -183,5 +204,13 @@ private fun InfoText(
 @Preview(showBackground = true)
 @Composable
 private fun RegisterPreview(){
-    Register(modifier = Modifier)
+    AppTheme(dynamicColor = false) {
+        RegisterContent(
+            modifier = Modifier
+                .fillMaxWidth(9/10f)
+                .height(50.dp),
+            state = RegisterState(),
+            onAction = { _ -> }
+        )
+    }
 }
