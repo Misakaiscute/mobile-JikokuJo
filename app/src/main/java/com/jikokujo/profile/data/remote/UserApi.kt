@@ -6,6 +6,7 @@ import com.jikokujo.profile.data.model.User
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
@@ -14,16 +15,18 @@ import retrofit2.http.Path
 
 interface UserApi {
     @Headers("accept: application/json")
+    @FormUrlEncoded
     @POST("user/register")
     suspend fun register(
         @Field("first_name") firstName: String,
-        @Field("last_name") lastName: String,
+        @Field("second_name") lastName: String,
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("password_confirmation") passwordConfirmation: String,
     ): ResponseRoot<EmptyPayload>
 
     @Headers("accept: application/json")
+    @FormUrlEncoded
     @POST("user/login/{remember}")
     suspend fun login(
         @Field("email") email: String,
@@ -51,7 +54,8 @@ interface UserApi {
     ): ResponseRoot<EmptyPayload>
 
     @Headers("accept: application/json")
-    @DELETE("user/delete")
+    @FormUrlEncoded
+    @POST("routes/favourite/toggle")
     suspend fun toggleFavourites(
         @Header("Authorization") authToken: String,
         @Field("route_id") routeId: String,
