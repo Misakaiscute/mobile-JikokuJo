@@ -119,7 +119,7 @@ private fun RegisterContent(
             modifier = modifier,
             text = state.password,
             label = "Jelszó",
-            hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
+            hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.password.isBlank()),
             isPasswordField = true,
             onValueChange = { value ->
                 onAction(RegisterAction.ChangeValue(
@@ -134,11 +134,11 @@ private fun RegisterContent(
             modifier = modifier,
             text = state.passwordConfirmation,
             label = "Jelszó újra",
-            hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.email.isBlank()),
+            hasError = passwordHasError || (state.inputError is InputException.MissingFieldException && state.passwordConfirmation.isBlank()),
             isPasswordField = true,
             onValueChange = { value ->
                 onAction(RegisterAction.ChangeValue(
-                    state.copy(password = value)
+                    state.copy(passwordConfirmation = value)
                 ))
             },
             onImeAction = {

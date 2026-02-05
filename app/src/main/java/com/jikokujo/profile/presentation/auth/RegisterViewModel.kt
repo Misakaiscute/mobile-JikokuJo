@@ -92,7 +92,7 @@ class RegisterViewModel @Inject constructor(
             lastName = _state.value.lastName,
             email = _state.value.email,
             password = _state.value.password,
-            passwordConfirmation = _state.value.password
+            passwordConfirmation = _state.value.passwordConfirmation
         )
         when(requestResult){
             is ApiResult.Error -> _state.update {
