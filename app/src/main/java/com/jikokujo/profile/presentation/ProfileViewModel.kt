@@ -44,6 +44,7 @@ class ProfileViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isUserLoggedIn = userRepository.userAccessToken != null,
+                    backStack = mutableStateListOf(ProfilePage.Main),
                     isLoading = false
                 )
             }
