@@ -131,7 +131,7 @@ private fun LoginContent(
                 }
             ){
                 Text(
-                    text = "Regisztráció",
+                    text = "Bejelentkezés",
                     style = Typography.bodyLarge
                 )
             }

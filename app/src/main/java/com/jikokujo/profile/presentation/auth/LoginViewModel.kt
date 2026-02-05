@@ -79,10 +79,16 @@ class LoginViewModel @Inject constructor(
             remember = _state.value.rememberUser
         )
         if (userRepository.userAccessToken != null){
+            _state.update {
+                LoginState()
+            }
             onSuccess()
         } else {
             _state.update {
-                it.copy(submitError = "Hibás email cím vagy jelszó")
+                it.copy(
+                    submitError = "Hibás email cím vagy jelszó",
+                    isLoading = false
+                )
             }
         }
     }
