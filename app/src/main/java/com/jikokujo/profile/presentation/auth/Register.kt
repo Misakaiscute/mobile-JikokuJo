@@ -84,7 +84,7 @@ private fun RegisterContent(
                 },
                 onImeAction = { focusManager.moveFocus(FocusDirection.Right) },
             )
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             TextFieldContainer(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -100,7 +100,7 @@ private fun RegisterContent(
                 onImeAction = { focusManager.moveFocus(FocusDirection.Down) },
             )
         }
-
+        Spacer(modifier = Modifier.height(4.dp))
         TextFieldContainer(
             modifier = modifier,
             text = state.email,

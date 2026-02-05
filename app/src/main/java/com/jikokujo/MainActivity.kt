@@ -90,7 +90,8 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavigationRoot(
                         backstack = backstack,
-                        modifier = Modifier.padding(innerPadding))
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }

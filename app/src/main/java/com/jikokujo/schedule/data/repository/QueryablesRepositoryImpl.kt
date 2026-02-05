@@ -1,10 +1,9 @@
 package com.jikokujo.schedule.data.repository
 
 import android.util.Log
-import com.jikokujo.schedule.data.remote.QueryablesApi
-import com.jikokujo.schedule.data.repository.QueryablesRepository
 import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
+import com.jikokujo.schedule.data.remote.QueryablesApi
 
 class QueryablesRepositoryImpl(
     private val api: QueryablesApi

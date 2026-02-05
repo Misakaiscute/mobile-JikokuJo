@@ -47,11 +47,9 @@ fun TextFieldContainer(
     )
     Spacer(modifier = Modifier.height(4.dp))
     BasicTextField(
+        modifier = modifier,
         value = text,
         onValueChange = onValueChange,
-        modifier = modifier,
-        enabled = true,
-        readOnly = false,
         textStyle = Typography.bodyMedium.merge(
             color = MaterialTheme.colorScheme.onSurface
         ),
@@ -64,7 +62,6 @@ fun TextFieldContainer(
             onDone = { onImeAction() }
         ),
         singleLine = true,
-        maxLines = 1,
         decorationBox = @Composable { innerTextField ->
             OutlinedTextFieldDefaults.DecorationBox(
                 value = text,
@@ -79,21 +76,17 @@ fun TextFieldContainer(
                         maxLines = 1
                     )
                 },
-                leadingIcon = null,
-                trailingIcon = null,
-                prefix = null,
-                suffix = null,
                 singleLine = true,
                 enabled = true,
                 isError = hasError,
                 colors = colors,
                 contentPadding = PaddingValues(
-                    start = 5.dp,
+                    start = 10.dp,
                     end = 0.dp,
                     top = 0.dp,
                     bottom = 0.dp
                 ),
-                interactionSource = interactionSource,
+                interactionSource = interactionSource
             )
         }
     )
