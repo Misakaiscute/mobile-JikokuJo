@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,11 +16,12 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.getSelectedDate
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -31,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.jikokujo.theme.AppTheme
 import com.jikokujo.theme.Typography
 import java.time.LocalDate
 
@@ -61,7 +64,14 @@ fun DateTimePicker(
         Row(
             modifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(bottomStart = 30f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
+                .clip(
+                    RoundedCornerShape(
+                        bottomStart = 30f,
+                        bottomEnd = 0f,
+                        topStart = 0f,
+                        topEnd = 0f
+                    )
+                )
                 .background(MaterialTheme.colorScheme.surface),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
@@ -123,18 +133,18 @@ fun DateTimePicker(
     }
     when(state.shownDialog){
         Dialogs.TimePicker -> {
-            PickerDialog(
+            TimePickerDialog(
                 onDismiss = { onAction(Action.ShowDialog(null)) },
                 onConfirm = { onAction(Action.ChangeFromTime(
                     hour = timeInputState.hour,
                     minute = timeInputState.minute
                 )) }
             ) {
-                TimeInput(timeInputState)
+                TimePicker(state = timeInputState)
             }
         }
         Dialogs.DatePicker -> {
-            PickerDialog(
+            DatePickerDialogWrapper(
                 onDismiss = { onAction(Action.ShowDialog(null)) },
                 onConfirm = { onAction(Action.ChangeFromDate(
                     year = datePickerState.getSelectedDate()!!.year,
@@ -142,19 +152,20 @@ fun DateTimePicker(
                     day = datePickerState.getSelectedDate()!!.dayOfMonth
                 )) }
             ) {
-                DatePicker(datePickerState)
+                DatePicker(state = datePickerState)
             }
         }
         else -> {}
     }
 }
 @Composable
-private fun PickerDialog(
+private fun TimePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ){
     AlertDialog(
+        modifier = Modifier.padding(horizontal = 0.dp),
         onDismissRequest = onDismiss,
         dismissButton = {
             TextButton(onClick = onDismiss) {
@@ -169,6 +180,29 @@ private fun PickerDialog(
         text = { content() }
     )
 }
+@Composable
+private fun DatePickerDialogWrapper(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable () -> Unit,
+){
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Bezárás")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("OK")
+            }
+        }
+    ){
+        content()
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun DateTimePickerPreview(){
@@ -180,4 +214,31 @@ private fun DateTimePickerPreview(){
         state = ScheduleSearchState(),
         onAction = {}
     )
+}
+@Preview(showBackground = true)
+@Composable
+private fun DatePickerDialogPreview(){
+    val state = rememberDatePickerState()
+    AppTheme(dynamicColor = false) {
+        DatePickerDialogWrapper(
+            onDismiss = {},
+            onConfirm = {}
+        ) {
+            DatePicker(state = state)
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
+@Composable
+private fun TimePickerDialogPreview(){
+    val state = rememberTimePickerState(8, 12, true)
+    AppTheme(dynamicColor = false) {
+        TimePickerDialog(
+            onDismiss = {},
+            onConfirm = {}
+        ) {
+            TimePicker(state = state)
+        }
+    }
 }
