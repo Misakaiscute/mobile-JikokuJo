@@ -14,6 +14,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -25,6 +26,7 @@ import com.jikokujo.R
 import com.jikokujo.core.utils.rawFile
 import com.jikokujo.schedule.data.model.getColor
 import com.jikokujo.theme.Typography
+import kotlinx.coroutines.launch
 import org.mapsforge.core.graphics.Cap
 import org.mapsforge.core.graphics.Join
 import org.mapsforge.core.graphics.Paint
@@ -39,16 +41,19 @@ import org.mapsforge.map.layer.cache.TileCache
 import org.mapsforge.map.layer.overlay.Polyline
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
+import kotlin.collections.map
 
 @Composable
 fun DisplayMapsforgeMap(
     modifier: Modifier,
     state: MapState,
+    layerState: MapLayerState,
     onAction: (Action) -> Unit
 ){
     MapsforgeMap(
         modifier = modifier,
-        state = state
+        state = state,
+        layerState = layerState
     )
     Box(
         modifier = modifier
@@ -98,9 +103,12 @@ fun DisplayMapsforgeMap(
 @Composable
 fun MapsforgeMap(
     modifier: Modifier,
-    state: MapState
+    state: MapState,
+    layerState: MapLayerState
 ){
     val localContext = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     val mapData = MapFile(localContext.rawFile(R.raw.budapest))
 
     AndroidView(
@@ -141,42 +149,78 @@ fun MapsforgeMap(
                     Log.e("MAPSFORGE_MAP", "Mapsforge map failed to load: ${e.message}")
                 }
             }
-
-            //Handle zooming in and out
-            if (mapView.model.mapViewPosition.zoomLevel < state.zoomLevel){
-                mapView.model.mapViewPosition.zoomIn(true)
-            } else if (mapView.model.mapViewPosition.zoomLevel > state.zoomLevel){
-                mapView.model.mapViewPosition.zoomOut(true)
-            }
-            mapView.model.mapViewPosition.rotation = Rotation(state.rotation, 0f, 0f)
-
-            //Placing & clearing line of a trip
-            if (state.pathPoints.count() > 1 && state.stops.count() > 1) {
-                val paint: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
-                    color = state.routeAssociated!!.getColor().toArgb()
-                    strokeWidth = 8f
-                    setStyle(Style.STROKE)
-                    setStrokeCap(Cap.ROUND)
-                    setStrokeJoin(Join.ROUND)
+            scope.launch {
+                //Handle zooming in and out
+                if (mapView.model.mapViewPosition.zoomLevel < state.zoomLevel){
+                    mapView.model.mapViewPosition.zoomIn(true)
+                } else if (mapView.model.mapViewPosition.zoomLevel > state.zoomLevel){
+                    mapView.model.mapViewPosition.zoomOut(true)
                 }
-                val route: List<LatLong> = state.pathPoints.map { pathPoint ->
-                    LatLong(pathPoint.lat, pathPoint.lon)
-                }.toList()
-                val polyline = Polyline(
-                    paint,
-                    AndroidGraphicFactory.INSTANCE
-                )
-
-                polyline.setPoints(route)
-                mapView.layerManager.layers.add(polyline)
-            } else {
-                if (mapView.layerManager.layers.count() > 1){
-                    mapView.layerManager.layers.remove(
-                        mapView.layerManager.layers.count() - 1,
-                        true
+                mapView.model.mapViewPosition.rotation = Rotation(state.rotation, 0f, 0f)
+            }
+            scope.launch {
+                //Placing & clearing line of a trip
+                if (!layerState.pathPoints.isEmpty() && !layerState.stops.isEmpty()) {
+                    if (mapView.layerManager.layers.count() > 1){
+                        var index = mapView.layerManager.layers.count() - 1
+                        while (index > 0) {
+                            mapView.layerManager.layers.remove(index, true)
+                            index--
+                        }
+                    }
+                    val paint: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
+                        color = layerState.routeAssociated!!.getColor().toArgb()
+                        strokeWidth = 20f
+                        setStyle(Style.STROKE)
+                        setStrokeCap(Cap.ROUND)
+                        setStrokeJoin(Join.ROUND)
+                    }
+                    val route: List<LatLong> = layerState.pathPoints.map { pathPoint ->
+                        LatLong(pathPoint.location.lat, pathPoint.location.lon)
+                    }.toList()
+                    val routePolyline = Polyline(
+                        paint,
+                        AndroidGraphicFactory.INSTANCE
                     )
+                    routePolyline.setPoints(route)
+                    mapView.layerManager.layers.add(routePolyline)
+                } else {
+                    if (mapView.layerManager.layers.count() > 1){
+                        var index = mapView.layerManager.layers.count() - 1
+                        while (index > 0) {
+                            mapView.layerManager.layers.remove(index)
+                            index--
+                        }
+                    }
                 }
             }
+//            if (layerState.pathPoints.count() > 1 && layerState.stops.count() > 1){
+//                if (mapView.layerManager.layers.count() < 2){
+//                    val paint: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
+//                        color = layerState.routeAssociated!!.getColor().toArgb()
+//                        strokeWidth = 20f
+//                        setStyle(Style.STROKE)
+//                        setStrokeCap(Cap.ROUND)
+//                        setStrokeJoin(Join.ROUND)
+//                    }
+//                    val route: List<LatLong> = layerState.pathPoints.map { pathPoint ->
+//                        LatLong(pathPoint.location.lat, pathPoint.location.lon)
+//                    }.toList()
+//                    val routePolyline = Polyline(
+//                        paint,
+//                        AndroidGraphicFactory.INSTANCE
+//                    )
+//                    routePolyline.setPoints(route)
+//                    mapView.layerManager.layers.add(routePolyline)
+//                }
+//            } else {
+//                if (mapView.layerManager.layers.count() > 1){
+//                    mapView.layerManager.layers.remove(
+//                        mapView.layerManager.layers.count() - 1,
+//                        true
+//                    )
+//                }
+//            }
         }
     )
 }
