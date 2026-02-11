@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.jikokujo.core.data.Payload
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
+import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
 
@@ -17,9 +18,9 @@ data class GetTripsObj(
     @SerializedName("trips")
     val trips: List<Trip>
 ): Payload
-data class GetShapeForTripObj(
-    @SerializedName("shapes")
-    val shapes: List<Location.RoutePathPoint>
+data class GetShapesForTripObj(
+    @SerializedName("points")
+    val shapes: List<RoutePathPoint>
 ): Payload
 data class GetStopsForTripObj(
     @SerializedName("stops")
