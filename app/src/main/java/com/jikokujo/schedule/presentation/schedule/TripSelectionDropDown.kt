@@ -37,7 +37,7 @@ import com.jikokujo.theme.Typography
 fun TripSelectionDropDown(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Any,
+    onAction: (Action) -> Unit,
     getRoute: (String) -> Queryable.Route,
     displayOnMap: (Trip, Queryable.Route) -> Unit
 ){
@@ -87,10 +87,10 @@ fun TripSelectionDropDown(
                         .clickable(
                             enabled = !state.isLoading,
                             onClick = {
-                                onAction(Action.SelectTrip(state.trips[i]))
+                                onAction(Action.SelectTrip(trip = state.trips[i]))
                                 displayOnMap(
-                                    state.selectedTrip!!,
-                                    getRoute(state.selectedTrip.routeId)
+                                    state.trips[i],
+                                    getRoute(state.trips[i].routeId)
                                 )
                             }
                         ),
