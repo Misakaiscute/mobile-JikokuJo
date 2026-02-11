@@ -48,6 +48,7 @@ fun SchedulePage(modifier: Modifier){
             DisplayMapsforgeMap(
                 modifier = Modifier,
                 state = mapViewModel.state.collectAsStateWithLifecycle().value,
+                layerState = mapViewModel.mapLayerState.collectAsStateWithLifecycle().value,
                 onAction = { action ->
                     mapViewModel.viewModelScope.launch {
                         mapViewModel.onAction(action)

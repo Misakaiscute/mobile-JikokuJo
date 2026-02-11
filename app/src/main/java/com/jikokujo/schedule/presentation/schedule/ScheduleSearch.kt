@@ -33,6 +33,7 @@ fun ScheduleSearch(
         when (state.dropDownShown){
             DropDowns.TripSelection -> {
                 if (state.selectedTrip != null) {
+                    removeTripFromMap()
                     onAction(Action.UnselectTrip)
                 } else if (state.dropDownExpanded){
                     onAction(Action.ChangeDropDownState(false))
@@ -74,7 +75,7 @@ fun ScheduleSearch(
         } else {
             when (state.dropDownShown){
                 DropDowns.QueryableSelection -> {
-                    removeTripFromMap.invoke()
+                    removeTripFromMap()
                     SearchBar(
                         modifier = modifier,
                         state = state,
