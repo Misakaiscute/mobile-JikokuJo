@@ -33,13 +33,13 @@ interface QueryablesApi {
     ): ResponseRoot<GetTripsObj>
 
     @Headers("accept: application/json")
-    @GET("route/{tripId}/possible-shapes")
+    @GET("trip/{tripId}/shapes")
     suspend fun getShapesForTrip(
         @Path("tripId") tripId: String
-    ): ResponseRoot<GetShapeForTripObj>
+    ): ResponseRoot<GetShapesForTripObj>
 
     @Headers("accept: application/json")
-    @GET("route/{tripId}/possible-shapes")
+    @GET("trip/{tripId}/stops")
     suspend fun getStopsForTrip(
         @Path("tripId") tripId: String
     ): ResponseRoot<GetStopsForTripObj>
