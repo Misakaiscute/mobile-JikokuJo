@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
@@ -125,7 +126,6 @@ private fun TripSelectionDropDownItem(
     ) {
         if (trip == null){
             Text(
-                //modifier = Modifier.padding(horizontal = 7.dp),
                 text = "Nincs indulás kiválasztva!",
                 style = Typography.bodyMedium.merge(
                     color = MaterialTheme.colorScheme.onSurface,
@@ -165,7 +165,9 @@ private fun TripSelectionDropDownItem(
                 text = route!!.shortName + " – " + trip.headSign,
                 style = Typography.bodyMedium.merge(
                     color = itemTextColor
-                )
+                ),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
             )
         }
     }
