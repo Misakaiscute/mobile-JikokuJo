@@ -165,7 +165,7 @@ class ScheduleSearchViewModel @Inject constructor(
     }
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private suspend fun selectTrip(trip: Trip) {
-        if (queryableRepository.queryables is ApiResult.Success){
+        if (tripsRepository.trips is ApiResult.Success){
             val tripExists: Boolean = (tripsRepository.trips as ApiResult.Success).data.find {
                 it.id == trip.id
             } != null
@@ -174,17 +174,8 @@ class ScheduleSearchViewModel @Inject constructor(
                     it.copy(
                         selectedTrip = trip,
                         dropDownExpanded = false,
-                        isLoading = true
                     )
                 }
-
-                tripsRepository.getShapes(trip = trip)
-                tripsRepository.getStops(trip = trip)
-
-                _state.update {
-                    it.copy(isLoading = false)
-                }
-
             } else {
                 throw IllegalArgumentException("Selecting a queryable not in the dataset is impossible")
             }
