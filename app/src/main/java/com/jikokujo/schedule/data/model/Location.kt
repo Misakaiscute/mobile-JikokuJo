@@ -7,13 +7,12 @@ sealed interface Location {
         @SerializedName("lon") val lon: Double,
         @SerializedName("lat") val lat: Double
     ): Location
-    data class RoutePathPoint(
-        @SerializedName("id") val id: String,
-        @SerializedName("lon") val lon: Double,
-        @SerializedName("lat") val lat: Double
-    ): Location
     data class Stop(
         @SerializedName("lon") val lon: Double,
         @SerializedName("lat") val lat: Double
     ): Location
 }
+data class RoutePathPoint(
+    @SerializedName("sequence") val order: Int,
+    @SerializedName("location") val location: Location.Auxiliary
+)
