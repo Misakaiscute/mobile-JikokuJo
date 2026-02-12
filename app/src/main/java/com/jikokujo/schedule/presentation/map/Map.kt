@@ -14,27 +14,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.jikokujo.schedule.data.model.getColor
 import com.jikokujo.theme.Typography
-import kotlinx.coroutines.launch
-import org.mapsforge.core.graphics.Cap
-import org.mapsforge.core.graphics.Join
-import org.mapsforge.core.graphics.Paint
-import org.mapsforge.core.graphics.Style
-import org.mapsforge.core.model.LatLong
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
 import org.mapsforge.map.android.view.MapView
-import org.mapsforge.map.layer.overlay.Polyline
-import kotlin.collections.map
 
 @Composable
 fun DisplayMapsforgeMap(
