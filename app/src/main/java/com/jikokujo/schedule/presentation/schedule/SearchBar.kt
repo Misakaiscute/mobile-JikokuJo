@@ -48,7 +48,7 @@ fun SearchBar(
                 onAction(Action.ChangeSearch(s))
             }
     }
-    LaunchedEffect(state.selectedQueryable) {
+    LaunchedEffect(state.searchString) {
         if (searchString.value != state.searchString){
             searchString.value = state.searchString
         }
@@ -91,11 +91,13 @@ fun SearchBar(
                 if (state.selectedQueryable != null){
                     Icon(
                         modifier = modifier
-                            .fillMaxHeight(4/5f)
+                            .fillMaxHeight()
                             .clickable(
                                 role = Role.Button,
                                 onClickLabel = "Search",
-                                onClick = { onAction(Action.Search) }
+                                onClick = {
+                                    onAction(Action.Search)
+                                }
                             ),
                         painter = painterResource(R.drawable.baseline_search_24),
                         contentDescription = "select",
@@ -104,11 +106,13 @@ fun SearchBar(
                 } else {
                     Icon(
                         modifier = modifier
-                            .fillMaxHeight(4/5f)
+                            .fillMaxHeight(2/3f)
                             .clickable(
                                 role = Role.Button,
                                 onClickLabel = "Unselect queryable",
-                                onClick = { onAction(Action.UnselectQueryable) }
+                                onClick = {
+                                    onAction(Action.UnselectQueryable)
+                                }
                             ),
                         painter = painterResource(R.drawable.trashcan),
                         contentDescription = "unselect",
