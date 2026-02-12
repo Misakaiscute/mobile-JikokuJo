@@ -23,6 +23,7 @@ data class MapState(
 )
 
 data class MapLayerState(
+    val shapeId: String? = null,
     val routeAssociated: Queryable.Route? = null,
     val pathPoints: List<RoutePathPoint> = listOf(),
     val stops: List<StopWithLocationAndStopTime> = listOf(),
@@ -67,40 +68,51 @@ class MapViewModel @Inject constructor(
         tripsRepository.getStops(trip)
 
         if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Success && tripsRepository.storedStops[trip.id] is ApiResult.Success){
-            _mapLayerState.update {
-                it.copy(
-                    routeAssociated = routeAssociated,
-                    pathPoints = (tripsRepository.storedShapes[trip.shapeId] as ApiResult.Success).data,
-                    stops = (tripsRepository.storedStops[trip.id] as ApiResult.Success).data,
-                )
-            }
-            _state.update {
+            successfulTripSelect(
+                trip = trip,
+                routeAssociated = routeAssociated
+            )
+        } else {
+            failedTripSelect(trip)
+        }
+    }
+    private fun successfulTripSelect(trip: Trip, routeAssociated: Queryable.Route){
+        _mapLayerState.update {
+            it.copy(
+                shapeId = trip.shapeId,
+                routeAssociated = routeAssociated,
+                pathPoints = (tripsRepository.storedShapes[trip.shapeId] as ApiResult.Success).data,
+                stops = (tripsRepository.storedStops[trip.id] as ApiResult.Success).data,
+            )
+        }
+        _state.update {
+            it.copy(
+                isLoading = false,
+                error = null
+            )
+        }
+    }
+    private fun failedTripSelect(trip: Trip){
+        _state.update {
+            if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Error){
                 it.copy(
                     isLoading = false,
-                    error = null
+                    error = "${(tripsRepository.storedShapes[trip.shapeId] as ApiResult.Error).errorMsg} Retry?"
                 )
-            }
-        } else {
-            _state.update {
-                if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Error){
-                    it.copy(
-                        isLoading = false,
-                        error = "${(tripsRepository.storedShapes[trip.shapeId] as ApiResult.Error).errorMsg} Retry?"
-                    )
-                } else {
-                    it.copy(
-                        isLoading = false,
-                        error = "${(tripsRepository.storedStops[trip.id] as ApiResult.Error).errorMsg} Retry?"
-                    )
-                }
-            }
-            _mapLayerState.update {
+            } else {
                 it.copy(
-                    routeAssociated = null,
-                    pathPoints = listOf(),
-                    stops = listOf()
+                    isLoading = false,
+                    error = "${(tripsRepository.storedStops[trip.id] as ApiResult.Error).errorMsg} Retry?"
                 )
             }
+        }
+        _mapLayerState.update {
+            it.copy(
+                shapeId = null,
+                routeAssociated = null,
+                pathPoints = listOf(),
+                stops = listOf()
+            )
         }
     }
     private fun unselectTrip() {
@@ -109,6 +121,7 @@ class MapViewModel @Inject constructor(
         }
         _mapLayerState.update {
             it.copy(
+                shapeId = null,
                 routeAssociated = null,
                 pathPoints = listOf(),
                 stops = listOf()
