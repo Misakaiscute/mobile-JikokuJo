@@ -111,12 +111,7 @@ fun MapsforgeMap(
             mapActionHandler.handleZoom(state.zoomLevel)
             mapActionHandler.handleRotation(state.rotation)
 
-            mapActionHandler.handleTrip(
-                shapeId = layerState.shapeId,
-                pathPoints = layerState.pathPoints,
-                routeAssociated = layerState.routeAssociated,
-                stops = layerState.stops
-            )
+            mapActionHandler.handleTrip(layerState)
         }
     )
 }

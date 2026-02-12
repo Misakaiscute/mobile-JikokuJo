@@ -24,6 +24,7 @@ data class MapState(
 
 data class MapLayerState(
     val shapeId: String? = null,
+    val selectedThrough: Queryable? = null,
     val routeAssociated: Queryable.Route? = null,
     val pathPoints: List<RoutePathPoint> = listOf(),
     val stops: List<StopWithLocationAndStopTime> = listOf(),
@@ -32,7 +33,11 @@ data class MapLayerState(
 sealed interface Action{
     data class ChangeZoomLevel(val zoomIn: Boolean): Action
     data class Rotate(val rotation: Float): Action
-    data class SelectTrip(val trip: Trip, val routeAssociated: Queryable.Route): Action
+    data class SelectTrip(
+        val trip: Trip,
+        val routeAssociated: Queryable.Route,
+        val selectedThrough: Queryable
+    ): Action
     data object UnselectTrip: Action
 }
 
@@ -49,11 +54,17 @@ class MapViewModel @Inject constructor(
     suspend fun onAction(action: Action) = when(action){
         is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
         is Action.Rotate -> rotate(action.rotation)
-        is Action.SelectTrip -> withContext(Dispatchers.IO) { selectTrip(action.trip, action.routeAssociated) }
+        is Action.SelectTrip -> withContext(Dispatchers.IO) {
+            selectTrip(action.trip, action.routeAssociated, action.selectedThrough)
+        }
         is Action.UnselectTrip -> unselectTrip()
     }
     @Throws(IllegalStateException::class, IllegalArgumentException::class)
-    private suspend fun selectTrip(trip: Trip, routeAssociated: Queryable.Route) {
+    private suspend fun selectTrip(
+        trip: Trip,
+        routeAssociated: Queryable.Route,
+        selectedThrough: Queryable
+    ) {
         if (tripsRepository.trips is ApiResult.Error){
             throw IllegalStateException("Fetched trips can't be ApiResult.Error, if a trip was selected")
         } else if ((tripsRepository.trips as ApiResult.Success).data.find { t -> t.id == trip.id } == null){
@@ -70,16 +81,22 @@ class MapViewModel @Inject constructor(
         if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Success && tripsRepository.storedStops[trip.id] is ApiResult.Success){
             successfulTripSelect(
                 trip = trip,
-                routeAssociated = routeAssociated
+                routeAssociated = routeAssociated,
+                selectedThrough = selectedThrough
             )
         } else {
             failedTripSelect(trip)
         }
     }
-    private fun successfulTripSelect(trip: Trip, routeAssociated: Queryable.Route){
+    private fun successfulTripSelect(
+        trip: Trip,
+        routeAssociated: Queryable.Route,
+        selectedThrough: Queryable
+    ){
         _mapLayerState.update {
             it.copy(
                 shapeId = trip.shapeId,
+                selectedThrough = selectedThrough,
                 routeAssociated = routeAssociated,
                 pathPoints = (tripsRepository.storedShapes[trip.shapeId] as ApiResult.Success).data,
                 stops = (tripsRepository.storedStops[trip.id] as ApiResult.Success).data,

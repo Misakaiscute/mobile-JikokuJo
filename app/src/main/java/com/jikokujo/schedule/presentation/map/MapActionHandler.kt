@@ -12,6 +12,7 @@ import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.getColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.mapsforge.core.graphics.Cap
 import org.mapsforge.core.graphics.Join
@@ -86,47 +87,60 @@ class MapActionHandler {
             0f
         )
     }
-    fun handleTrip(
-        shapeId: String?,
-        pathPoints: List<RoutePathPoint>,
-        stops: List<StopWithLocationAndStopTime>,
-        routeAssociated: Queryable.Route?
-    ) = coroutineScope.launch {
+    fun handleTrip(layerState: MapLayerState) = coroutineScope.launch {
         val onlyMapVisible: Boolean = mapView.layerManager.layers.count() <= 1
-        val tripAvailable: Boolean = pathPoints.isNotEmpty() && stops.isNotEmpty()
+        val tripAvailable: Boolean = layerState.pathPoints.isNotEmpty() && layerState.stops.isNotEmpty()
         if (onlyMapVisible) {
             if (tripAvailable) {
-                shownShapeId = shapeId
-                launch {
-                    addTripPolyline(
-                        pathPoints = pathPoints,
-                        routeAssociated = routeAssociated
+                shownShapeId = layerState.shapeId
+                val tripPolyline = async {
+                    return@async produceTripPolyline(
+                        pathPoints = layerState.pathPoints,
+                        stops = layerState.stops,
+                        routeAssociated = layerState.routeAssociated,
+                        selectedThrough = layerState.selectedThrough,
                     )
                 }
-                launch {
-                    addTripStops(
-                        stops = stops,
-                        routeAssociated = routeAssociated
+                val tripStops = async {
+                    return@async produceTripStops(
+                        stops = layerState.stops,
+                        routeAssociated = layerState.routeAssociated,
+                        selectedThrough = layerState.selectedThrough
                     )
+                }
+                tripPolyline.await().forEach {
+                    mapView.layerManager.layers.add(it)
+                }
+                tripStops.await().forEach {
+                    mapView.layerManager.layers.add(it)
                 }
             }
         } else {
             if (tripAvailable) {
-                val tripIdChanged: Boolean = shownShapeId != shapeId
+                val tripIdChanged: Boolean = shownShapeId != layerState.shapeId
                 if (tripIdChanged) {
-                    shownShapeId = shapeId
+                    shownShapeId = layerState.shapeId
                     clearLayersAboveMap()
-                    launch {
-                        addTripPolyline(
-                            pathPoints = pathPoints,
-                            routeAssociated = routeAssociated
+                    val tripPolyline = async {
+                        return@async produceTripPolyline(
+                            pathPoints = layerState.pathPoints,
+                            stops = layerState.stops,
+                            routeAssociated = layerState.routeAssociated,
+                            selectedThrough = layerState.selectedThrough,
                         )
                     }
-                    launch {
-                        addTripStops(
-                            stops = stops,
-                            routeAssociated = routeAssociated
+                    val tripStops = async {
+                        return@async produceTripStops(
+                            stops = layerState.stops,
+                            routeAssociated = layerState.routeAssociated,
+                            selectedThrough = layerState.selectedThrough
                         )
+                    }
+                    tripPolyline.await().forEach {
+                        mapView.layerManager.layers.add(it)
+                    }
+                    tripStops.await().forEach {
+                        mapView.layerManager.layers.add(it)
                     }
                 }
             } else {
@@ -135,41 +149,134 @@ class MapActionHandler {
             }
         }
     }
-    private fun addTripPolyline(pathPoints: List<RoutePathPoint>, routeAssociated: Queryable.Route?) {
+    private fun produceTripPolyline(
+        pathPoints: List<RoutePathPoint>,
+        stops: List<StopWithLocationAndStopTime>,
+        routeAssociated: Queryable.Route?,
+        selectedThrough: Queryable?
+    ): List<Polyline> {
+        val stroke = 15f
         val paint: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
             color = routeAssociated!!.getColor().toArgb()
-            strokeWidth = 15f
+            strokeWidth = stroke
             setStyle(Style.STROKE)
             setStrokeCap(Cap.ROUND)
             setStrokeJoin(Join.ROUND)
         }
+        val wasStopSelected = selectedThrough as? Queryable.Stop != null
+        if (wasStopSelected) {
+            return polylineThroughStop(
+                pathPoints = pathPoints,
+                stops = stops,
+                stopId = selectedThrough.id,
+                paintAfterStop = paint,
+                stroke = stroke
+            )
+        } else {
+            return polylineThroughRoute(
+                pathPoints = pathPoints,
+                paint = paint
+            )
+        }
+    }
+    private fun polylineThroughRoute(
+        pathPoints: List<RoutePathPoint>,
+        paint: Paint
+    ): List<Polyline>{
         val route: List<LatLong> = pathPoints.map { pathPoint ->
             LatLong(pathPoint.location.lat, pathPoint.location.lon)
         }.toList()
         val routePolyline = Polyline(
             paint,
             AndroidGraphicFactory.INSTANCE
-        )
-        routePolyline.setPoints(route)
-        mapView.layerManager.layers.add(routePolyline)
+        ).apply {
+            setPoints(route)
+        }
+        return listOf(routePolyline)
     }
-    fun addTripStops(stops: List<StopWithLocationAndStopTime>, routeAssociated: Queryable.Route?) {
+    private fun polylineThroughStop(
+        pathPoints: List<RoutePathPoint>,
+        stops: List<StopWithLocationAndStopTime>,
+        stopId: String,
+        paintAfterStop: Paint,
+        stroke: Float
+    ): List<Polyline>{
+        val paintBeforeStop: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
+            color = Color.Black.toArgb()
+            strokeWidth = stroke
+            setStyle(Style.STROKE)
+            setStrokeCap(Cap.ROUND)
+            setStrokeJoin(Join.ROUND)
+        }
+        val routeBeforeStop: MutableList<LatLong> = mutableListOf()
+        val routeAfterStop: MutableList<LatLong> = mutableListOf()
+        val switchingPoint = MapUtils.findClosestLocationIndex(
+            list = pathPoints,
+            point = stops.find { it.id == stopId }!!.location
+        )
+        for (i in 0..<pathPoints.count()){
+            if (i < switchingPoint){
+                routeBeforeStop.add(LatLong(
+                    pathPoints[i].location.lat,
+                    pathPoints[i].location.lon
+                ))
+            } else {
+                routeAfterStop.add(LatLong(
+                    pathPoints[i].location.lat,
+                    pathPoints[i].location.lon
+                ))
+            }
+        }
+        val routeAfterStopPolyline = Polyline(paintAfterStop, AndroidGraphicFactory.INSTANCE).apply{
+            setPoints(routeAfterStop)
+        }
+        val routeBeforeStopPolyline = Polyline(paintBeforeStop, AndroidGraphicFactory.INSTANCE).apply {
+            setPoints(routeBeforeStop)
+        }
+
+        return listOf(routeBeforeStopPolyline, routeAfterStopPolyline)
+    }
+    fun produceTripStops(
+        stops: List<StopWithLocationAndStopTime>,
+        routeAssociated: Queryable.Route?,
+        selectedThrough: Queryable?
+    ): List<Marker> {
+        val markerSize = 20f
         val markerBitmap = MapUtils.createSimpleDotBitmap(
-            radius = 20f,
+            radius = markerSize,
             color = routeAssociated?.getColor() ?: Color.Black
         )
-        val markers: List<Marker> = stops.map { stop ->
-            Marker(
-                LatLong(stop.location.lat, stop.location.lon),
-                markerBitmap,
-                0,
-                0
+        val markers: MutableList<Marker> = mutableListOf()
+        val wasStopSelected = selectedThrough as? Queryable.Stop != null
+        if (wasStopSelected) {
+            val markerBitmapBeforeStop = MapUtils.createSimpleDotBitmap(
+                radius = markerSize,
+                color = Color.Black
             )
+            val selectedStopArrivalTime = stops.find {
+                it.id == selectedThrough.id
+            }!!.arrivalTime
+            stops.forEach { stop ->
+                markers.add(Marker(
+                    LatLong(stop.location.lat, stop.location.lon),
+                    if (stop.arrivalTime >= selectedStopArrivalTime) markerBitmap else markerBitmapBeforeStop,
+                    0,
+                    0
+                ))
+            }
+        } else {
+            stops.forEach { stop ->
+                markers.add(Marker(
+                    LatLong(stop.location.lat, stop.location.lon),
+                    markerBitmap,
+                    0,
+                    0
+                ))
+            }
         }
-        markers.forEach { marker ->
-            mapView.layerManager.layers.add(marker)
-        }
+        return markers
     }
+
     private fun clearLayersAboveMap() {
         if (mapView.layerManager.layers.count() > 1){
             var index = mapView.layerManager.layers.count() - 1

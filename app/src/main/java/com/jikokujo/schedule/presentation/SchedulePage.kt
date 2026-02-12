@@ -66,9 +66,15 @@ fun SchedulePage(modifier: Modifier){
                 getRoute = { routeId ->
                     scheduleSearchViewModel.getRoute(routeId)
                 },
-                displayTripOnMap = { trip, routeAssoc ->
+                displayTripOnMap = { trip, routeAssoc, selectedThrough ->
                     mapViewModel.viewModelScope.launch {
-                        mapViewModel.onAction(MapAction.SelectTrip(trip, routeAssoc))
+                        mapViewModel.onAction(
+                            MapAction.SelectTrip(
+                                trip = trip,
+                                routeAssociated = routeAssoc,
+                                selectedThrough = selectedThrough
+                            )
+                        )
                     }
                 },
                 removeTripFromMap = {

@@ -40,7 +40,7 @@ fun TripSelectionDropDown(
     state: ScheduleSearchState,
     onAction: (Action) -> Unit,
     getRoute: (String) -> Queryable.Route,
-    displayOnMap: (Trip, Queryable.Route) -> Unit
+    displayOnMap: (Trip, Queryable.Route, Queryable) -> Unit
 ){
     val itemHeight = 40
     val maxItems = 5
@@ -91,7 +91,8 @@ fun TripSelectionDropDown(
                                 onAction(Action.SelectTrip(trip = state.trips[i]))
                                 displayOnMap(
                                     state.trips[i],
-                                    getRoute(state.trips[i].routeId)
+                                    getRoute(state.trips[i].routeId),
+                                    state.selectedQueryable!!
                                 )
                             }
                         ),

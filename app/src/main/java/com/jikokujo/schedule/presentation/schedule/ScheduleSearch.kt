@@ -26,7 +26,7 @@ fun ScheduleSearch(
     state: ScheduleSearchState,
     onAction: (Action) -> Unit,
     getRoute: (String) -> Queryable.Route,
-    displayTripOnMap: (Trip, Queryable.Route) -> Unit,
+    displayTripOnMap: (Trip, Queryable.Route, Queryable) -> Unit,
     removeTripFromMap: () -> Unit
 ){
     BackHandler {
@@ -142,7 +142,7 @@ private fun ScheduleSearchPreview(){
         state = ScheduleSearchState(),
         onAction = {},
         getRoute = { _ -> Queryable.Route("001", "M3-mas metró", "0b6324", 3) },
-        displayTripOnMap = { _, _ -> },
+        displayTripOnMap = { _, _, _ -> },
         removeTripFromMap = {}
     )
 }
