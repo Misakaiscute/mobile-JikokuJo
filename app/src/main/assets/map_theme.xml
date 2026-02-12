@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rendertheme
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://mapsforge.org/renderTheme"
-    xsi:schemaLocation="http://mapsforge.org/renderTheme https://raw.githubusercontent.com/mapsforge/mapsforge/master/resources/renderTheme.xsd"
     version="5"
     map-background="#dcdcdc"
     map-background-outside="#EEEEEE"
@@ -16,7 +13,7 @@
     </rule>
 
     <rule e="way" k="highway" v="*">
-        <line stroke="#717171" stroke-width="0.4"/>
+        <line stroke="#616161" stroke-width="0.65"/>
     </rule>
 
     <rule e="way" k="natural" v="water">
