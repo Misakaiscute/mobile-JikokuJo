@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import com.google.gson.annotations.SerializedName
 
 data class StopWithLocationAndStopTime(
-    @SerializedName("stop_id")
+    @SerializedName("id")
     val id: String,
-    @SerializedName("stop_name")
+    @SerializedName("name")
     val name: String,
     @SerializedName("location")
     val location: Location.Stop,
