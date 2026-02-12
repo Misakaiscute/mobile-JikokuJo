@@ -120,11 +120,11 @@ class ScheduleSearchViewModel @Inject constructor(
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun selectStop(stop: Queryable.Stop) {
         if (queryableRepository.queryables is ApiResult.Success){
-            val stopExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data.filter {
-                it is Queryable.Stop
-            }.find {
-                (it as Queryable.Stop).id == stop.id
-            } != null
+            val stopExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data
+                .filterIsInstance<Queryable.Stop>()
+                .find {
+                    it.id == stop.id
+                } != null
             if (stopExists) {
                 _state.update {
                     it.copy(
@@ -143,11 +143,11 @@ class ScheduleSearchViewModel @Inject constructor(
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun selectRoute(route: Queryable.Route) {
         if (queryableRepository.queryables is ApiResult.Success<*>){
-            val routeExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data.filter {
-                it is Queryable.Route
-            }.find {
-                (it as Queryable.Route).id == route.id
-            } != null
+            val routeExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data
+                .filterIsInstance<Queryable.Route>()
+                .find {
+                    it.id == route.id
+                } != null
             if (routeExists) {
                 _state.update {
                     it.copy(
@@ -246,7 +246,9 @@ class ScheduleSearchViewModel @Inject constructor(
                     }
                     is ApiResult.Success -> {
                         it.copy(
-                            trips = (tripsRepository.trips as ApiResult.Success).data,
+                            trips = (tripsRepository.trips as ApiResult.Success).data.sortedBy { trip ->
+                                trip.stops[0].arrivalTime
+                            },
                             dropDownExpanded = true,
                             isLoading = false
                         )
