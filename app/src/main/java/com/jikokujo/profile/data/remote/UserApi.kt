@@ -3,6 +3,7 @@ package com.jikokujo.profile.data.remote
 import com.jikokujo.core.data.EmptyPayload
 import com.jikokujo.core.data.ResponseRoot
 import com.jikokujo.profile.data.model.User
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Field
@@ -15,8 +16,8 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface UserApi {
-    @Headers("accept: application/json")
     @FormUrlEncoded
+    @Headers("accept: application/json")
     @POST("user/register")
     suspend fun register(
         @Field("first_name") firstName: String,
@@ -26,8 +27,8 @@ interface UserApi {
         @Field("password_confirmation") passwordConfirmation: String,
     ): ResponseRoot<EmptyPayload>
 
-    @Headers("accept: application/json")
     @FormUrlEncoded
+    @Headers("accept: application/json")
     @POST("user/login/{remember}")
     suspend fun login(
         @Field("email") email: String,
@@ -35,38 +36,43 @@ interface UserApi {
         @Path("remember") remember: Boolean = false
     ): ResponseRoot<UserLoginObj>
 
+    @GET("user/logout")
+    suspend fun logout(
+        @Header("Authorization") authToken: String
+    ): Response<ResponseRoot<EmptyPayload>> //TODO: Not yet implemented on the backend
+
     @Headers("accept: application/json")
-    @POST("user")
+    @GET("user")
     suspend fun getUser(
         @Header("Authorization") authToken: String
-    ): ResponseRoot<GetUserObj>
+    ): Response<ResponseRoot<GetUserObj>>
 
     @Headers("accept: application/json")
     @PUT("user/update")
     suspend fun updateUser(
         @Header("Authorization") authToken: String,
         @Body user: User
-    ): ResponseRoot<EmptyPayload>
+    ): Response<ResponseRoot<EmptyPayload>>
 
     @Headers("accept: application/json")
     @DELETE("user/delete")
     suspend fun deleteUser(
         @Header("Authorization") authToken: String
-    ): ResponseRoot<EmptyPayload>
+    ): Response<ResponseRoot<EmptyPayload>>
 
-    @Headers("accept: application/json")
     @FormUrlEncoded
+    @Headers("accept: application/json")
     @POST("routes/favourite/toggle")
     suspend fun toggleFavourite(
         @Header("Authorization") authToken: String,
         @Field("route_id") routeId: String,
         @Field("minutes") minutes: Int
-    ): ResponseRoot<EmptyPayload>
+    ): Response<ResponseRoot<EmptyPayload>>
 
     @Headers("accept: application/json")
     @FormUrlEncoded
     @GET("favourites")
     suspend fun getFavourites(
         @Header("Authorization") authToken: String,
-    ): ResponseRoot<EmptyPayload> //TODO: Change to correct return type once available
+    ): Response<ResponseRoot<EmptyPayload>> //TODO: Change to correct return type once available
 }

@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.jikokujo.profile.presentation.auth.AuthPage
+import com.jikokujo.profile.presentation.profile.ProfilePage
 import kotlinx.coroutines.launch
 
 @Composable
@@ -25,18 +26,19 @@ fun ProfileNavRoot(modifier: Modifier){
         modifier = modifier.padding(horizontal = 10.dp),
         color = MaterialTheme.colorScheme.background
     ) {
-        if (!profileViewModel.state.collectAsStateWithLifecycle().value.isUserLoggedIn) {
+        val state = profileViewModel.state.collectAsStateWithLifecycle().value
+        if (state.user == null) {
             AuthPage(
                 modifier = Modifier,
                 onAuthSuccess = {
                     profileViewModel.viewModelScope.launch {
-                        profileViewModel.onAction(ProfileAction.SuccessfulAuth)
+                        profileViewModel.onAction(ProfileAction.AttemptAuth)
                     }
                 }
             )
         } else {
             NavDisplay(
-                backStack = profileViewModel.state.collectAsStateWithLifecycle().value.backStack!!,
+                backStack = state.backStack!!,
                 onBack = {
                     profileViewModel.viewModelScope.launch {
                         profileViewModel.onAction(ProfileAction.NavigateBack)
@@ -44,9 +46,15 @@ fun ProfileNavRoot(modifier: Modifier){
                 },
                 entryProvider = entryProvider {
                     entry<ProfilePage.Main> {
-                        Box(
-                            Modifier.fillMaxSize().background(Color.Red)
-                        ) { }
+                        ProfilePage(
+                            modifier = Modifier,
+                            state = state,
+                            onAction = { action ->
+                                profileViewModel.viewModelScope.launch {
+                                    profileViewModel.onAction(action)
+                                }
+                            }
+                        )
                     }
                     entry<ProfilePage.Favourites> {
                         Box(

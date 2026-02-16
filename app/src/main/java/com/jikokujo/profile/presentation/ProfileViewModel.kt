@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation3.runtime.NavKey
+import com.jikokujo.core.data.ApiResult
+import com.jikokujo.profile.data.model.User
 import com.jikokujo.profile.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -19,14 +21,16 @@ sealed interface ProfilePage: NavKey {
 }
 
 data class ProfileState(
-    val isUserLoggedIn: Boolean = false,
+    val user: User? = null,
     val backStack: List<ProfilePage>? = null,
     val isLoading: Boolean = false,
+    val error: String? = null
 )
 sealed interface ProfileAction{
-    data object SuccessfulAuth: ProfileAction
+    data object AttemptAuth: ProfileAction
     data class Navigate(val page: ProfilePage): ProfileAction
     data object NavigateBack: ProfileAction
+    data object LogOut: ProfileAction
 }
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -37,30 +41,54 @@ class ProfileViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.Default){
-            _state.update {
-                it.copy(isLoading = true)
-            }
-            userRepository.checkAuth()
-            _state.update {
-                it.copy(
-                    isUserLoggedIn = userRepository.userAccessToken != null,
-                    backStack = mutableStateListOf(ProfilePage.Main),
-                    isLoading = false
-                )
-            }
+            attemptAuth()
         }
     }
     suspend fun onAction(action: ProfileAction) = when(action){
-        is ProfileAction.SuccessfulAuth -> onSuccessfulAuth()
+        is ProfileAction.AttemptAuth -> attemptAuth()
         is ProfileAction.Navigate -> navigate(action.page)
         is ProfileAction.NavigateBack -> navigate(null)
+        is ProfileAction.LogOut -> logout()
     }
-    private fun onSuccessfulAuth(){
-        if (userRepository.userAccessToken != null){
-            _state.update {
+    private suspend fun logout(){
+        userRepository.logout()
+        _state.update {
+            it.copy(
+                user = null,
+                backStack = null
+            )
+        }
+    }
+    private suspend fun attemptAuth(){
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = null
+            )
+        }
+        userRepository.getLoggedInUser()
+        when (userRepository.loggedInUser){
+            is ApiResult.Success -> _state.update {
                 it.copy(
-                    isUserLoggedIn = true,
-                    backStack = mutableStateListOf(ProfilePage.Main)
+                    user = (userRepository.loggedInUser as ApiResult.Success).data,
+                    backStack = listOf(ProfilePage.Main),
+                    isLoading = false,
+                    error = null
+                )
+            }
+            is ApiResult.Error -> _state.update {
+                it.copy(
+                    user = null,
+                    backStack = null,
+                    isLoading = false,
+                    error = (userRepository.loggedInUser as ApiResult.Error).errorMsg
+                )
+            }
+            else -> _state.update {
+                it.copy(
+                    user = null,
+                    backStack = null,
+                    isLoading = false,
                 )
             }
         }

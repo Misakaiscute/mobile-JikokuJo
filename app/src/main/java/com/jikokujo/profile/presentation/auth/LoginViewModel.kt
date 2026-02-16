@@ -86,7 +86,7 @@ class LoginViewModel @Inject constructor(
         } else {
             _state.update {
                 it.copy(
-                    submitError = "Hibás email cím vagy jelszó",
+                    submitError = "Hibás email cím vagy jelszó.",
                     isLoading = false
                 )
             }

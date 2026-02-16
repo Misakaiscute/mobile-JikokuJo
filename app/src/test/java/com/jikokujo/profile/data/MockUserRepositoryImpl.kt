@@ -35,7 +35,7 @@ class MockUserRepositoryImpl: UserRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSignedInUser() {
+    override suspend fun getLoggedInUser() {
         TODO("Not yet implemented")
     }
 }

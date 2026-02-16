@@ -6,6 +6,9 @@ import com.jikokujo.profile.data.model.User
 interface UserRepository {
     var loggedInUser: ApiResult<User>?
     var userAccessToken: String?
+    companion object {
+        fun String.toBearer() = "Bearer $this"
+    }
     suspend fun register(
         firstName: String,
         lastName: String,
@@ -20,5 +23,5 @@ interface UserRepository {
     )
     suspend fun logout()
     suspend fun checkAuth()
-    suspend fun getSignedInUser()
+    suspend fun getLoggedInUser()
 }

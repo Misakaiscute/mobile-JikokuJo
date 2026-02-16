@@ -8,7 +8,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.jikokujo.core.data.ApiResult
 import com.jikokujo.profile.data.model.User
 import com.jikokujo.profile.data.remote.UserApi
-import kotlinx.coroutines.flow.first
+import com.jikokujo.profile.data.repository.UserRepository.Companion.toBearer
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -52,7 +52,8 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun login(email: String, password: String, remember: Boolean) {
-        if (this.loggedInUser != null){
+        checkAuth()
+        if (this.userAccessToken != null) {
             return
         }
         val response = try {
@@ -72,9 +73,13 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        this.loggedInUser = null
-        this.userAccessToken = null
-        deleteAccessToken()
+        checkAuth()
+        this.userAccessToken?.let{
+            api.logout(it.toBearer())
+            deleteAccessToken()
+            this.loggedInUser = null
+        }
+        throw IllegalAccessException("Without a logged in user logging out is impossible")
     }
 
     override suspend fun checkAuth() {
@@ -83,20 +88,26 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSignedInUser() {
+    override suspend fun getLoggedInUser() {
         checkAuth()
         this.userAccessToken?.let { token ->
             val response = try {
-                api.getUser(token)
+                api.getUser(token.toBearer())
             } catch (e: Exception) {
-                this.loggedInUser = ApiResult.Error("Nincs még bejelentkezett felhasználó.")
+                this.loggedInUser = ApiResult.Error("Hiba történt.")
                 Log.e("EXCEPTION", e.message.toString())
                 e.printStackTrace()
                 return
             }
-            this.loggedInUser = ApiResult.Success(response.data!!.user)
+            val isTokenInvalid: Boolean = response.code() != 200
+            if (isTokenInvalid){
+                deleteAccessToken()
+            } else {
+                this.loggedInUser = ApiResult.Success(response.body()!!.data!!.user)
+            }
+            return
         }
-        this.loggedInUser = ApiResult.Error("Nincs még bejelentkezett felhasználó.")
+        this.loggedInUser = null
     }
 
     private suspend fun storeAccessToken() {
