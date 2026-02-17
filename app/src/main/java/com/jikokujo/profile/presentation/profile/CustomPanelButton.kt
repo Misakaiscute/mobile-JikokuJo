@@ -33,19 +33,20 @@ import java.util.Locale.getDefault
 fun CustomPanelButton(
     modifier: Modifier,
     @DrawableRes icon: Int,
+    color: Color,
     text: String,
     isEnabled: Boolean = true,
     onClick: () -> Unit,
 ){
     Button(
-        modifier = modifier.padding(all = 5.dp),
+        modifier = modifier.padding(all = 2.dp),
         shape = RoundedCornerShape(size = 10.dp),
         colors = ButtonDefaults.buttonColors().copy(
             containerColor = Color.Transparent
         ),
         border = BorderStroke(
             width = 2.dp,
-            color = MaterialTheme.colorScheme.primary
+            color = color
         ),
         enabled = isEnabled,
         onClick = onClick
@@ -58,14 +59,14 @@ fun CustomPanelButton(
             Icon(
                 modifier = Modifier.scale(1.5f),
                 painter = painterResource(icon),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = color,
                 contentDescription = text.lowercase(getDefault()),
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = text,
                 style = Typography.bodyMedium.merge(
-                    color = MaterialTheme.colorScheme.primary,
+                    color = color,
                     textAlign = TextAlign.Center
                 )
             )
@@ -81,6 +82,7 @@ private fun CustomPanelPreview(){
                 .fillMaxWidth()
                 .height(100.dp),
             icon = R.drawable.favourites_star,
+            color = MaterialTheme.colorScheme.primary,
             text = "Kedvencek",
             onClick = {}
         )

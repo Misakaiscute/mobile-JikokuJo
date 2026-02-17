@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,55 +29,76 @@ fun ProfilePage(
 ){
     val scrollState = rememberScrollState()
     Column(
-        modifier = modifier.verticalScroll(scrollState),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = state.user!!.firstName + ' ' + state.user.lastName,
-            style = Typography.labelMedium.merge(
+            style = Typography.titleLarge.merge(
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
         )
         Row(
-            modifier = modifier.height(120.dp)
+            modifier = modifier
+                .height(120.dp)
+                .fillMaxWidth()
         ) {
             CustomPanelButton(
-                modifier = Modifier.fillMaxHeight(),
-                icon = R.drawable.favourites_star,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                icon = R.drawable.my_data,
+                color = MaterialTheme.colorScheme.primary,
                 text = "Adataim",
                 isEnabled = !state.isLoading,
                 onClick = {}
             )
             CustomPanelButton(
-                modifier = Modifier.fillMaxHeight(),
-                icon = R.drawable.favourites_star,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                icon = R.drawable.settings,
+                color = MaterialTheme.colorScheme.primary,
                 text = "Beállítások",
                 isEnabled = !state.isLoading,
                 onClick = {}
             )
         }
         CustomPanelButton(
-            modifier = Modifier.height(120.dp),
+            modifier = Modifier
+                .height(120.dp)
+                .fillMaxWidth(),
             icon = R.drawable.favourites_star,
+            color = MaterialTheme.colorScheme.primary,
             text = "Kedvencek",
             isEnabled = !state.isLoading,
             onClick = {}
         )
         Row(
-            modifier = modifier.height(120.dp)
+            modifier = modifier
+                .height(120.dp)
+                .fillMaxWidth()
         ) {
             CustomPanelButton(
-                modifier = Modifier.fillMaxHeight(),
-                icon = R.drawable.favourites_star,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                icon = R.drawable.privacy_policy,
+                color = MaterialTheme.colorScheme.primary,
                 text = "ÁSZF ❐",
                 isEnabled = !state.isLoading,
                 onClick = {}
             )
             CustomPanelButton(
-                modifier = Modifier.fillMaxHeight(),
-                icon = R.drawable.favourites_star,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                icon = R.drawable.logout,
+                color = MaterialTheme.colorScheme.error,
                 text = "Kijelentkezés",
                 isEnabled = !state.isLoading,
                 onClick = { onAction(ProfileAction.LogOut) }

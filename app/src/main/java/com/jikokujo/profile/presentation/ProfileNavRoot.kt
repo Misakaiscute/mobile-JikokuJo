@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -22,11 +24,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileNavRoot(modifier: Modifier){
     val profileViewModel = viewModel<ProfileViewModel>()
+    val state = profileViewModel.state.collectAsStateWithLifecycle().value
+
+    //TODO: Add some sort of loading indication
     Surface(
         modifier = modifier.padding(horizontal = 10.dp),
         color = MaterialTheme.colorScheme.background
     ) {
-        val state = profileViewModel.state.collectAsStateWithLifecycle().value
         if (state.user == null) {
             AuthPage(
                 modifier = Modifier,
