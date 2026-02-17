@@ -9,6 +9,7 @@ import com.jikokujo.schedule.data.remote.QueryablesApi
 import com.jikokujo.core.data.ApiResult
 import com.jikokujo.schedule.data.model.RoutePathPoint
 import java.time.LocalDateTime
+import kotlin.collections.forEach
 import kotlin.collections.mutableListOf
 
 class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
@@ -27,11 +28,11 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
                 return
             }
             response.data?.let {
-                val shapes: MutableList<RoutePathPoint> = mutableListOf()
+                val shapesSanitized: MutableList<RoutePathPoint> = mutableListOf()
                 for (i in 0..<it.shapes.count() / 2){
-                    shapes.add(it.shapes[i])
+                    shapesSanitized.add(it.shapes[i])
                 }
-                this.storedShapes[trip.shapeId] = ApiResult.Success(shapes)
+                this.storedShapes[trip.shapeId] = ApiResult.Success(shapesSanitized.toList())
             }
         }
     }
@@ -47,7 +48,15 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
                 return
             }
             response.data?.let {
-                this.storedStops[trip.id] = ApiResult.Success(it.stops)
+                val stopIds: MutableList<String> = mutableListOf()
+                val stopsSanitized: MutableList<StopWithLocationAndStopTime> = mutableListOf()
+                it.stops.forEach { stop ->
+                    if (!stopIds.contains(stop.id)){
+                        stopsSanitized.add(stop)
+                        stopIds.add(stop.id)
+                    }
+                }
+                this.storedStops[trip.id] = ApiResult.Success(stopsSanitized.toList())
             }
         }
     }

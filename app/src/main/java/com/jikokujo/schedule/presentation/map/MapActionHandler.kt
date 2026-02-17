@@ -164,8 +164,8 @@ class MapActionHandler {
             setStrokeJoin(Join.ROUND)
         }
         val wasStopSelected = selectedThrough as? Queryable.Stop != null
-        if (wasStopSelected) {
-            return polylineThroughStop(
+        return if (wasStopSelected) {
+            polylineThroughStop(
                 pathPoints = pathPoints,
                 stops = stops,
                 stopId = selectedThrough.id,
@@ -173,7 +173,7 @@ class MapActionHandler {
                 stroke = stroke
             )
         } else {
-            return polylineThroughRoute(
+            polylineThroughRoute(
                 pathPoints = pathPoints,
                 paint = paint
             )
@@ -242,7 +242,7 @@ class MapActionHandler {
         selectedThrough: Queryable?
     ): List<Marker> {
         val markerSize = 20f
-        val markerBitmap = MapUtils.createSimpleDotBitmap(
+        val markerBitmapAfterStop = MapUtils.createSimpleDotBitmap(
             radius = markerSize,
             color = routeAssociated?.getColor() ?: Color.Black
         )
@@ -253,13 +253,14 @@ class MapActionHandler {
                 radius = markerSize,
                 color = Color.Black
             )
-            val selectedStopArrivalTime = stops.find {
-                it.id == selectedThrough.id
-            }!!.arrivalTime
+            var selectedStopSeen = false
             stops.forEach { stop ->
+                if (stop.id == selectedThrough.id && !selectedStopSeen){
+                    selectedStopSeen = true
+                }
                 markers.add(Marker(
                     LatLong(stop.location.lat, stop.location.lon),
-                    if (stop.arrivalTime >= selectedStopArrivalTime) markerBitmap else markerBitmapBeforeStop,
+                    if (selectedStopSeen) markerBitmapAfterStop else markerBitmapBeforeStop,
                     0,
                     0
                 ))
@@ -268,7 +269,7 @@ class MapActionHandler {
             stops.forEach { stop ->
                 markers.add(Marker(
                     LatLong(stop.location.lat, stop.location.lon),
-                    markerBitmap,
+                    markerBitmapAfterStop,
                     0,
                     0
                 ))
