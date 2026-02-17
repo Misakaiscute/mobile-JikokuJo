@@ -7,6 +7,7 @@ import com.jikokujo.schedule.data.model.RoutePathPoint
 import org.mapsforge.core.graphics.Bitmap
 import org.mapsforge.core.graphics.Style
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
+import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -53,8 +54,12 @@ object MapUtils {
     fun findClosestLocationIndex(list: List<RoutePathPoint>, point: Location.Stop): Int{
         var closestI = 0
         for (i in 1..<list.count()){
-            val currentDist = sqrt((point.lon - list[i].location.lon).pow(2) - (point.lat - list[i].location.lat).pow(2))
-            val closestDist = sqrt((point.lon - list[closestI].location.lon).pow(2) - (point.lat - list[closestI].location.lat).pow(2))
+            val currentDist = sqrt(abs(
+                (point.lon - list[i].location.lon).pow(2) - (point.lat - list[i].location.lat).pow(2)
+            ))
+            val closestDist = sqrt(abs(
+                (point.lon - list[closestI].location.lon).pow(2) - (point.lat - list[closestI].location.lat).pow(2)
+            ))
             if (closestDist > currentDist) {
                 closestI = i
             }
