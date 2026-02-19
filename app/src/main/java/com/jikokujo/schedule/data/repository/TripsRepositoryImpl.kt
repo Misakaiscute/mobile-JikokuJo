@@ -29,8 +29,13 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
             }
             response.data?.let {
                 val shapesSanitized: MutableList<RoutePathPoint> = mutableListOf()
-                for (i in 0..<it.shapes.count() / 2){
-                    shapesSanitized.add(it.shapes[i])
+                shapesSanitized.add(it.shapes[0])
+                for (i in 1..<it.shapes.count()){
+                    if (it.shapes[i].distanceTraveled == 0){
+                        break
+                    } else {
+                        shapesSanitized.add(it.shapes[i])
+                    }
                 }
                 this.storedShapes[trip.shapeId] = ApiResult.Success(shapesSanitized.toList())
             }

@@ -13,6 +13,6 @@ sealed interface Location {
     ): Location
 }
 data class RoutePathPoint(
-    @SerializedName("sequence") val order: Int,
+    @SerializedName("distance_traveled") val distanceTraveled: Int,
     @SerializedName("location") val location: Location.Auxiliary
 )
