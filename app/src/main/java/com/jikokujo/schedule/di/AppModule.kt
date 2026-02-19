@@ -1,5 +1,6 @@
 package com.jikokujo.schedule.di
 
+import com.jikokujo.BuildConfig
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
 import com.jikokujo.schedule.data.remote.QueryablesApi
@@ -18,7 +19,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-    const val EMULATOR_DEV_LOCALHOST = "10.0.2.2"
     @Provides
     @Singleton
     fun provideQueryablesApi(): QueryablesApi {
@@ -27,7 +27,7 @@ object AppModule {
             .create()
 
         return Retrofit.Builder()
-            .baseUrl("http://$EMULATOR_DEV_LOCALHOST/backend-JikokuJo/public/index.php/api/")
+            .baseUrl(BuildConfig.API)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(QueryablesApi::class.java)

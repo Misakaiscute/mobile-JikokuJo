@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -22,6 +23,8 @@ project.extensions.configure<ApplicationExtension>("android") {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "API", "\"${gradleLocalProperties(rootDir, providers).getProperty("api")}\"")
     }
 
     buildTypes {
@@ -39,6 +42,7 @@ project.extensions.configure<ApplicationExtension>("android") {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

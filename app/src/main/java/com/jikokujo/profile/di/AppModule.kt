@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import com.jikokujo.BuildConfig
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
 import com.jikokujo.profile.data.remote.UserApi
@@ -24,7 +25,6 @@ object AppModule {
     val Context.userAccessTokenDataStore: DataStore<Preferences> by preferencesDataStore(
         "user_access_token"
     )
-    const val EMULATOR_DEV_LOCALHOST = "10.0.2.2"
     @Provides
     @Singleton
     fun provideUserApi(): UserApi {
@@ -33,7 +33,7 @@ object AppModule {
             .create()
 
         return Retrofit.Builder()
-            .baseUrl("http://$EMULATOR_DEV_LOCALHOST/backend-JikokuJo/public/index.php/api/")
+            .baseUrl(BuildConfig.API)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(UserApi::class.java)
