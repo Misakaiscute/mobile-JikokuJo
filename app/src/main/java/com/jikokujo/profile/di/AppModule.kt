@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.jikokujo.BuildConfig
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
+import com.jikokujo.core.utils.EmulatorDetector
 import com.jikokujo.profile.data.remote.UserApi
 import com.jikokujo.profile.data.repository.UserRepository
 import com.jikokujo.profile.data.repository.UserRepositoryImpl
@@ -15,8 +16,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -32,8 +35,15 @@ object AppModule {
             .setStrictness(Strictness.LENIENT)
             .create()
 
+        val okHttpClient = OkHttpClient.Builder()
+            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()
+
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.API)
+            .client(okHttpClient)
+            .baseUrl(if (EmulatorDetector.isEmulator) BuildConfig.EMULATED_DEVICE_API else BuildConfig.PHYSICAL_DEVICE_API)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(UserApi::class.java)

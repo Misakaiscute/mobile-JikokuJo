@@ -9,6 +9,19 @@ plugins {
     alias(libs.plugins.dagger.hilt.android)
 }
 
+val realApi: String =
+    gradleLocalProperties(rootDir, providers).getProperty("api_protocol", "http") + "://" +
+    gradleLocalProperties(rootDir, providers).getProperty("api_host", "localhost") + ':' +
+    gradleLocalProperties(rootDir, providers).getProperty("api_port", "8000") + '/' +
+    gradleLocalProperties(rootDir, providers).getProperty("api_suffix", "")
+
+val emuApi: String =
+    gradleLocalProperties(rootDir, providers).getProperty("api_protocol", "http") + "://" +
+    "10.0.2.2" + ':' +
+    gradleLocalProperties(rootDir, providers).getProperty("api_port", "8000") + '/' +
+    gradleLocalProperties(rootDir, providers).getProperty("api_suffix", "")
+
+
 project.extensions.configure<ApplicationExtension>("android") {
     namespace = "com.jikokujo"
     compileSdk {
@@ -24,7 +37,8 @@ project.extensions.configure<ApplicationExtension>("android") {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "API", "\"${gradleLocalProperties(rootDir, providers).getProperty("api")}\"")
+        buildConfigField("String", "EMULATED_DEVICE_API", "\"$emuApi\"")
+        buildConfigField("String", "PHYSICAL_DEVICE_API", "\"$realApi\"")
     }
 
     buildTypes {
