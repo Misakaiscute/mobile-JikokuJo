@@ -13,7 +13,7 @@ data class GetQueryablesObj(
     @SerializedName("routes")
     val routes: List<Queryable.Route>
 ): Payload
-data class GetTripsObj(
+data class  GetTripsObj(
     @SerializedName("trips")
     val trips: List<Trip>
 ): Payload

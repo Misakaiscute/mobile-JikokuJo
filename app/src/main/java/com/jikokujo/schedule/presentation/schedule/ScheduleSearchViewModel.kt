@@ -123,7 +123,7 @@ class ScheduleSearchViewModel @Inject constructor(
             val stopExists: Boolean = (queryableRepository.queryables as ApiResult.Success<List<Queryable>>).data
                 .filterIsInstance<Queryable.Stop>()
                 .find {
-                    it.id == stop.id
+                    it.name == stop.name
                 } != null
             if (stopExists) {
                 _state.update {

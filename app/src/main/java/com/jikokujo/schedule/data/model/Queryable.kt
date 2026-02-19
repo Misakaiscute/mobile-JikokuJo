@@ -12,7 +12,7 @@ sealed interface Queryable {
         @SerializedName("type") val type: Int
     ): Queryable
     data class Stop(
-        @SerializedName("id") val id: String,
+        @SerializedName("ids") val ids: List<String>,
         @SerializedName("name") val name: String,
     ): Queryable
 }

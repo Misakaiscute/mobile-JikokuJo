@@ -168,7 +168,7 @@ class MapActionHandler {
             polylineThroughStop(
                 pathPoints = pathPoints,
                 stops = stops,
-                stopId = selectedThrough.id,
+                stopIds = selectedThrough.ids,
                 paintAfterStop = paint,
                 stroke = stroke
             )
@@ -197,7 +197,7 @@ class MapActionHandler {
     private fun polylineThroughStop(
         pathPoints: List<RoutePathPoint>,
         stops: List<StopWithLocationAndStopTime>,
-        stopId: String,
+        stopIds: List<String>,
         paintAfterStop: Paint,
         stroke: Float
     ): List<Polyline>{
@@ -212,7 +212,9 @@ class MapActionHandler {
         val routeAfterStop: MutableList<LatLong> = mutableListOf()
         val switchingPoint = MapUtils.findClosestLocationIndex(
             list = pathPoints,
-            point = stops.find { it.id == stopId }!!.location
+            point = stops.find {
+                stopIds.contains(it.id)
+            }!!.location
         )
         for (i in 0..<pathPoints.count()){
             if (i < switchingPoint){
@@ -255,7 +257,7 @@ class MapActionHandler {
             )
             var selectedStopSeen = false
             stops.forEach { stop ->
-                if (stop.id == selectedThrough.id && !selectedStopSeen){
+                if (selectedThrough.ids.contains(stop.id) && !selectedStopSeen){
                     selectedStopSeen = true
                 }
                 markers.add(Marker(

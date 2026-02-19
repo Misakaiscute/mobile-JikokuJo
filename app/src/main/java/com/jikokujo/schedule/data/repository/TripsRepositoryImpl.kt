@@ -72,12 +72,9 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
             when(selected){
                 is Queryable.Stop -> {
                     api.getTripsFromStop(
-                        stopId = selected.id,
-                        year = dateTime.year.toString(),
-                        month = String.format("%02d", dateTime.monthValue),
-                        day = String.format("%02d", dateTime.dayOfMonth),
-                        hour = String.format("%02d", dateTime.hour),
-                        minute = String.format("%02d", dateTime.minute)
+                        stopIds = selected.ids.joinToString(),
+                        date = dateTime.year.toString() + String.format("%02d", dateTime.monthValue) + String.format("%02d", dateTime.dayOfMonth),
+                        time = String.format("%02d", dateTime.hour) + String.format("%02d", dateTime.minute)
                     )
                 }
                 is Queryable.Route -> {

@@ -138,7 +138,7 @@ private fun TripSelectionDropDownItem(
                 is Queryable.Stop -> {
                     var returnIdx = 0
                     trip.stops.fastForEachIndexed { idx, stop ->
-                        if (state.selectedQueryable.id == stop.id){
+                        if (state.selectedQueryable.ids.contains(stop.id)){
                             returnIdx = idx
                         }
                     }
@@ -179,7 +179,7 @@ private fun TripSelectionDropDownItemPreview(){
     TripSelectionDropDownItem(
         modifier = Modifier,
         state = ScheduleSearchState(
-            selectedQueryable = Queryable.Stop("0", "Zodony utca")
+            selectedQueryable = Queryable.Stop(listOf("001"), "Zodony utca")
         ),
         trip = Trip(
             id = "TRIP_ID",

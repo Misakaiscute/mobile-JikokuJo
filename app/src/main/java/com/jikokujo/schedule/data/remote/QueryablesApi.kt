@@ -1,8 +1,11 @@
 package com.jikokujo.schedule.data.remote
 
 import com.jikokujo.core.data.ResponseRoot
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface QueryablesApi {
@@ -21,15 +24,13 @@ interface QueryablesApi {
         @Path("minute") minute: String,
     ): ResponseRoot<GetTripsObj>
 
+    @FormUrlEncoded
     @Headers("accept: application/json")
-    @GET("stop/{stopId}/time/{year}{month}{day}/{hour}{minute}")
+    @POST("stop/trip")
     suspend fun getTripsFromStop(
-        @Path("stopId") stopId: String,
-        @Path("year") year: String,
-        @Path("month") month: String,
-        @Path("day") day: String,
-        @Path("hour") hour: String,
-        @Path("minute") minute: String,
+        @Field("ids") stopIds: String,
+        @Field("date") date: String,
+        @Field("time") time: String,
     ): ResponseRoot<GetTripsObj>
 
     @Headers("accept: application/json")

@@ -147,7 +147,7 @@ private fun DropdownItemWithRoutePreview(){
 private fun DropdownItemWithStopPreview(){
     QueryableDropDownItem(
         modifier = Modifier,
-        item = Queryable.Stop("001", "Kálvin tér"),
+        item = Queryable.Stop(listOf("001"), "Kálvin tér"),
         itemHeight = 40
     )
 }
