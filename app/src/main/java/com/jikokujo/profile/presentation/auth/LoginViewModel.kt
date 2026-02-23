@@ -2,7 +2,7 @@ package com.jikokujo.profile.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import com.jikokujo.core.utils.validateEmail
-import com.jikokujo.profile.data.repository.UserRepository
+import com.jikokujo.core.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

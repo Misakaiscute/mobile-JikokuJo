@@ -1,6 +1,7 @@
-package com.jikokujo.core.data
+package com.jikokujo.core.data.remote
 
 import com.google.gson.annotations.SerializedName
+import com.jikokujo.core.data.model.User
 
 interface Payload
 

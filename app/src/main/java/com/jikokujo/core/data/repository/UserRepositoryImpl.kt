@@ -1,14 +1,14 @@
-package com.jikokujo.profile.data.repository
+package com.jikokujo.core.data.repository
 
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.jikokujo.core.data.ApiResult
-import com.jikokujo.profile.data.model.User
-import com.jikokujo.profile.data.remote.UserApi
-import com.jikokujo.profile.data.repository.UserRepository.Companion.toBearer
+import com.jikokujo.core.data.remote.ApiResult
+import com.jikokujo.core.data.model.User
+import com.jikokujo.core.data.remote.UserApi
+import com.jikokujo.core.data.repository.UserRepository.Companion.toBearer
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

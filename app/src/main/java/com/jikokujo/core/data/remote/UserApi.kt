@@ -1,8 +1,6 @@
-package com.jikokujo.profile.data.remote
+package com.jikokujo.core.data.remote
 
-import com.jikokujo.core.data.EmptyPayload
-import com.jikokujo.core.data.ResponseRoot
-import com.jikokujo.profile.data.model.User
+import com.jikokujo.core.data.model.User
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE

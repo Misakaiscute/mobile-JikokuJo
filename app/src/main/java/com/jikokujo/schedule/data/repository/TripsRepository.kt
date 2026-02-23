@@ -1,6 +1,6 @@
 package com.jikokujo.schedule.data.repository
 
-import com.jikokujo.core.data.ApiResult
+import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime

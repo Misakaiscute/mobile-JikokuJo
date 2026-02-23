@@ -1,8 +1,8 @@
 package com.jikokujo.profile.data
 
-import com.jikokujo.core.data.ApiResult
-import com.jikokujo.profile.data.model.User
-import com.jikokujo.profile.data.repository.UserRepository
+import com.jikokujo.core.data.remote.ApiResult
+import com.jikokujo.core.data.model.User
+import com.jikokujo.core.data.repository.UserRepository
 
 class MockUserRepositoryImpl: UserRepository {
     override var loggedInUser: ApiResult<User>? = null

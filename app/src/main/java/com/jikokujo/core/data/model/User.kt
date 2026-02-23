@@ -1,4 +1,4 @@
-package com.jikokujo.profile.data.model
+package com.jikokujo.core.data.model
 
 import com.google.gson.annotations.SerializedName
 

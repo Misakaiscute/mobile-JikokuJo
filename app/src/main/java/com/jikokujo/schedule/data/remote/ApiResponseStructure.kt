@@ -1,7 +1,7 @@
 package com.jikokujo.schedule.data.remote
 
 import com.google.gson.annotations.SerializedName
-import com.jikokujo.core.data.Payload
+import com.jikokujo.core.data.remote.Payload
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime

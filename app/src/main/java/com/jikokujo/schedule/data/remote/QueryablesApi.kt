@@ -1,6 +1,6 @@
 package com.jikokujo.schedule.data.remote
 
-import com.jikokujo.core.data.ResponseRoot
+import com.jikokujo.core.data.remote.ResponseRoot
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET

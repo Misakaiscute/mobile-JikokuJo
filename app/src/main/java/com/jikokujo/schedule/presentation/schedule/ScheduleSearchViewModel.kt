@@ -2,7 +2,7 @@ package com.jikokujo.schedule.presentation.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jikokujo.core.data.ApiResult
+import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.repository.QueryablesRepository

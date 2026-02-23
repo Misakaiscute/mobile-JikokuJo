@@ -1,7 +1,7 @@
-package com.jikokujo.profile.data.repository
+package com.jikokujo.core.data.repository
 
-import com.jikokujo.core.data.ApiResult
-import com.jikokujo.profile.data.model.User
+import com.jikokujo.core.data.remote.ApiResult
+import com.jikokujo.core.data.model.User
 
 interface UserRepository {
     var loggedInUser: ApiResult<User>?

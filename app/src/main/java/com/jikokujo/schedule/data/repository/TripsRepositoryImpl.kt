@@ -6,7 +6,7 @@ import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.remote.QueryablesApi
-import com.jikokujo.core.data.ApiResult
+import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.RoutePathPoint
 import java.time.LocalDateTime
 import kotlin.collections.forEach

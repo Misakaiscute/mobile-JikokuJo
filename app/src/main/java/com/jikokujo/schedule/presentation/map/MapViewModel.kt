@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.core.data.ApiResult
+import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
