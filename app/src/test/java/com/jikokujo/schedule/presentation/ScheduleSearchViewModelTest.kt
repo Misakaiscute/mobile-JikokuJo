@@ -6,29 +6,38 @@ import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.presentation.schedule.ScheduleAction
 import com.jikokujo.schedule.presentation.schedule.DropDowns
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ScheduleSearchViewModelTest {
     private lateinit var viewModel: ScheduleSearchViewModel
 
     @Before
     fun setUp() {
-        val queryables = mutableListOf<Queryable>()
+        Dispatchers.setMain(StandardTestDispatcher())
 
-        (0..<(3 * 26)).forEachIndexed { index, i ->
+        val queryables = mutableListOf<Queryable>()
+        (0..<(26)).forEach{ i ->
             queryables.add(Queryable.Route(
-                id = index.toString(),
-                shortName = (i % 27 + 65).toChar() + index.toString(),
+                id = i.toString(),
+                shortName = (i + 65).toChar() + i.toString(),
                 type = 1,
-                color = index.toLong().toString()
+                color = i.toLong().toString()
             ))
             queryables.add(Queryable.Stop(
-                ids = listOf(index.toString()),
-                name = (i % 27 + 97).toChar() + index.toString()
+                ids = listOf(i.toString()),
+                name = (i + 97).toChar() + i.toString()
             ))
         }
         val queryablesRepositoryTestImpl = MockQueryablesRepositoryImpl(
@@ -41,6 +50,11 @@ class ScheduleSearchViewModelTest {
             tripsRepository = tripRepositoryTestImpl
         )
     }
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
     @Test
     fun `queryables fetched on VM initialization`(){
         assertNull(
@@ -49,18 +63,15 @@ class ScheduleSearchViewModelTest {
         )
     }
     @Test
-    fun `filtering empty string to anything`(){
+    fun `filtering empty string to anything`() = runTest {
         val searchString = "a"
-        runBlocking {
-            viewModel.onAction(ScheduleAction.ChangeSearch(searchString))
-        }
+
+        viewModel.onAction(ScheduleAction.ChangeSearch(searchString))
+        advanceUntilIdle()
+
         val expected = listOf(
             Queryable.Route(id = "0", shortName = "A0", type = 1, color = 0.toLong().toString()),
-            Queryable.Route(id = "26", shortName = "A26", type = 1, color = 26.toLong().toString()),
-            Queryable.Route(id = "52", shortName = "A52", type = 1, color = 52.toLong().toString()),
             Queryable.Stop(ids = listOf("0"), name = "a0"),
-            Queryable.Stop(ids = listOf("26"), name = "a26"),
-            Queryable.Stop(ids = listOf("52"), name = "a52")
         )
         assertTrue(
             "The state must contain the same (amount of) items as manually specified.\n" +
@@ -82,10 +93,10 @@ class ScheduleSearchViewModelTest {
         )
     }
     @Test
-    fun `filtering anything to empty string`(){
-        runBlocking {
-            viewModel.onAction(ScheduleAction.ChangeSearch(""))
-        }
+    fun `filtering anything to empty string`() = runTest {
+        viewModel.onAction(ScheduleAction.ChangeSearch("b"))
+        viewModel.onAction(ScheduleAction.ChangeSearch(""))
+        advanceUntilIdle()
         assertTrue(
             "The state must contain no queryables at this point",
             viewModel.state.value.queryables.count() == 0
@@ -105,7 +116,7 @@ class ScheduleSearchViewModelTest {
     }
     @Test
     fun `select EXISTING stop`(){
-        val stop = Queryable.Stop(listOf("26"), "a26")
+        val stop = Queryable.Stop(listOf("0"), "a0")
         runBlocking {
             viewModel.onAction(ScheduleAction.SelectStop(stop))
         }
@@ -138,12 +149,12 @@ class ScheduleSearchViewModelTest {
     }
     @Test
     fun `select EXISTING route`(){
-        val route = Queryable.Route(id = "27", shortName = "B27", type = 1, color = 27.toLong().toString())
+        val route = Queryable.Route(id = "0", shortName = "A0", type = 1, color = 0.toLong().toString())
         runBlocking {
             viewModel.onAction(ScheduleAction.SelectRoute(route))
         }
         assertTrue(
-            "The state must contain no queryables at this point",
+            "The state must contain the selected queryable",
             (viewModel.state.value.selectedQueryable as Queryable.Route).id == route.id
         )
         assertFalse(
@@ -169,7 +180,6 @@ class ScheduleSearchViewModelTest {
             exception is IllegalArgumentException
         )
     }
-    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `search with no queryable selected`(){
         val exception = assertThrows(IllegalStateException::class.java){
