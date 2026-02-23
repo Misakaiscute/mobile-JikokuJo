@@ -41,7 +41,6 @@ class MapActionHandler {
         }
         this.mapView = mapView
     }
-
     fun drawMapIfDoesntExist(localContext: Context, initialZoom: Byte) {
         val mapData = MapFile(localContext.rawFile(R.raw.budapest))
 
@@ -87,7 +86,10 @@ class MapActionHandler {
             0f
         )
     }
-    fun handleTrip(layerState: MapLayerState) = coroutineScope.launch {
+    fun handleTrip(
+        layerState: MapLayerState,
+        stateAction: (MapAction) -> Unit
+    ) = coroutineScope.launch {
         val onlyMapVisible: Boolean = mapView.layerManager.layers.count() <= 1
         val tripAvailable: Boolean = layerState.pathPoints.isNotEmpty() && layerState.stops.isNotEmpty()
         if (onlyMapVisible) {
@@ -114,6 +116,11 @@ class MapActionHandler {
                 tripStops.await().forEach {
                     mapView.layerManager.layers.add(it)
                 }
+                centerMapToTrip(layerState.pathPoints)
+                fitMapToTrip(
+                    pathPoints = layerState.pathPoints,
+                    setNewZoomLevel = { lvl -> stateAction(MapAction.SetZoomLevel(lvl)) }
+                )
             }
         } else {
             if (tripAvailable) {
@@ -142,12 +149,84 @@ class MapActionHandler {
                     tripStops.await().forEach {
                         mapView.layerManager.layers.add(it)
                     }
+                    centerMapToTrip(layerState.pathPoints)
+                    fitMapToTrip(
+                        pathPoints = layerState.pathPoints,
+                        setNewZoomLevel = { lvl -> stateAction(MapAction.SetZoomLevel(lvl)) }
+                    )
                 }
             } else {
                 shownShapeId = null
                 clearLayersAboveMap()
             }
         }
+    }
+    fun centerMapToTrip(pathPoints: List<RoutePathPoint>){
+        val centerPoint = MapUtils.calculateCenterPoint(pathPoints)
+
+        mapView.setCenter(LatLong(
+             centerPoint.lat,
+            centerPoint.lon,
+        ))
+    }
+    fun fitMapToTrip(
+        pathPoints: List<RoutePathPoint>,
+        setNewZoomLevel: (Int) -> Unit
+    ){
+        val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
+
+        var isContained: Boolean =
+            mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
+            mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+
+        while (!isContained) {
+            handleZoom((mapView.model.mapViewPosition.zoomLevel - 1).toByte())
+            isContained =
+                mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
+                mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+        }
+        setNewZoomLevel(mapView.model.mapViewPosition.zoomLevel.toInt())
+    }
+    fun produceTripStops(
+        stops: List<StopWithLocationAndStopTime>,
+        routeAssociated: Queryable.Route?,
+        selectedThrough: Queryable?
+    ): List<Marker> {
+        val markerSize = 20f
+        val markerBitmapAfterStop = MapUtils.createSimpleDotBitmap(
+            radius = markerSize,
+            color = routeAssociated?.getColor() ?: Color.Black
+        )
+        val markers: MutableList<Marker> = mutableListOf()
+        val wasStopSelected = selectedThrough as? Queryable.Stop != null
+        if (wasStopSelected) {
+            val markerBitmapBeforeStop = MapUtils.createSimpleDotBitmap(
+                radius = markerSize,
+                color = Color.Black
+            )
+            var selectedStopSeen = false
+            stops.forEach { stop ->
+                if (selectedThrough.ids.contains(stop.id) && !selectedStopSeen){
+                    selectedStopSeen = true
+                }
+                markers.add(Marker(
+                    LatLong(stop.location.lat, stop.location.lon),
+                    if (selectedStopSeen) markerBitmapAfterStop else markerBitmapBeforeStop,
+                    0,
+                    0
+                ))
+            }
+        } else {
+            stops.forEach { stop ->
+                markers.add(Marker(
+                    LatLong(stop.location.lat, stop.location.lon),
+                    markerBitmapAfterStop,
+                    0,
+                    0
+                ))
+            }
+        }
+        return markers
     }
     private fun produceTripPolyline(
         pathPoints: List<RoutePathPoint>,
@@ -211,8 +290,8 @@ class MapActionHandler {
         val routeBeforeStop: MutableList<LatLong> = mutableListOf()
         val routeAfterStop: MutableList<LatLong> = mutableListOf()
         val switchingPoint = MapUtils.findClosestLocationIndex(
-            list = pathPoints,
-            point = stops.find {
+            points = pathPoints,
+            target = stops.find {
                 stopIds.contains(it.id)
             }!!.location
         )
@@ -238,48 +317,6 @@ class MapActionHandler {
 
         return listOf(routeBeforeStopPolyline, routeAfterStopPolyline)
     }
-    fun produceTripStops(
-        stops: List<StopWithLocationAndStopTime>,
-        routeAssociated: Queryable.Route?,
-        selectedThrough: Queryable?
-    ): List<Marker> {
-        val markerSize = 20f
-        val markerBitmapAfterStop = MapUtils.createSimpleDotBitmap(
-            radius = markerSize,
-            color = routeAssociated?.getColor() ?: Color.Black
-        )
-        val markers: MutableList<Marker> = mutableListOf()
-        val wasStopSelected = selectedThrough as? Queryable.Stop != null
-        if (wasStopSelected) {
-            val markerBitmapBeforeStop = MapUtils.createSimpleDotBitmap(
-                radius = markerSize,
-                color = Color.Black
-            )
-            var selectedStopSeen = false
-            stops.forEach { stop ->
-                if (selectedThrough.ids.contains(stop.id) && !selectedStopSeen){
-                    selectedStopSeen = true
-                }
-                markers.add(Marker(
-                    LatLong(stop.location.lat, stop.location.lon),
-                    if (selectedStopSeen) markerBitmapAfterStop else markerBitmapBeforeStop,
-                    0,
-                    0
-                ))
-            }
-        } else {
-            stops.forEach { stop ->
-                markers.add(Marker(
-                    LatLong(stop.location.lat, stop.location.lon),
-                    markerBitmapAfterStop,
-                    0,
-                    0
-                ))
-            }
-        }
-        return markers
-    }
-
     private fun clearLayersAboveMap() {
         if (mapView.layerManager.layers.count() > 1){
             var index = mapView.layerManager.layers.count() - 1

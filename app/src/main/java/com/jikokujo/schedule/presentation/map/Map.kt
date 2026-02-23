@@ -29,12 +29,13 @@ fun DisplayMapsforgeMap(
     modifier: Modifier,
     state: MapState,
     layerState: MapLayerState,
-    onAction: (Action) -> Unit
+    onAction: (MapAction) -> Unit
 ){
     MapsforgeMap(
         modifier = modifier,
         state = state,
-        layerState = layerState
+        layerState = layerState,
+        onAction = { action -> onAction(action) }
     )
     Box(
         modifier = modifier
@@ -52,7 +53,7 @@ fun DisplayMapsforgeMap(
                     contentColor = MaterialTheme.colorScheme.secondary
                 ),
                 shape = RoundedCornerShape(5.dp),
-                onClick = { onAction(Action.ChangeZoomLevel(true)) }
+                onClick = { onAction(MapAction.SetZoomLevel(state.zoomLevel + 1)) }
             ){
                 Text(
                     text = "+",
@@ -68,7 +69,7 @@ fun DisplayMapsforgeMap(
                     contentColor = MaterialTheme.colorScheme.secondary
                 ),
                 shape = RoundedCornerShape(5.dp),
-                onClick = { onAction(Action.ChangeZoomLevel(false)) }
+                onClick = { onAction(MapAction.SetZoomLevel(state.zoomLevel - 1)) }
             ){
                 Text(
                     text = "-",
@@ -85,10 +86,11 @@ fun DisplayMapsforgeMap(
 fun MapsforgeMap(
     modifier: Modifier,
     state: MapState,
-    layerState: MapLayerState
+    layerState: MapLayerState,
+    onAction: (MapAction) -> Unit
 ){
     val localContext = LocalContext.current
-    val mapActionHandler = remember{ MapActionHandler() }
+    val mapActionHandler = remember { MapActionHandler() }
 
     AndroidView(
         modifier = modifier.fillMaxSize(),
@@ -111,7 +113,10 @@ fun MapsforgeMap(
             mapActionHandler.handleZoom(state.zoomLevel)
             mapActionHandler.handleRotation(state.rotation)
 
-            mapActionHandler.handleTrip(layerState)
+            mapActionHandler.handleTrip(
+                layerState = layerState,
+                stateAction = onAction
+            )
         }
     )
 }

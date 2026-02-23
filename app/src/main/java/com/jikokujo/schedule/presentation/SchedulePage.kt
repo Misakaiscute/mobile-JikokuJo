@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jikokujo.schedule.presentation.map.Action as MapAction
+import com.jikokujo.schedule.presentation.map.MapAction as MapAction
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
 import com.jikokujo.schedule.presentation.map.MapViewModel
 import com.jikokujo.schedule.presentation.schedule.Action as ScheduleAction

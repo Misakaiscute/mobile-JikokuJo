@@ -30,15 +30,15 @@ data class MapLayerState(
     val stops: List<StopWithLocationAndStopTime> = listOf(),
 )
 
-sealed interface Action{
-    data class ChangeZoomLevel(val zoomIn: Boolean): Action
-    data class Rotate(val rotation: Float): Action
+sealed interface MapAction{
+    data class SetZoomLevel(val zoomLevel: Int): MapAction
+    data class Rotate(val rotation: Float): MapAction
     data class SelectTrip(
         val trip: Trip,
         val routeAssociated: Queryable.Route,
         val selectedThrough: Queryable
-    ): Action
-    data object UnselectTrip: Action
+    ): MapAction
+    data object UnselectTrip: MapAction
 }
 
 @HiltViewModel
@@ -51,13 +51,13 @@ class MapViewModel @Inject constructor(
     private val _state = MutableStateFlow(MapState())
     val state = _state.asStateFlow()
 
-    suspend fun onAction(action: Action) = when(action){
-        is Action.ChangeZoomLevel -> changeZoomLevel(action.zoomIn)
-        is Action.Rotate -> rotate(action.rotation)
-        is Action.SelectTrip -> withContext(Dispatchers.IO) {
+    suspend fun onAction(action: MapAction) = when(action){
+        is MapAction.SetZoomLevel -> changeZoomLevel(action.zoomLevel)
+        is MapAction.Rotate -> rotate(action.rotation)
+        is MapAction.SelectTrip -> withContext(Dispatchers.IO) {
             selectTrip(action.trip, action.routeAssociated, action.selectedThrough)
         }
-        is Action.UnselectTrip -> unselectTrip()
+        is MapAction.UnselectTrip -> unselectTrip()
     }
     @Throws(IllegalStateException::class, IllegalArgumentException::class)
     private suspend fun selectTrip(
@@ -145,11 +145,11 @@ class MapViewModel @Inject constructor(
             )
         }
     }
-    private fun changeZoomLevel(zoomIn: Boolean){
+    private fun changeZoomLevel(zoomLevel: Int){
         if(_state.value.zoomLevel in 6..25){
             _state.update {
                 it.copy(
-                    zoomLevel = if (zoomIn) (_state.value.zoomLevel + 1).toByte() else (_state.value.zoomLevel - 1).toByte()
+                    zoomLevel = zoomLevel.toByte()
                 )
             }
         }

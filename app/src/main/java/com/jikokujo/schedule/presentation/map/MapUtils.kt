@@ -51,19 +51,61 @@ object MapUtils {
         }
         return bitmap
     }
-    fun findClosestLocationIndex(list: List<RoutePathPoint>, point: Location.Stop): Int{
+    fun findClosestLocationIndex(points: List<RoutePathPoint>, target: Location.Stop): Int{
         var closestI = 0
-        for (i in 1..<list.count()){
+        for (i in 1..<points.count()){
             val currentDist = sqrt(abs(
-                (point.lon - list[i].location.lon).pow(2) - (point.lat - list[i].location.lat).pow(2)
+                (target.lon - points[i].location.lon).pow(2) - (target.lat - points[i].location.lat).pow(2)
             ))
             val closestDist = sqrt(abs(
-                (point.lon - list[closestI].location.lon).pow(2) - (point.lat - list[closestI].location.lat).pow(2)
+                (target.lon - points[closestI].location.lon).pow(2) - (target.lat - points[closestI].location.lat).pow(2)
             ))
             if (closestDist > currentDist) {
                 closestI = i
             }
         }
         return closestI
+    }
+    @Throws(ArithmeticException::class)
+    fun calculateCenterPoint(points: List<RoutePathPoint>): Location.Auxiliary{
+        if (points.isEmpty()){
+            throw ArithmeticException("Points must contain at least one item at least.")
+        } else {
+            val centerX: Double = points.sumOf {
+                it.location.lat
+            } / points.count()
+            val centerY: Double = points.sumOf {
+                it.location.lon
+            } / points.count()
+
+            return Location.Auxiliary(
+                lat = centerX,
+                lon = centerY
+            )
+        }
+    }
+    fun findPathBoundaries(points: List<RoutePathPoint>): Pair<Location.Auxiliary, Location.Auxiliary>{
+        if (points.isEmpty()){
+            return Location.Auxiliary(0.0, 0.0) to Location.Auxiliary(0.0, 0.0)
+        } else {
+            var minLat = points[0].location.lat
+            var maxLat = points[0].location.lon
+            var minLon = points[0].location.lat
+            var maxLon = points[0].location.lon
+            for (i in 1..<points.count()){
+                if (points[i].location.lat < minLat){
+                    minLat = points[i].location.lat
+                } else if (points[i].location.lat > maxLat){
+                    maxLat = points[i].location.lat
+                }
+
+                if (points[i].location.lon < minLon){
+                    minLon = points[i].location.lon
+                } else if (points[i].location.lon > maxLon){
+                    maxLon = points[i].location.lon
+                }
+            }
+            return Location.Auxiliary(minLon, minLat) to Location.Auxiliary(maxLon, maxLat)
+        }
     }
 }
