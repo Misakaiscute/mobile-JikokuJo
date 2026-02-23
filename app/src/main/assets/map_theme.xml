@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rendertheme
+    version="5"
+    map-background="#dcdcdc"
+    map-background-outside="#EEEEEE"
+>
+    <rule e="way" k="amenity" v="*" closed="yes">
+        <area fill="#c4c4c4" />
+    </rule>
+
+    <rule e="way" k="building" v="*" closed="yes">
+        <area fill="#c4c4c4" />
+    </rule>
+
+    <rule e="way" k="highway" v="*">
+        <line stroke="#616161" stroke-width="0.65"/>
+    </rule>
+
+    <rule e="way" k="natural" v="water">
+        <area fill="#8fcbff" />
+    </rule>
+
+    <rule e="any" k="natural" v="fell|grassland|tundra|wood|tree|tree_row">
+        <area fill="#adfc9f" stroke="#122918" stroke-width="0.1"/>
+    </rule>
+
+    <rule e="any" k="leisure" v="*">
+        <area fill="#adfc9f" stroke="#122918" stroke-width="0.1"/>
+    </rule>
+</rendertheme>
