@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,7 +35,7 @@ import com.jikokujo.theme.Typography
 fun QueryableDropDown(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Unit
+    onAction: (ScheduleAction) -> Unit
 ){
     val itemHeight = 40
     val maxItems = 5
@@ -62,8 +60,8 @@ fun QueryableDropDown(
                         enabled = !state.isLoading,
                         onClick = {
                             when (state.queryables[i]){
-                                is Queryable.Route -> onAction(Action.SelectRoute(state.queryables[i] as Queryable.Route))
-                                is Queryable.Stop -> onAction(Action.SelectStop(state.queryables[i] as Queryable.Stop))
+                                is Queryable.Route -> onAction(ScheduleAction.SelectRoute(state.queryables[i] as Queryable.Route))
+                                is Queryable.Stop -> onAction(ScheduleAction.SelectStop(state.queryables[i] as Queryable.Stop))
                             }
                         }
                     ),

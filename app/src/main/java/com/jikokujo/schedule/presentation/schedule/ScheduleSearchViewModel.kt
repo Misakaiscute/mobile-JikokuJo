@@ -9,6 +9,8 @@ import com.jikokujo.schedule.data.repository.QueryablesRepository
 import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -38,25 +40,27 @@ data class ScheduleSearchState(
     val error: String? = null
 )
 
-sealed interface Action{
-    data class ChangeDropDownState(val isExpanded: Boolean, val dropDownShown: DropDowns? = null): Action
-    data class ShowDialog(val dialog: Dialogs?): Action
-    data class ChangeFromDate(val year: Int, val month: Int, val day: Int): Action
-    data class ChangeFromTime(val hour: Int, val minute: Int): Action
-    data class ChangeSearch(val string: String): Action
-    data class SelectRoute(val route: Queryable.Route): Action
-    data class SelectStop(val stop: Queryable.Stop): Action
-    data class SelectTrip(val trip: Trip): Action
-    data object UnselectQueryable: Action
-    data object UnselectTrip: Action
-    data object Search: Action
-    data object RetryFetchInitialData: Action
+sealed interface ScheduleAction{
+    data class ChangeDropDownState(val isExpanded: Boolean, val dropDownShown: DropDowns? = null): ScheduleAction
+    data class ShowDialog(val dialog: Dialogs?): ScheduleAction
+    data class ChangeFromDate(val year: Int, val month: Int, val day: Int): ScheduleAction
+    data class ChangeFromTime(val hour: Int, val minute: Int): ScheduleAction
+    data class ChangeSearch(val string: String): ScheduleAction
+    data class SelectRoute(val route: Queryable.Route): ScheduleAction
+    data class SelectStop(val stop: Queryable.Stop): ScheduleAction
+    data class SelectTrip(val trip: Trip): ScheduleAction
+    data object UnselectQueryable: ScheduleAction
+    data object UnselectTrip: ScheduleAction
+    data object Search: ScheduleAction
+    data object RetryFetchInitialData: ScheduleAction
 }
 @HiltViewModel
 class ScheduleSearchViewModel @Inject constructor(
     private val queryableRepository: QueryablesRepository,
     private val tripsRepository: TripsRepository
 ): ViewModel() {
+    private var _queryableFilteringJob: Job? = null
+
     private val _state = MutableStateFlow(ScheduleSearchState())
     val state = _state.asStateFlow()
 
@@ -66,19 +70,19 @@ class ScheduleSearchViewModel @Inject constructor(
         }
     }
 
-    suspend fun onAction(action: Action) = when(action){
-        is Action.ChangeDropDownState -> changeDropDownState(action.isExpanded, action.dropDownShown)
-        is Action.ShowDialog -> showDialog(action.dialog)
-        is Action.ChangeFromTime -> changeTripFromTime(action.hour, action.minute)
-        is Action.ChangeFromDate -> changeTripFromDate(action.year, action.month, action.day)
-        is Action.ChangeSearch -> withContext(Dispatchers.Default) { changeSearch(action.string) }
-        is Action.SelectStop -> selectStop(action.stop)
-        is Action.SelectRoute -> selectRoute(action.route)
-        is Action.UnselectQueryable -> unselectQueryable()
-        is Action.SelectTrip -> withContext(Dispatchers.IO) { selectTrip(action.trip) }
-        is Action.UnselectTrip -> unselectTrip()
-        is Action.Search -> withContext(Dispatchers.IO) { search() }
-        is Action.RetryFetchInitialData -> withContext(Dispatchers.IO) { fetchQueryables() }
+    suspend fun onAction(action: ScheduleAction) = when(action){
+        is ScheduleAction.ChangeDropDownState -> changeDropDownState(action.isExpanded, action.dropDownShown)
+        is ScheduleAction.ShowDialog -> showDialog(action.dialog)
+        is ScheduleAction.ChangeFromTime -> changeTripFromTime(action.hour, action.minute)
+        is ScheduleAction.ChangeFromDate -> changeTripFromDate(action.year, action.month, action.day)
+        is ScheduleAction.ChangeSearch -> withContext(Dispatchers.Default) { changeSearchString(action.string) }
+        is ScheduleAction.SelectStop -> selectStop(action.stop)
+        is ScheduleAction.SelectRoute -> selectRoute(action.route)
+        is ScheduleAction.UnselectQueryable -> unselectQueryable()
+        is ScheduleAction.SelectTrip -> withContext(Dispatchers.IO) { selectTrip(action.trip) }
+        is ScheduleAction.UnselectTrip -> unselectTrip()
+        is ScheduleAction.Search -> withContext(Dispatchers.IO) { search() }
+        is ScheduleAction.RetryFetchInitialData -> withContext(Dispatchers.IO) { fetchQueryables() }
     }
     private fun changeDropDownState(isExpanded: Boolean, dropDownShown: DropDowns?) = _state.update {
         it.copy(
@@ -89,29 +93,34 @@ class ScheduleSearchViewModel @Inject constructor(
     private fun showDialog(dialog: Dialogs?) = _state.update {
         it.copy(shownDialog = dialog)
     }
-    private fun changeSearch(value: String) = _state.update {
-        if (value == _state.value.searchString) {
-            it.copy()
+    private fun changeSearchString(toValue: String){
+        _queryableFilteringJob?.cancel()
+        _state.update {
+            it.copy(searchString = toValue)
         }
-        else if (value.isBlank()){
+        _queryableFilteringJob = viewModelScope.launch {
+            delay(500)
+            filterQueryables(toValue)
+        }
+    }
+    private fun filterQueryables(currentSearchString: String) = _state.update {
+        if (currentSearchString.isBlank()){
             it.copy(
                 queryables = listOf(),
                 selectedQueryable = null,
-                searchString = value,
                 dropDownShown = DropDowns.QueryableSelection,
                 dropDownExpanded = false
             )
         } else {
             val filteredItems = (queryableRepository.queryables as ApiResult.Success).data.filter { queryable ->
                 when(queryable){
-                    is Queryable.Stop -> queryable.name.contains(value, ignoreCase = true)
-                    is Queryable.Route -> queryable.shortName.contains(value, ignoreCase = true)
+                    is Queryable.Stop -> queryable.name.contains(currentSearchString, ignoreCase = true)
+                    is Queryable.Route -> queryable.shortName.contains(currentSearchString, ignoreCase = true)
                 }
             }.take(100)
             it.copy(
                 queryables = filteredItems,
                 selectedQueryable = null,
-                searchString = value,
                 dropDownShown = DropDowns.QueryableSelection,
                 dropDownExpanded = !filteredItems.isEmpty()
             )
@@ -164,7 +173,7 @@ class ScheduleSearchViewModel @Inject constructor(
         }
     }
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
-    private suspend fun selectTrip(trip: Trip) {
+    private fun selectTrip(trip: Trip) {
         if (tripsRepository.trips is ApiResult.Success){
             val tripExists: Boolean = (tripsRepository.trips as ApiResult.Success).data.find {
                 it.id == trip.id

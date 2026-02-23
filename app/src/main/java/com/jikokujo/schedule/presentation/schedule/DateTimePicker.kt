@@ -42,7 +42,7 @@ import java.time.LocalDate
 fun DateTimePicker(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Unit
+    onAction: (ScheduleAction) -> Unit
 ){
     val timeInputState = rememberTimePickerState(
         initialHour = state.tripTimeConstraint.hour,
@@ -98,7 +98,7 @@ fun DateTimePicker(
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
             contentPadding = PaddingValues(horizontal = 5.dp, vertical = 0.dp),
-            onClick = { onAction(Action.ShowDialog(Dialogs.DatePicker)) }
+            onClick = { onAction(ScheduleAction.ShowDialog(Dialogs.DatePicker)) }
         ) {
             Text(
                 modifier = Modifier
@@ -119,7 +119,7 @@ fun DateTimePicker(
                 contentColor = MaterialTheme.colorScheme.onSurface
             ),
             contentPadding = PaddingValues(all = 0.dp),
-            onClick = { onAction(Action.ShowDialog(Dialogs.TimePicker)) }
+            onClick = { onAction(ScheduleAction.ShowDialog(Dialogs.TimePicker)) }
         ) {
             Text(
                 modifier = Modifier
@@ -134,8 +134,8 @@ fun DateTimePicker(
     when(state.shownDialog){
         Dialogs.TimePicker -> {
             TimePickerDialog(
-                onDismiss = { onAction(Action.ShowDialog(null)) },
-                onConfirm = { onAction(Action.ChangeFromTime(
+                onDismiss = { onAction(ScheduleAction.ShowDialog(null)) },
+                onConfirm = { onAction(ScheduleAction.ChangeFromTime(
                     hour = timeInputState.hour,
                     minute = timeInputState.minute
                 )) }
@@ -145,8 +145,8 @@ fun DateTimePicker(
         }
         Dialogs.DatePicker -> {
             DatePickerDialogWrapper(
-                onDismiss = { onAction(Action.ShowDialog(null)) },
-                onConfirm = { onAction(Action.ChangeFromDate(
+                onDismiss = { onAction(ScheduleAction.ShowDialog(null)) },
+                onConfirm = { onAction(ScheduleAction.ChangeFromDate(
                     year = datePickerState.getSelectedDate()!!.year,
                     month = datePickerState.getSelectedDate()!!.monthValue,
                     day = datePickerState.getSelectedDate()!!.dayOfMonth

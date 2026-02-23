@@ -24,7 +24,7 @@ import com.jikokujo.schedule.data.model.Trip
 fun ScheduleSearch(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Unit,
+    onAction: (ScheduleAction) -> Unit,
     getRoute: (String) -> Queryable.Route,
     displayTripOnMap: (Trip, Queryable.Route, Queryable) -> Unit,
     removeTripFromMap: () -> Unit
@@ -34,18 +34,18 @@ fun ScheduleSearch(
             DropDowns.TripSelection -> {
                 if (state.selectedTrip != null) {
                     removeTripFromMap()
-                    onAction(Action.UnselectTrip)
+                    onAction(ScheduleAction.UnselectTrip)
                 } else if (state.dropDownExpanded){
-                    onAction(Action.ChangeDropDownState(false))
+                    onAction(ScheduleAction.ChangeDropDownState(false))
                 } else {
-                    onAction(Action.ChangeDropDownState(false, DropDowns.QueryableSelection))
+                    onAction(ScheduleAction.ChangeDropDownState(false, DropDowns.QueryableSelection))
                 }
             }
             DropDowns.QueryableSelection -> {
                 if (state.selectedQueryable != null) {
-                    onAction(Action.UnselectQueryable)
+                    onAction(ScheduleAction.UnselectQueryable)
                 } else {
-                    onAction(Action.ChangeDropDownState(false))
+                    onAction(ScheduleAction.ChangeDropDownState(false))
                 }
             }
         }
@@ -98,7 +98,7 @@ fun ScheduleSearch(
                         ExpanderArrow(
                             modifier = modifier.fillMaxHeight(),
                             isExpanded = state.dropDownExpanded,
-                            onClick = { onAction(Action.ChangeDropDownState(!state.dropDownExpanded)) }
+                            onClick = { onAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded)) }
                         )
                         Spacer(modifier.weight(1f))
                         DateTimePicker(
@@ -126,7 +126,7 @@ fun ScheduleSearch(
                         ExpanderArrow(
                             modifier = modifier,
                             isExpanded = state.dropDownExpanded,
-                            onClick = { onAction(Action.ChangeDropDownState(!state.dropDownExpanded)) }
+                            onClick = { onAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded)) }
                         )
                     }
                 }

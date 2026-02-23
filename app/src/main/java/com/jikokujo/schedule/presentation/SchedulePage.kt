@@ -19,7 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jikokujo.schedule.presentation.map.MapAction as MapAction
 import com.jikokujo.schedule.presentation.map.DisplayMapsforgeMap
 import com.jikokujo.schedule.presentation.map.MapViewModel
-import com.jikokujo.schedule.presentation.schedule.Action as ScheduleAction
+import com.jikokujo.schedule.presentation.schedule.ScheduleAction as ScheduleAction
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearch
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchState
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel

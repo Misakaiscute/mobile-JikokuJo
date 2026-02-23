@@ -1,7 +1,6 @@
 package com.jikokujo.schedule.presentation.schedule
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,7 +38,7 @@ import com.jikokujo.theme.Typography
 fun TripSelectionDropDown(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Unit,
+    onAction: (ScheduleAction) -> Unit,
     getRoute: (String) -> Queryable.Route,
     displayOnMap: (Trip, Queryable.Route, Queryable) -> Unit
 ){
@@ -58,7 +57,7 @@ fun TripSelectionDropDown(
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .clickable(
-                        onClick = { onAction(Action.ChangeDropDownState(true)) }
+                        onClick = { onAction(ScheduleAction.ChangeDropDownState(true)) }
                     ),
                 state = state,
                 trip = state.selectedTrip,
@@ -89,7 +88,7 @@ fun TripSelectionDropDown(
                         .clickable(
                             enabled = !state.isLoading,
                             onClick = {
-                                onAction(Action.SelectTrip(trip = state.trips[i]))
+                                onAction(ScheduleAction.SelectTrip(trip = state.trips[i]))
                                 displayOnMap(
                                     state.trips[i],
                                     getRoute(state.trips[i].routeId),

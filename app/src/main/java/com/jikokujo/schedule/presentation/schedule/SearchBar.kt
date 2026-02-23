@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,40 +27,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jikokujo.R
 import com.jikokujo.theme.Typography
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
 
 @OptIn(FlowPreview::class)
 @Composable
 fun SearchBar(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (Action) -> Unit
+    onAction: (ScheduleAction) -> Unit
 ){
     val height = 50.dp
-    val searchString = remember { MutableStateFlow(state.searchString) }
-
-    LaunchedEffect(searchString) {
-        searchString
-            .debounce(300)
-            .collect { s ->
-                onAction(Action.ChangeSearch(s))
-            }
-    }
-    LaunchedEffect(state.searchString) {
-        if (searchString.value != state.searchString){
-            searchString.value = state.searchString
-        }
-    }
-
     Row(
         modifier = modifier
             .onFocusChanged {
-                onAction(Action.ChangeDropDownState(it.hasFocus && state.queryables.count() > 0))
+                onAction(ScheduleAction.ChangeDropDownState(it.hasFocus && state.queryables.count() > 0))
             }
             .focusable()
             .height(height)
@@ -70,20 +51,28 @@ fun SearchBar(
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.Center
     ) {
+        val trailingIcon: Int? = if (state.selectedQueryable != null) {
+            R.drawable.baseline_search_24
+        } else if (state.searchString.isNotBlank()){
+            R.drawable.trashcan
+        } else null
+
         CustomSearchBar(
             modifier = modifier.fillMaxSize(),
-            text = searchString.collectAsStateWithLifecycle().value,
+            text = state.searchString,
             placeholder = "Megálló / járatnév",
-            trailingIcon = if (state.selectedQueryable == null) R.drawable.trashcan else R.drawable.baseline_search_24,
+            trailingIcon = trailingIcon,
             onTrailingIconClick = {
                 if (state.selectedQueryable == null) {
-                    onAction(Action.UnselectQueryable)
+                    onAction(ScheduleAction.UnselectQueryable)
                 } else {
-                    onAction(Action.Search)
+                    onAction(ScheduleAction.Search)
                 }
             },
             trailingIconDesc = if (state.selectedQueryable == null) "keresés törlése" else "keresés",
-            onValueChange = { newVal -> searchString.value = newVal },
+            onValueChange = { newVal ->
+                onAction(ScheduleAction.ChangeSearch(newVal))
+            },
         )
     }
 }
@@ -92,7 +81,7 @@ private fun CustomSearchBar(
     modifier: Modifier,
     text: String,
     placeholder: String,
-    @DrawableRes trailingIcon: Int,
+    @DrawableRes trailingIcon: Int?,
     trailingIconDesc: String = "",
     onTrailingIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
@@ -143,18 +132,20 @@ private fun CustomSearchBar(
                 ),
                 interactionSource = interactionSource,
                 trailingIcon = {
-                    Icon(
-                        modifier = Modifier
-                            .fillMaxHeight(2/3f)
-                            .clickable(
-                                role = Role.Button,
-                                onClickLabel = trailingIconDesc,
-                                onClick = onTrailingIconClick
-                            ),
-                        painter = painterResource(trailingIcon),
-                        contentDescription = trailingIconDesc,
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
+                    if (trailingIcon != null){
+                        Icon(
+                            modifier = Modifier
+                                .fillMaxHeight(2/3f)
+                                .clickable(
+                                    role = Role.Button,
+                                    onClickLabel = trailingIconDesc,
+                                    onClick = onTrailingIconClick
+                                ),
+                            painter = painterResource(trailingIcon),
+                            contentDescription = trailingIconDesc,
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             )
         }
