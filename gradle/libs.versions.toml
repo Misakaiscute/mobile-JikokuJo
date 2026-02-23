@@ -16,6 +16,7 @@ mapsforgeVersion = "0.26.0"
 junitJupiter = "5.14.0"
 nav3Version = "1.1.0-alpha02"
 datastoreVersion = "1.2.0"
+coroutineTestingVersion = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,8 @@ navigation-runtime = { group = "androidx.navigation3", name = "navigation3-runti
 navigation-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "nav3Version" }
 
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastoreVersion"}
+
+coroutine-testing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutineTestingVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -91,6 +91,7 @@ dependencies {
 
     implementation(libs.datastore)
 
+    testImplementation(libs.coroutine.testing)
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.androidx.junit)
