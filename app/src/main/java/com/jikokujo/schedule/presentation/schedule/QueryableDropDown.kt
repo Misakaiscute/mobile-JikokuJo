@@ -44,7 +44,6 @@ fun QueryableDropDown(
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(bottomStart = 20f, bottomEnd = 0f, topStart = 0f, topEnd = 0f))
             .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
             .verticalScroll(scrollState)
     ) {

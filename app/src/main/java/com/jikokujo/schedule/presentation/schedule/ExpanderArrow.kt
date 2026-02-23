@@ -40,7 +40,6 @@ fun ExpanderArrow(
             modifier = Modifier.rotate(if (isExpanded) 180f else 0f),
             painter = painterResource(R.drawable.expand_button),
             contentDescription = "expand button",
-            tint = Color.Black
         )
     }
 }

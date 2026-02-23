@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,29 +34,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppTheme(dynamicColor = false) {
+            AppTheme {
                 val backstack = rememberSaveable { mutableStateListOf<MainPage>(MainPage.Schedule) }
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = {
-                                Image(
+                                Icon(
                                     modifier = Modifier.fillMaxWidth(),
                                     painter = painterResource(R.drawable.jikokujo),
-                                    alignment = Alignment.Center,
                                     contentDescription = "app logo",
+                                    tint = MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             colors = TopAppBarDefaults.topAppBarColors().copy(
                                 containerColor = MaterialTheme.colorScheme.surface,
-                                titleContentColor = MaterialTheme.colorScheme.onSurface,
                             ),
                         )
                     },
                     bottomBar = {
                         BottomAppBar(
-                            modifier = Modifier
-                                .fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth(),
                             containerColor = MaterialTheme.colorScheme.surface,
                         ) {
                             Row(
@@ -86,7 +85,6 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-
                 ) { innerPadding ->
                     NavigationRoot(
                         backstack = backstack,

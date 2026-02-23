@@ -1,6 +1,7 @@
 package com.jikokujo.schedule.presentation.schedule
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -116,7 +117,6 @@ private fun TripSelectionDropDownItem(
     itemTextColor: Color
 ){
     val route: Queryable.Route? = if (trip != null) getRoute(trip.routeId) else null
-
     Row(
         modifier = modifier
             .fillMaxWidth()
