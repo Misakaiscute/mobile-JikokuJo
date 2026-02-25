@@ -5,20 +5,20 @@ import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.presentation.map.MapAction
-import com.jikokujo.schedule.presentation.map.MapViewModel
+import com.jikokujo.schedule.presentation.map.TripAction
+import com.jikokujo.schedule.presentation.map.TripInfoViewModel
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
 import java.time.LocalDateTime
 
-class MapViewModelTest {
-    private lateinit var viewModel: MapViewModel
+class TripInfoViewModelTest {
+    private lateinit var viewModel: TripInfoViewModel
     @Before
     fun setUp() {
         val tripsRepository = MockTripsRepositoryImpl()
-        this.viewModel = MapViewModel(tripsRepository)
+        this.viewModel = TripInfoViewModel(tripsRepository)
 
         runBlocking {
             tripsRepository.getTrips(
@@ -66,7 +66,7 @@ class MapViewModelTest {
             directionId = 1
         )
         runBlocking {
-            viewModel.onAction(MapAction.SelectTrip(
+            viewModel.onAction(TripAction.SelectTrip(
                 trip = trip,
                 routeAssociated = route,
                 selectedThrough = Queryable.Stop(
@@ -77,11 +77,11 @@ class MapViewModelTest {
         }
         assertTrue(
             "Stops must be set after selecting a trip",
-            viewModel.mapLayerState.value.stops.count() > 1
+            viewModel.state.value.stops.count() > 1
         )
         assertTrue(
             "PathPoints must be set after selecting a trip",
-            viewModel.mapLayerState.value.pathPoints.count() > 1
+            viewModel.state.value.pathPoints.count() > 1
         )
         assertNull(
             "Error must be null after successful selection",
@@ -89,7 +89,7 @@ class MapViewModelTest {
         )
         assertTrue(
             "Route associated must be to a Route after successful selection",
-            viewModel.mapLayerState.value.routeAssociated.hashCode() == route.hashCode()
+            viewModel.state.value.routeAssociated.hashCode() == route.hashCode()
         )
     }
     @Test
@@ -128,7 +128,7 @@ class MapViewModelTest {
 
         val exception = assertThrows(IllegalArgumentException::class.java){
             runBlocking {
-                viewModel.onAction(MapAction.SelectTrip(
+                viewModel.onAction(TripAction.SelectTrip(
                     trip = trip,
                     routeAssociated = route,
                     selectedThrough = Queryable.Stop(
@@ -177,7 +177,7 @@ class MapViewModelTest {
             directionId = 1
         )
         runBlocking {
-            viewModel.onAction(MapAction.SelectTrip(
+            viewModel.onAction(TripAction.SelectTrip(
                 trip = trip,
                 routeAssociated = route,
                 selectedThrough = Queryable.Stop(
@@ -185,7 +185,7 @@ class MapViewModelTest {
                     name = "Valami"
                 )
             ))
-            viewModel.onAction(MapAction.UnselectTrip)
+            viewModel.onAction(TripAction.UnselectTrip)
         }
 
         assertNull(
@@ -194,15 +194,15 @@ class MapViewModelTest {
         )
         assertTrue(
             "Stops must be empty, when no trip is selected",
-            viewModel.mapLayerState.value.stops.count() == 0
+            viewModel.state.value.stops.count() == 0
         )
         assertTrue(
             "PathPoints must be empty, when no trip is selected",
-            viewModel.mapLayerState.value.pathPoints.count() == 0
+            viewModel.state.value.pathPoints.count() == 0
         )
         assertNull(
             "No route can be associated, when no trip is selected",
-            viewModel.mapLayerState.value.routeAssociated
+            viewModel.state.value.routeAssociated
         )
     }
 }
