@@ -18,34 +18,33 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.core.utils.loadingShimmer
 import com.jikokujo.schedule.data.model.Queryable
-import com.jikokujo.schedule.data.model.Trip
+import com.jikokujo.schedule.presentation.map.TripAction
 
 @Composable
 fun ScheduleSearch(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (ScheduleAction) -> Unit,
+    onScheduleAction: (ScheduleAction) -> Unit,
+    onTripAction: (TripAction) -> Unit,
     getRoute: (String) -> Queryable.Route,
-    displayTripOnMap: (Trip, Queryable.Route, Queryable) -> Unit,
-    removeTripFromMap: () -> Unit
 ){
     BackHandler {
         when (state.dropDownShown){
             DropDowns.TripSelection -> {
                 if (state.selectedTrip != null) {
-                    removeTripFromMap()
-                    onAction(ScheduleAction.UnselectTrip)
+                    onTripAction(TripAction.UnselectTrip)
+                    onScheduleAction(ScheduleAction.UnselectTrip)
                 } else if (state.dropDownExpanded){
-                    onAction(ScheduleAction.ChangeDropDownState(false))
+                    onScheduleAction(ScheduleAction.ChangeDropDownState(false))
                 } else {
-                    onAction(ScheduleAction.ChangeDropDownState(false, DropDowns.QueryableSelection))
+                    onScheduleAction(ScheduleAction.ChangeDropDownState(false, DropDowns.QueryableSelection))
                 }
             }
             DropDowns.QueryableSelection -> {
                 if (state.selectedQueryable != null) {
-                    onAction(ScheduleAction.UnselectQueryable)
+                    onScheduleAction(ScheduleAction.UnselectQueryable)
                 } else {
-                    onAction(ScheduleAction.ChangeDropDownState(false))
+                    onScheduleAction(ScheduleAction.ChangeDropDownState(false))
                 }
             }
         }
@@ -75,17 +74,16 @@ fun ScheduleSearch(
         } else {
             when (state.dropDownShown){
                 DropDowns.QueryableSelection -> {
-                    removeTripFromMap()
                     SearchBar(
                         modifier = modifier,
                         state = state,
-                        onAction = onAction
+                        onAction = onScheduleAction
                     )
                     if (state.dropDownExpanded) {
                         QueryableDropDown(
                             modifier = modifier,
                             state = state,
-                            onAction = onAction
+                            onAction = onScheduleAction
                         )
                     }
                     Row(
@@ -98,13 +96,15 @@ fun ScheduleSearch(
                         ExpanderArrow(
                             modifier = modifier.fillMaxHeight(),
                             isExpanded = state.dropDownExpanded,
-                            onClick = { onAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded)) }
+                            onClick = {
+                                onScheduleAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded))
+                            }
                         )
                         Spacer(modifier.weight(1f))
                         DateTimePicker(
                             modifier = modifier.fillMaxHeight(),
                             state = state,
-                            onAction = onAction
+                            onAction = onScheduleAction
                         )
                     }
                 }
@@ -112,9 +112,9 @@ fun ScheduleSearch(
                     TripSelectionDropDown(
                         modifier = modifier,
                         state = state,
-                        onAction = onAction,
+                        onScheduleAction = onScheduleAction,
+                        onTripAction = onTripAction,
                         getRoute = getRoute,
-                        displayOnMap = displayTripOnMap
                     )
                     Row(
                         modifier = modifier
@@ -126,7 +126,9 @@ fun ScheduleSearch(
                         ExpanderArrow(
                             modifier = modifier,
                             isExpanded = state.dropDownExpanded,
-                            onClick = { onAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded)) }
+                            onClick = {
+                                onScheduleAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded))
+                            }
                         )
                     }
                 }
@@ -140,9 +142,8 @@ private fun ScheduleSearchPreview(){
     ScheduleSearch(
         modifier = Modifier,
         state = ScheduleSearchState(),
-        onAction = {},
+        onScheduleAction = {},
         getRoute = { _ -> Queryable.Route("001", "M3-mas metró", "0b6324", 3) },
-        displayTripOnMap = { _, _, _ -> },
-        removeTripFromMap = {}
+        onTripAction = {}
     )
 }

@@ -16,10 +16,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jikokujo.schedule.presentation.map.TripAction as MapAction
 import com.jikokujo.schedule.presentation.map.Map
 import com.jikokujo.schedule.presentation.map.TripInfoViewModel
-import com.jikokujo.schedule.presentation.schedule.ScheduleAction as ScheduleAction
+import com.jikokujo.schedule.presentation.schedule.ScheduleAction
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearch
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchState
 import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
@@ -57,30 +56,19 @@ fun SchedulePage(modifier: Modifier){
             ScheduleSearch(
                 modifier = Modifier,
                 state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
-                onAction = { action ->
+                onScheduleAction = { action ->
                     scheduleSearchViewModel.viewModelScope.launch {
                         scheduleSearchViewModel.onAction(action)
+                    }
+                },
+                onTripAction = { action ->
+                    tripInfoViewModel.viewModelScope.launch {
+                        tripInfoViewModel.onAction(action)
                     }
                 },
                 getRoute = { routeId ->
                     scheduleSearchViewModel.getRoute(routeId)
                 },
-                displayTripOnMap = { trip, routeAssoc, selectedThrough ->
-                    tripInfoViewModel.viewModelScope.launch {
-                        tripInfoViewModel.onAction(
-                            MapAction.SelectTrip(
-                                trip = trip,
-                                routeAssociated = routeAssoc,
-                                selectedThrough = selectedThrough
-                            )
-                        )
-                    }
-                },
-                removeTripFromMap = {
-                    tripInfoViewModel.viewModelScope.launch {
-                        tripInfoViewModel.onAction(MapAction.UnselectTrip)
-                    }
-                }
             )
         }
     }

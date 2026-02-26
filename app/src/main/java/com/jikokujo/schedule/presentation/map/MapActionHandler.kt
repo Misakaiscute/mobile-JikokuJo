@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.jikokujo.R
+import com.jikokujo.core.utils.darken
+import com.jikokujo.core.utils.lighten
 import com.jikokujo.core.utils.rawFile
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.RoutePathPoint
@@ -19,7 +21,6 @@ import org.mapsforge.core.graphics.Join
 import org.mapsforge.core.graphics.Paint
 import org.mapsforge.core.graphics.Style
 import org.mapsforge.core.model.LatLong
-import org.mapsforge.core.model.Rotation
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
 import org.mapsforge.map.android.rendertheme.AssetsRenderTheme
 import org.mapsforge.map.android.util.AndroidUtil
@@ -72,42 +73,29 @@ class MapActionHandler {
             }
         }
     }
-    fun handleZoom(toZoomLevel: Byte) = coroutineScope.launch {
-        if (mapView.model.mapViewPosition.zoomLevel < toZoomLevel){
-            mapView.model.mapViewPosition.zoomIn(true)
-        } else if (mapView.model.mapViewPosition.zoomLevel > toZoomLevel){
-            mapView.model.mapViewPosition.zoomOut(true)
-        }
-    }
-    fun handleRotation(toRotationDeg: Float) = coroutineScope.launch {
-        mapView.model.mapViewPosition.rotation = Rotation(
-            toRotationDeg,
-            0f,
-            0f
-        )
-    }
     fun handleTrip(
-        layerState: MapLayerState,
-        stateAction: (MapAction) -> Unit
+        tripInfoState: TripInfoState,
+        pixelDensity: Float
     ) = coroutineScope.launch {
         val onlyMapVisible: Boolean = mapView.layerManager.layers.count() <= 1
-        val tripAvailable: Boolean = layerState.pathPoints.isNotEmpty() && layerState.stops.isNotEmpty()
+        val tripAvailable: Boolean = tripInfoState.pathPoints.isNotEmpty() && tripInfoState.stops.isNotEmpty()
         if (onlyMapVisible) {
             if (tripAvailable) {
-                shownShapeId = layerState.shapeId
+                shownShapeId = tripInfoState.shapeId
                 val tripPolyline = async {
                     return@async produceTripPolyline(
-                        pathPoints = layerState.pathPoints,
-                        stops = layerState.stops,
-                        routeAssociated = layerState.routeAssociated,
-                        selectedThrough = layerState.selectedThrough,
+                        pathPoints = tripInfoState.pathPoints,
+                        stops = tripInfoState.stops,
+                        routeAssociated = tripInfoState.routeAssociated,
+                        selectedThrough = tripInfoState.selectedThrough,
                     )
                 }
                 val tripStops = async {
                     return@async produceTripStops(
-                        stops = layerState.stops,
-                        routeAssociated = layerState.routeAssociated,
-                        selectedThrough = layerState.selectedThrough
+                        stops = tripInfoState.stops,
+                        routeAssociated = tripInfoState.routeAssociated,
+                        selectedThrough = tripInfoState.selectedThrough,
+                        pixelDensity = pixelDensity
                     )
                 }
                 tripPolyline.await().forEach {
@@ -116,31 +104,29 @@ class MapActionHandler {
                 tripStops.await().forEach {
                     mapView.layerManager.layers.add(it)
                 }
-                centerMapToTrip(layerState.pathPoints)
-                fitMapToTrip(
-                    pathPoints = layerState.pathPoints,
-                    setNewZoomLevel = { lvl -> stateAction(MapAction.SetZoomLevel(lvl)) }
-                )
+                centerMapToTrip(tripInfoState.pathPoints)
+                fitMapToTrip(tripInfoState.pathPoints)
             }
         } else {
             if (tripAvailable) {
-                val tripIdChanged: Boolean = shownShapeId != layerState.shapeId
+                val tripIdChanged: Boolean = shownShapeId != tripInfoState.shapeId
                 if (tripIdChanged) {
-                    shownShapeId = layerState.shapeId
+                    shownShapeId = tripInfoState.shapeId
                     clearLayersAboveMap()
                     val tripPolyline = async {
                         return@async produceTripPolyline(
-                            pathPoints = layerState.pathPoints,
-                            stops = layerState.stops,
-                            routeAssociated = layerState.routeAssociated,
-                            selectedThrough = layerState.selectedThrough,
+                            pathPoints = tripInfoState.pathPoints,
+                            stops = tripInfoState.stops,
+                            routeAssociated = tripInfoState.routeAssociated,
+                            selectedThrough = tripInfoState.selectedThrough,
                         )
                     }
                     val tripStops = async {
                         return@async produceTripStops(
-                            stops = layerState.stops,
-                            routeAssociated = layerState.routeAssociated,
-                            selectedThrough = layerState.selectedThrough
+                            stops = tripInfoState.stops,
+                            routeAssociated = tripInfoState.routeAssociated,
+                            selectedThrough = tripInfoState.selectedThrough,
+                            pixelDensity = pixelDensity
                         )
                     }
                     tripPolyline.await().forEach {
@@ -149,11 +135,8 @@ class MapActionHandler {
                     tripStops.await().forEach {
                         mapView.layerManager.layers.add(it)
                     }
-                    centerMapToTrip(layerState.pathPoints)
-                    fitMapToTrip(
-                        pathPoints = layerState.pathPoints,
-                        setNewZoomLevel = { lvl -> stateAction(MapAction.SetZoomLevel(lvl)) }
-                    )
+                    centerMapToTrip(tripInfoState.pathPoints)
+                    fitMapToTrip(pathPoints = tripInfoState.pathPoints)
                 }
             } else {
                 shownShapeId = null
@@ -169,10 +152,7 @@ class MapActionHandler {
             centerPoint.lon,
         ))
     }
-    fun fitMapToTrip(
-        pathPoints: List<RoutePathPoint>,
-        setNewZoomLevel: (Int) -> Unit
-    ){
+    fun fitMapToTrip(pathPoints: List<RoutePathPoint>){
         val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
 
         var isContained: Boolean =
@@ -180,30 +160,44 @@ class MapActionHandler {
             mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
 
         while (!isContained) {
-            handleZoom((mapView.model.mapViewPosition.zoomLevel - 1).toByte())
+            mapView.model.mapViewPosition.zoomOut(true)
             isContained =
                 mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
                 mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
         }
-        setNewZoomLevel(mapView.model.mapViewPosition.zoomLevel.toInt())
     }
     fun produceTripStops(
         stops: List<StopWithLocationAndStopTime>,
         routeAssociated: Queryable.Route?,
-        selectedThrough: Queryable?
+        selectedThrough: Queryable?,
+        pixelDensity: Float
     ): List<Marker> {
-        val markerSize = 20f
-        val markerBitmapAfterStop = MapUtils.createSimpleDotBitmap(
-            radius = markerSize,
-            color = routeAssociated?.getColor() ?: Color.Black
-        )
+        val markerSize = 19f
+        val markerBitmapAfterStop = ShapeBuilderFactory
+            .size(38, 38, pixelDensity)
+            .addCircle(
+                radius = markerSize,
+                color = routeAssociated?.getColor()?.darken(0.15f)?.toArgb() ?: Color.DarkGray.lighten(0.15f).toArgb()
+            )
+            .addCircle(
+                radius = markerSize - 5f,
+                color = routeAssociated?.getColor()?.lighten(0.15f)?.toArgb() ?: Color.DarkGray.darken(0.15f).toArgb()
+            )
+            .buildToMapsforgeBitmap()
         val markers: MutableList<Marker> = mutableListOf()
         val wasStopSelected = selectedThrough as? Queryable.Stop != null
         if (wasStopSelected) {
-            val markerBitmapBeforeStop = MapUtils.createSimpleDotBitmap(
-                radius = markerSize,
-                color = Color.Black
-            )
+            val markerBitmapBeforeStop = ShapeBuilderFactory
+                .size(38, 38, pixelDensity)
+                .addCircle(
+                    radius = markerSize,
+                    color = Color.DarkGray.darken(0.15f).toArgb()
+                )
+                .addCircle(
+                    radius = markerSize - 5f,
+                    color = Color.DarkGray.lighten(0.15f).toArgb()
+                )
+                .buildToMapsforgeBitmap()
             var selectedStopSeen = false
             stops.forEach { stop ->
                 if (selectedThrough.ids.contains(stop.id) && !selectedStopSeen){
@@ -281,7 +275,7 @@ class MapActionHandler {
         stroke: Float
     ): List<Polyline>{
         val paintBeforeStop: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
-            color = Color.Black.toArgb()
+            color = Color.DarkGray.toArgb()
             strokeWidth = stroke
             setStyle(Style.STROKE)
             setStrokeCap(Cap.ROUND)
