@@ -32,15 +32,16 @@ import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.model.arrivalTimeFormatted
 import com.jikokujo.schedule.data.model.getColor
+import com.jikokujo.schedule.presentation.map.TripAction
 import com.jikokujo.theme.Typography
 
 @Composable
 fun TripSelectionDropDown(
     modifier: Modifier,
     state: ScheduleSearchState,
-    onAction: (ScheduleAction) -> Unit,
+    onScheduleAction: (ScheduleAction) -> Unit,
+    onTripAction: (TripAction) -> Unit,
     getRoute: (String) -> Queryable.Route,
-    displayOnMap: (Trip, Queryable.Route, Queryable) -> Unit
 ){
     val itemHeight = 40
     val maxItems = 5
@@ -57,7 +58,7 @@ fun TripSelectionDropDown(
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .clickable(
-                        onClick = { onAction(ScheduleAction.ChangeDropDownState(true)) }
+                        onClick = { onTripAction(TripAction.ShowTripInfo) }
                     ),
                 state = state,
                 trip = state.selectedTrip,
@@ -88,12 +89,12 @@ fun TripSelectionDropDown(
                         .clickable(
                             enabled = !state.isLoading,
                             onClick = {
-                                onAction(ScheduleAction.SelectTrip(trip = state.trips[i]))
-                                displayOnMap(
-                                    state.trips[i],
-                                    getRoute(state.trips[i].routeId),
-                                    state.selectedQueryable!!
-                                )
+                                onScheduleAction(ScheduleAction.SelectTrip(trip = state.trips[i]))
+                                onTripAction(TripAction.SelectTrip(
+                                    trip = state.trips[i],
+                                    routeAssociated = getRoute(state.trips[i].routeId),
+                                    selectedThrough = state.selectedQueryable!!
+                                ))
                             }
                         ),
                     state = state,
