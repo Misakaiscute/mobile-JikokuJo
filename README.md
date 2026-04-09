@@ -17,7 +17,7 @@
 ## Using what?
 
 ### This part of the project is a native android mobile application, written in [Kotlin](https://gradle.org) with the help of the [Jetpack Compose framwork](https://developer.android.com/compose)
-### Dependency injection is handled by [Dagger-Hilt](https://dagger.dev/hilt), for network request [Retrofit]() is used, and for the map [Mapsforge](https://github.com/mapsforge/mapsforge) displays and [OSM](https://www.openstreetmap.org/about) provides the map data.
+### Dependency injection is handled by [Dagger-Hilt](https://dagger.dev/hilt), for network request [Retrofit]() is used, and as for the map, [Mapsforge](https://github.com/mapsforge/mapsforge) displays and [OSM](https://www.openstreetmap.org/about) provides the map data.
 ### The package manager and build tool for this project is [Gradle](https://gradle.org).
 
 ## How to install
@@ -27,19 +27,20 @@
 - #### JDK 21 set to the JAVA_HOME environment variable
 - #### Minimum Android SDK Version 28
 - #### Internet access
-- #### (**Highly recommended**) Using Android Studio for running the application
+
+### Android Studio:
+
+- #### It's highly recommended to use [Android Studio](https://developer.android.com/studio) for running the app. The installation instuctions will be utilizing Android Studio as well.
 
 ### Installation process:
 
 0. #### As the [api](https://github.com/Misakaiscute/backend-JikokuJo) is necessary to use this app, it's highly recommended to set that up first.
 1. #### Clone the repository into your selected directory
-2. #### Editing the **local.properties.example** file, and renaming it to **local.properties**. (set the sdk.dir to your Android SDK)
-3. #### Run the **gradlew.bat build** command from the directory, build the application.
-4. #### Start up an android emulator. (Android Studio integrated emulator highly recommended)
-5. #### Run the **gradlew.bat build** command from the directory, to install the application on the running device. (this might take a bit)
-6. #### 🏁You're ready to start using the app!🏁
+2. #### Edit the **local.properties.example** file, and rename it to **local.properties**. (set the sdk.dir to your Android SDKs' directory)
+3. #### Run the **gradlew.bat build** command from the directory, to build the application.
+4. #### Run the application through Android Studio [like this](https://developer.android.com/studio/run).
+5. #### 🏁You're ready to start using the app!🏁
 
 ## ⚠️Warning⚠️
 
 ### This is just one repository of the three, which make up the complete project. This repository doesn't provide any functionality without the [api](https://github.com/Misakaiscute/backend-JikokuJo), and for the full experience please consider checking out the [web app](https://github.com/Misakaiscute/frontend-JikokuJo).
-
