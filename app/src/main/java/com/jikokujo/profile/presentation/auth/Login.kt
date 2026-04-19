@@ -73,6 +73,7 @@ private fun LoginContent(
                 textAlign = TextAlign.Center
             )
         )
+        Spacer(modifier = Modifier.height(10.dp))
         TextFieldContainer(
             modifier = modifier,
             text = state.email,

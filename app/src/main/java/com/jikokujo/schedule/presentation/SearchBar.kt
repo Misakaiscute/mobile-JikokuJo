@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.schedule
+package com.jikokujo.schedule.presentation
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
@@ -18,13 +18,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
@@ -86,6 +92,14 @@ private fun CustomSearchBar(
     onTrailingIconClick: () -> Unit,
     onValueChange: (String) -> Unit,
 ){
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(text)) }
+
+    LaunchedEffect(text) {
+        if (text != textFieldValue.text) {
+            textFieldValue = TextFieldValue(text, selection = TextRange(text.length))
+        }
+    }
+
     val interactionSource = remember { MutableInteractionSource() }
     val colors = TextFieldDefaults.colors().copy(
         focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -100,8 +114,11 @@ private fun CustomSearchBar(
     )
     BasicTextField(
         modifier = modifier,
-        value = text,
-        onValueChange = onValueChange,
+        value = textFieldValue,
+        onValueChange = { newValue ->
+            textFieldValue = newValue
+            onValueChange(newValue.text)
+        },
         textStyle = Typography.bodyMedium.merge(
             color = MaterialTheme.colorScheme.onSurface
         ),
@@ -109,7 +126,7 @@ private fun CustomSearchBar(
         singleLine = true,
         decorationBox = @Composable { innerTextField ->
             TextFieldDefaults.DecorationBox(
-                value = text,
+                value = textFieldValue.text,
                 visualTransformation = VisualTransformation.None,
                 innerTextField = innerTextField,
                 placeholder = {

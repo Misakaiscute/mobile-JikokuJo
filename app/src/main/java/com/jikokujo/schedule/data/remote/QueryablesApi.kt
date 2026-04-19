@@ -6,22 +6,19 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.http.Path
 
 interface QueryablesApi {
     @Headers("accept: application/json")
     @GET("queryables")
     suspend fun getQueryables(): ResponseRoot<GetQueryablesObj>
 
+    @FormUrlEncoded
     @Headers("accept: application/json")
-    @GET("route/{routeId}/time/{year}{month}{day}/{hour}{minute}")
+    @GET("route/trip")
     suspend fun getTripsFromRoute(
-        @Path("routeId") routeId: String,
-        @Path("year") year: String,
-        @Path("month") month: String,
-        @Path("day") day: String,
-        @Path("hour") hour: String,
-        @Path("minute") minute: String,
+        @Field("route_id") routeId: String,
+        @Field("date") date: String,
+        @Field("time") time: String,
     ): ResponseRoot<GetTripsObj>
 
     @FormUrlEncoded
@@ -33,15 +30,17 @@ interface QueryablesApi {
         @Field("time") time: String,
     ): ResponseRoot<GetTripsObj>
 
+    @FormUrlEncoded
     @Headers("accept: application/json")
-    @GET("trip/{tripId}/shapes")
+    @POST("trip/shapes")
     suspend fun getShapesForTrip(
-        @Path("tripId") tripId: String
+        @Field("trip_id") tripId: String
     ): ResponseRoot<GetShapesForTripObj>
 
+    @FormUrlEncoded
     @Headers("accept: application/json")
-    @GET("trip/{tripId}/stops")
+    @POST("trip/stops")
     suspend fun getStopsForTrip(
-        @Path("tripId") tripId: String
+        @Field("trip_id") tripId: String
     ): ResponseRoot<GetStopsForTripObj>
 }

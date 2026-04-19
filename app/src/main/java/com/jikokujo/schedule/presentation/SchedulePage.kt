@@ -16,12 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jikokujo.schedule.presentation.map.Map
-import com.jikokujo.schedule.presentation.map.TripInfoViewModel
-import com.jikokujo.schedule.presentation.schedule.ScheduleAction
-import com.jikokujo.schedule.presentation.schedule.ScheduleSearch
-import com.jikokujo.schedule.presentation.schedule.ScheduleSearchState
-import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
+import com.jikokujo.map.presentation.Map
+import com.jikokujo.map.presentation.TripInfoViewModel
 import com.jikokujo.theme.Typography
 import kotlinx.coroutines.launch
 

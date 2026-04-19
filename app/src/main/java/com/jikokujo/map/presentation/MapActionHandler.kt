@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.map
+package com.jikokujo.map.presentation
 
 import android.content.Context
 import android.util.Log
@@ -8,6 +8,8 @@ import com.jikokujo.R
 import com.jikokujo.core.utils.darken
 import com.jikokujo.core.utils.lighten
 import com.jikokujo.core.utils.rawFile
+import com.jikokujo.map.utils.MapUtils
+import com.jikokujo.map.utils.ShapeBuilderFactory
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
@@ -30,6 +32,7 @@ import org.mapsforge.map.layer.overlay.Marker
 import org.mapsforge.map.layer.overlay.Polyline
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
+import kotlin.collections.forEach
 
 class MapActionHandler {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
@@ -147,10 +150,12 @@ class MapActionHandler {
     fun centerMapToTrip(pathPoints: List<RoutePathPoint>){
         val centerPoint = MapUtils.calculateCenterPoint(pathPoints)
 
-        mapView.setCenter(LatLong(
-             centerPoint.lat,
-            centerPoint.lon,
-        ))
+        mapView.setCenter(
+            LatLong(
+                centerPoint.lat,
+                centerPoint.lon,
+            )
+        )
     }
     fun fitMapToTrip(pathPoints: List<RoutePathPoint>){
         val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
@@ -173,29 +178,29 @@ class MapActionHandler {
         pixelDensity: Float
     ): List<Marker> {
         val markerSize = 19f
-        val markerBitmapAfterStop = ShapeBuilderFactory
+        val markerBitmapAfterStop = ShapeBuilderFactory.Companion
             .size(38, 38, pixelDensity)
             .addCircle(
                 radius = markerSize,
-                color = routeAssociated?.getColor()?.darken(0.15f)?.toArgb() ?: Color.DarkGray.lighten(0.15f).toArgb()
+                color = routeAssociated?.getColor()?.darken(0.15f)?.toArgb() ?: Color.Companion.DarkGray.lighten(0.15f).toArgb()
             )
             .addCircle(
                 radius = markerSize - 5f,
-                color = routeAssociated?.getColor()?.lighten(0.15f)?.toArgb() ?: Color.DarkGray.darken(0.15f).toArgb()
+                color = routeAssociated?.getColor()?.lighten(0.15f)?.toArgb() ?: Color.Companion.DarkGray.darken(0.15f).toArgb()
             )
             .buildToMapsforgeBitmap()
         val markers: MutableList<Marker> = mutableListOf()
         val wasStopSelected = selectedThrough as? Queryable.Stop != null
         if (wasStopSelected) {
-            val markerBitmapBeforeStop = ShapeBuilderFactory
+            val markerBitmapBeforeStop = ShapeBuilderFactory.Companion
                 .size(38, 38, pixelDensity)
                 .addCircle(
                     radius = markerSize,
-                    color = Color.DarkGray.darken(0.15f).toArgb()
+                    color = Color.Companion.DarkGray.darken(0.15f).toArgb()
                 )
                 .addCircle(
                     radius = markerSize - 5f,
-                    color = Color.DarkGray.lighten(0.15f).toArgb()
+                    color = Color.Companion.DarkGray.lighten(0.15f).toArgb()
                 )
                 .buildToMapsforgeBitmap()
             var selectedStopSeen = false
@@ -203,21 +208,25 @@ class MapActionHandler {
                 if (selectedThrough.ids.contains(stop.id) && !selectedStopSeen){
                     selectedStopSeen = true
                 }
-                markers.add(Marker(
-                    LatLong(stop.location.lat, stop.location.lon),
-                    if (selectedStopSeen) markerBitmapAfterStop else markerBitmapBeforeStop,
-                    0,
-                    0
-                ))
+                markers.add(
+                    Marker(
+                        LatLong(stop.location.lat, stop.location.lon),
+                        if (selectedStopSeen) markerBitmapAfterStop else markerBitmapBeforeStop,
+                        0,
+                        0
+                    )
+                )
             }
         } else {
             stops.forEach { stop ->
-                markers.add(Marker(
-                    LatLong(stop.location.lat, stop.location.lon),
-                    markerBitmapAfterStop,
-                    0,
-                    0
-                ))
+                markers.add(
+                    Marker(
+                        LatLong(stop.location.lat, stop.location.lon),
+                        markerBitmapAfterStop,
+                        0,
+                        0
+                    )
+                )
             }
         }
         return markers
@@ -275,7 +284,7 @@ class MapActionHandler {
         stroke: Float
     ): List<Polyline>{
         val paintBeforeStop: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
-            color = Color.DarkGray.toArgb()
+            color = Color.Companion.DarkGray.toArgb()
             strokeWidth = stroke
             setStyle(Style.STROKE)
             setStrokeCap(Cap.ROUND)
@@ -291,15 +300,19 @@ class MapActionHandler {
         )
         for (i in 0..<pathPoints.count()){
             if (i < switchingPoint){
-                routeBeforeStop.add(LatLong(
-                    pathPoints[i].location.lat,
-                    pathPoints[i].location.lon
-                ))
+                routeBeforeStop.add(
+                    LatLong(
+                        pathPoints[i].location.lat,
+                        pathPoints[i].location.lon
+                    )
+                )
             } else {
-                routeAfterStop.add(LatLong(
-                    pathPoints[i].location.lat,
-                    pathPoints[i].location.lon
-                ))
+                routeAfterStop.add(
+                    LatLong(
+                        pathPoints[i].location.lat,
+                        pathPoints[i].location.lon
+                    )
+                )
             }
         }
         val routeAfterStopPolyline = Polyline(paintAfterStop, AndroidGraphicFactory.INSTANCE).apply{

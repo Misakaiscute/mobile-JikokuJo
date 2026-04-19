@@ -6,8 +6,8 @@ import com.jikokujo.R
 
 sealed interface Queryable {
     data class Route(
-        @SerializedName("route_id") val id: String,
-        @SerializedName("route_short_name") val shortName: String,
+        @SerializedName("id") val id: String,
+        @SerializedName("short_name") val shortName: String,
         @SerializedName("color") val color: String,
         @SerializedName("type") val type: Int
     ): Queryable

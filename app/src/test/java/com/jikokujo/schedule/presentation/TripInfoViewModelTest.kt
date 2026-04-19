@@ -5,8 +5,8 @@ import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.presentation.map.TripAction
-import com.jikokujo.schedule.presentation.map.TripInfoViewModel
+import com.jikokujo.map.presentation.TripAction
+import com.jikokujo.map.presentation.TripInfoViewModel
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test

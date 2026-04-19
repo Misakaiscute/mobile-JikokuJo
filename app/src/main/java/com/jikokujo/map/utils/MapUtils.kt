@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.map
+package com.jikokujo.map.utils
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb

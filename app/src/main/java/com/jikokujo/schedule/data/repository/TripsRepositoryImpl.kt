@@ -80,11 +80,8 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
                 is Queryable.Route -> {
                     api.getTripsFromRoute(
                         routeId = selected.id,
-                        year = dateTime.year.toString(),
-                        month = String.format("%02d", dateTime.monthValue),
-                        day = String.format("%02d", dateTime.dayOfMonth),
-                        hour = String.format("%02d", dateTime.hour),
-                        minute = String.format("%02d", dateTime.minute)
+                        date = dateTime.year.toString() + String.format("%02d", dateTime.monthValue) + String.format("%02d", dateTime.dayOfMonth),
+                        time = String.format("%02d", dateTime.hour) + String.format("%02d", dateTime.minute)
                     )
                 }
             }

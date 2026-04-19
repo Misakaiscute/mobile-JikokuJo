@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.map
+package com.jikokujo.map.presentation
 
 import androidx.lifecycle.ViewModel
 import com.jikokujo.schedule.data.model.Queryable

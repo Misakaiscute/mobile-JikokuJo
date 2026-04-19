@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.map
+package com.jikokujo.map.presentation
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -33,6 +33,7 @@ import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.arrivalTimeFormatted
 import com.jikokujo.schedule.data.model.getColor
+import com.jikokujo.map.utils.ShapeBuilderFactory
 import com.jikokujo.theme.Typography
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,25 +100,25 @@ private fun TripInfoWithStopSelected(
     val routeColor = state.routeAssociated?.getColor() ?: Color.Black
 
     val startingPointColor = if (switchingStopIndex == 0) routeColor else Color.DarkGray
-    val startingPointBitmap = remember { ShapeBuilderFactory
+    val startingPointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(startY = 0.5f, width = 12f, color = startingPointColor.toArgb())
         .addCircle(radius = circleSize, color = startingPointColor.darken(0.15f).toArgb())
         .addCircle(radius = circleSize - 5f, color = startingPointColor.lighten(0.15f).toArgb())
         .buildToBitmap() }
-    val intermediateBeforePointBitmap = remember { ShapeBuilderFactory
+    val intermediateBeforePointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(width = 12f, color = Color.DarkGray.toArgb())
         .addCircle(radius = circleSize, color = Color.DarkGray.darken(0.15f).toArgb())
         .addCircle(radius = circleSize - 5f, color = Color.DarkGray.lighten(0.15f).toArgb())
         .buildToBitmap() }
-    val intermediateAfterPointBitmap = remember { ShapeBuilderFactory
+    val intermediateAfterPointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(width = 12f, color = routeColor.toArgb())
         .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
         .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
         .buildToBitmap() }
-    val switchingPointBitmap = remember { ShapeBuilderFactory
+    val switchingPointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(endY = 0.5f, width = 12f, color = Color.DarkGray.toArgb())
         .addVerticalLine(startY = 0.5f, width = 12f, color = routeColor.toArgb())
@@ -125,7 +126,7 @@ private fun TripInfoWithStopSelected(
         .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
         .buildToBitmap() }
     val endingPointColor = if (switchingStopIndex == state.stops.count() - 1) Color.DarkGray else routeColor
-    val endingPointBitmap = remember { ShapeBuilderFactory
+    val endingPointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(endY = 0.5f, width = 12f, color = endingPointColor.toArgb())
         .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
@@ -164,19 +165,19 @@ private fun TripInfoWithRouteSelected(
     val circleSize = 12f
     val routeColor = state.routeAssociated?.getColor() ?: Color.Black
 
-    val startingPointBitmap = remember { ShapeBuilderFactory
+    val startingPointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(startY = 0.5f, width = 12f, color = routeColor.toArgb())
         .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
         .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
         .buildToBitmap() }
-    val intermediatePointBitmap = remember { ShapeBuilderFactory
+    val intermediatePointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(width = 12f, color = routeColor.toArgb())
         .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
         .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
         .buildToBitmap() }
-    val endingPointBitmap = remember { ShapeBuilderFactory
+    val endingPointBitmap = remember { ShapeBuilderFactory.Companion
         .size(elementHeight, elementHeight, pixelDensity)
         .addVerticalLine(endY = 0.5f, width = 12f, color = routeColor.toArgb())
         .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())

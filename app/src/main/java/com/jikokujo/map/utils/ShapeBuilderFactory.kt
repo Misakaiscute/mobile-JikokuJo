@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.map
+package com.jikokujo.map.utils
 
 import android.graphics.Bitmap
 import org.mapsforge.core.graphics.Bitmap as MapsforgeBitmap

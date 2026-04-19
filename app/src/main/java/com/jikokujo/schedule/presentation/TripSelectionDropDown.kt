@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.schedule
+package com.jikokujo.schedule.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,7 +32,7 @@ import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
 import com.jikokujo.schedule.data.model.arrivalTimeFormatted
 import com.jikokujo.schedule.data.model.getColor
-import com.jikokujo.schedule.presentation.map.TripAction
+import com.jikokujo.map.presentation.TripAction
 import com.jikokujo.theme.Typography
 
 @Composable

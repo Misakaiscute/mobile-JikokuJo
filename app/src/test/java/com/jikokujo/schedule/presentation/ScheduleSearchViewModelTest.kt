@@ -3,9 +3,6 @@ package com.jikokujo.schedule.presentation
 import com.jikokujo.schedule.data.MockQueryablesRepositoryImpl
 import com.jikokujo.schedule.data.MockTripsRepositoryImpl
 import com.jikokujo.schedule.data.model.Queryable
-import com.jikokujo.schedule.presentation.schedule.ScheduleAction
-import com.jikokujo.schedule.presentation.schedule.DropDowns
-import com.jikokujo.schedule.presentation.schedule.ScheduleSearchViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking

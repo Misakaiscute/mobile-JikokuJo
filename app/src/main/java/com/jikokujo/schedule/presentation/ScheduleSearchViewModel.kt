@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.schedule
+package com.jikokujo.schedule.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

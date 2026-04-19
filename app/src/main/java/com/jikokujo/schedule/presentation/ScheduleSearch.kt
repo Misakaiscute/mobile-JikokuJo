@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.schedule
+package com.jikokujo.schedule.presentation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.core.utils.loadingShimmer
 import com.jikokujo.schedule.data.model.Queryable
-import com.jikokujo.schedule.presentation.map.TripAction
+import com.jikokujo.map.presentation.TripAction
 
 @Composable
 fun ScheduleSearch(

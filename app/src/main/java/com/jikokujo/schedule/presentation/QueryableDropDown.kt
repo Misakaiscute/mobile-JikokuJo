@@ -1,4 +1,4 @@
-package com.jikokujo.schedule.presentation.schedule
+package com.jikokujo.schedule.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
