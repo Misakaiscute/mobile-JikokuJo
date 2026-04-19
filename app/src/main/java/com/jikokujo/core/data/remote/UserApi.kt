@@ -27,11 +27,11 @@ interface UserApi {
 
     @FormUrlEncoded
     @Headers("accept: application/json")
-    @POST("user/login/{remember}")
+    @POST("user/login")
     suspend fun login(
         @Field("email") email: String,
         @Field("password") password: String,
-        @Path("remember") remember: Boolean = false
+        @Field("remember") remember: Boolean = false
     ): ResponseRoot<UserLoginObj>
 
     @GET("user/logout")
@@ -44,19 +44,6 @@ interface UserApi {
     suspend fun getUser(
         @Header("Authorization") authToken: String
     ): Response<ResponseRoot<GetUserObj>>
-
-    @Headers("accept: application/json")
-    @PUT("user/update")
-    suspend fun updateUser(
-        @Header("Authorization") authToken: String,
-        @Body user: User
-    ): Response<ResponseRoot<EmptyPayload>>
-
-    @Headers("accept: application/json")
-    @DELETE("user/delete")
-    suspend fun deleteUser(
-        @Header("Authorization") authToken: String
-    ): Response<ResponseRoot<EmptyPayload>>
 
     @FormUrlEncoded
     @Headers("accept: application/json")
