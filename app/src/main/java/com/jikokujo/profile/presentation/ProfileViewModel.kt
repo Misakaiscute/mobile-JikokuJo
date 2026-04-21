@@ -71,7 +71,7 @@ class ProfileViewModel @Inject constructor(
     private suspend fun logout(){
         userRepository.logout()
         _state.update {
-            it.copy(user = null)
+            it.copy(isLoggedIn = false)
         }
     }
     private suspend fun attemptAuth(){
@@ -83,12 +83,16 @@ class ProfileViewModel @Inject constructor(
         }
         if (userRepository.check()) {
             _state.update {
-                it.copy(loading = it.loading - Loadable.Authentication())
+                it.copy(
+                    isLoggedIn = true,
+                    favourites = listOf(),
+                    loading = it.loading - Loadable.Authentication()
+                )
             }
         } else {
             _state.update {
                 it.copy(
-                    user = null,
+                    isLoggedIn = false,
                     loading = it.loading - Loadable.Authentication(),
                     error = it.error + Loadable.Authentication("Felhasználó nincs bejelentkezve")
                 )

@@ -1,6 +1,7 @@
 package com.jikokujo.profile.presentation.auth
 
 import androidx.lifecycle.ViewModel
+import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.profile.utils.validateEmail
 import com.jikokujo.core.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,22 +74,23 @@ class LoginViewModel @Inject constructor(
             }
             return
         }
-        userRepository.login(
+        val response: ApiResult<Nothing?> = userRepository.login(
             email = _state.value.email,
             password = _state.value.password,
             remember = _state.value.rememberUser
         )
-        if (userRepository.userAccessToken != null){
-            _state.update {
-                LoginState()
-            }
-            onSuccess()
-        } else {
-            _state.update {
+        when (response){
+            is ApiResult.Error -> _state.update {
                 it.copy(
-                    submitError = "Hibás email cím vagy jelszó.",
+                    submitError = response.errorMsg,
                     isLoading = false
                 )
+            }
+            is ApiResult.Success -> {
+                _state.update {
+                    LoginState()
+                }
+                onSuccess()
             }
         }
     }

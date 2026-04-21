@@ -18,7 +18,7 @@ interface UserApi {
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("password_confirmation") passwordConfirmation: String,
-    ): Response<ResponseRoot<EmptyPayload>>
+    ): ResponseRoot<EmptyPayload>
 
     @FormUrlEncoded
     @Headers("accept: application/json")
@@ -27,18 +27,18 @@ interface UserApi {
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("remember") remember: Boolean = false
-    ): Response<ResponseRoot<UserLoginObj>>
+    ): ResponseRoot<UserLoginObj>
 
     @POST("user/logout")
     suspend fun logout(
         @Header("Authorization") authToken: String
-    ): Response<ResponseRoot<EmptyPayload>>
+    ): ResponseRoot<EmptyPayload>
 
     @Headers("accept: application/json")
     @GET("user")
     suspend fun getUser(
         @Header("Authorization") authToken: String
-    ): Response<ResponseRoot<GetUserObj>>
+    ): ResponseRoot<GetUserObj>
 
     @FormUrlEncoded
     @Headers("accept: application/json")
@@ -47,12 +47,11 @@ interface UserApi {
         @Header("Authorization") authToken: String,
         @Field("route_id") routeId: String,
         @Field("time") atMins: Int
-    ): Response<ResponseRoot<ToggleFavouriteObj>>
+    ): ResponseRoot<ToggleFavouriteObj>
 
-    @FormUrlEncoded
     @Headers("accept: application/json")
     @GET("user/favourites")
     suspend fun getFavourites(
         @Header("Authorization") authToken: String,
-    ): Response<ResponseRoot<GetFavouritesObj>>
+    ): ResponseRoot<GetFavouritesObj>
 }

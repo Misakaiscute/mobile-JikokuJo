@@ -8,11 +8,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.jikokujo.core.data.model.Favourite
 import com.jikokujo.core.data.model.User
 import com.jikokujo.core.data.remote.ApiResult
+import com.jikokujo.core.data.remote.EmptyPayload
 import com.jikokujo.core.data.remote.UserApi
 import com.jikokujo.core.data.repository.UserRepository.Companion.toBearer
+import com.jikokujo.core.utils.errorAs
 import com.jikokujo.schedule.data.model.Queryable
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -30,13 +33,14 @@ class UserRepositoryImpl @Inject constructor(
         if (this.userAccessToken == null){
             return false
         } else {
-            val response = api.getUser(this.userAccessToken!!.toBearer())
-            val isTokenValid: Boolean = response.code() / 200 < 100 && response.code() % 200 < 100
-
-            if (isTokenValid) {
+            try {
+                api.getUser(this.userAccessToken!!.toBearer())
+            } catch (e: HttpException) {
                 deleteAccessToken()
+                return false
             }
-            return isTokenValid
+
+            return true
         }
     }
 
@@ -47,7 +51,7 @@ class UserRepositoryImpl @Inject constructor(
         password: String,
         passwordConfirmation: String,
     ): ApiResult<Nothing?> {
-        val response = try {
+        try {
             api.register(
                 firstName = firstName,
                 lastName = lastName,
@@ -55,17 +59,17 @@ class UserRepositoryImpl @Inject constructor(
                 password = password,
                 passwordConfirmation = passwordConfirmation
             )
+        } catch (e: HttpException){
+            return when (e.code()){
+                422 -> ApiResult.Error("Ez az email cím már használatban van.")
+                else -> ApiResult.Error("Valami hiba történt.")
+            }
         } catch (e: Exception) {
             Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
             return ApiResult.Error("Sikertelen regisztráció.")
         }
-
-        return if (response.body()!!.errors.isEmpty()){
-            ApiResult.Success(null)
-        } else {
-            ApiResult.Error(response.body()!!.errors.firstOrNull() ?: "Valami hiba történt.")
-        }
+        return ApiResult.Success(null)
     }
     override suspend fun login(
         email: String,
@@ -78,18 +82,16 @@ class UserRepositoryImpl @Inject constructor(
                 password = password,
                 remember = remember
             )
+        } catch (e: HttpException){
+            return ApiResult.Error("Hibás email cím vagy jelszó.")
         } catch (e: Exception) {
             Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
-            return ApiResult.Error("Valami hiba történt.")
+            return ApiResult.Error("Szerver nem elérhető.")
         }
 
-        if (response.body()!!.errors.isEmpty()){
-            storeAccessToken(response.body()!!.data!!.userAccessToken)
-            return ApiResult.Success(null)
-        } else {
-            return ApiResult.Error(response.body()!!.errors.firstOrNull() ?: "Valami hiba történt.")
-        }
+        storeAccessToken(response.data!!.userAccessToken)
+        return ApiResult.Success(null)
     }
     override suspend fun logout(): ApiResult<Nothing?> {
         if (!check()){
@@ -108,17 +110,16 @@ class UserRepositoryImpl @Inject constructor(
 
         val response = try {
             api.getUser(this.userAccessToken!!.toBearer())
+        } catch (e: HttpException){
+            val error: String = e.errorAs<EmptyPayload>().errors.firstOrNull() ?: "Valami hiba történt."
+            return ApiResult.Error(error)
         } catch (e: Exception) {
             Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
-            return ApiResult.Error("Valami hiba történt.")
+            return ApiResult.Error("Szerver nem elérhető.")
         }
 
-        return if (response.body()!!.errors.isEmpty()){
-            ApiResult.Success(response.body()!!.data!!.user)
-        } else {
-            ApiResult.Error(response.body()!!.errors.firstOrNull() ?: "Valami hiba történt.")
-        }
+        return ApiResult.Success(response.data!!.user)
     }
     override suspend fun getFavourites(): ApiResult<List<Favourite>> {
         if (!check()){
@@ -127,19 +128,17 @@ class UserRepositoryImpl @Inject constructor(
 
         val response = try {
             api.getFavourites(this.userAccessToken!!.toBearer())
+        } catch (e: HttpException){
+            val error: String = e.errorAs<EmptyPayload>().errors.firstOrNull() ?: "Valami hiba történt."
+            return ApiResult.Error(error)
         } catch (e: Exception) {
             Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
-            return ApiResult.Error("Valami hiba történt.")
+            return ApiResult.Error("Szerver nem elérhető.")
         }
 
-        return if (response.body()!!.errors.isEmpty()){
-            ApiResult.Success(response.body()!!.data!!.favourites)
-        } else {
-            ApiResult.Error(response.body()!!.errors.firstOrNull() ?: "Valami hiba történt.")
-        }
+        return ApiResult.Success(response.data!!.favourites)
     }
-
     override suspend fun toggleFavourite(routeId: String, time: Int): ApiResult<Queryable.Route?> {
         if (!check()){
             return ApiResult.Error("Felhasználó nincs bejelentkezve.")
@@ -151,19 +150,19 @@ class UserRepositoryImpl @Inject constructor(
                 routeId = routeId,
                 atMins = time
             )
+        } catch (e: HttpException){
+            val error: String = e.errorAs<EmptyPayload>().errors.firstOrNull() ?: "Valami hiba történt."
+            return ApiResult.Error(error)
         } catch (e: Exception) {
             Log.e("EXCEPTION", e.message.toString())
             e.printStackTrace()
-            return ApiResult.Error("Valami hiba történt.")
+            return ApiResult.Error("Szerver nem elérhető.")
         }
-        return if (response.body()!!.errors.isEmpty()){
-            if (response.body()!!.data!!.isCreated){
-                ApiResult.Success(response.body()!!.data!!.route)
-            } else {
-                ApiResult.Success(null)
-            }
+
+        return if (response.data!!.isCreated){
+            ApiResult.Success(response.data.route)
         } else {
-            ApiResult.Error(response.body()!!.errors.firstOrNull() ?: "Valami hiba történt.")
+            ApiResult.Success(null)
         }
     }
 

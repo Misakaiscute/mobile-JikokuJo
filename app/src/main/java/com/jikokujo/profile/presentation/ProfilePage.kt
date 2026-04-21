@@ -18,12 +18,11 @@ fun ProfilePage(modifier: Modifier){
     val profileViewModel = viewModel<ProfileViewModel>()
     val state = profileViewModel.state.collectAsStateWithLifecycle().value
 
-    //TODO: Add some sort of loading indication
     Surface(
         modifier = modifier.padding(horizontal = 10.dp),
         color = MaterialTheme.colorScheme.background
     ) {
-        if (state.user == null) {
+        if (!state.isLoggedIn) {
             AuthPage(
                 modifier = Modifier,
                 onAuthSuccess = {

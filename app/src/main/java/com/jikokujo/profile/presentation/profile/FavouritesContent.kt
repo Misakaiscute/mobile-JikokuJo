@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
@@ -48,7 +49,7 @@ fun FavouritesContent(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (profileState.loading.contains(Loadable.Favourites())) {
+        if (profileState.loading.contains(Loadable.Favourites()) || profileState.favourites == null) {
             for(i in 0..8){
                 FavouriteItem(
                     modifier = Modifier.loadingShimmer(
@@ -64,27 +65,45 @@ fun FavouritesContent(
         } else if (profileState.error.contains(Loadable.Favourites())) {
             Row(
                 modifier = Modifier
-                    .height(200.dp)
+                    .height(100.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Nincsen még egy elem sem a kedvencek között.",
+                    text = "Valami hiba történt.",
                     style = Typography.bodyLarge.merge(
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.error
                     )
                 )
             }
         } else {
-            profileState.favourites!!.forEach { fav ->
-                FavouriteItem(
-                    modifier = Modifier,
-                    favourite = fav,
-                    onAction = { action ->
-                        onAction(action)
-                    }
-                )
+            if (profileState.favourites.count() < 1){
+                Row(
+                    modifier = Modifier
+                        .height(100.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Nincsen még egy járat sem a kedvencek között.",
+                        style = Typography.bodyLarge.merge(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center
+                        )
+                    )
+                }
+            } else {
+                profileState.favourites.forEach { fav ->
+                    FavouriteItem(
+                        modifier = Modifier,
+                        favourite = fav,
+                        onAction = { action ->
+                            onAction(action)
+                        }
+                    )
+                }
             }
         }
     }
