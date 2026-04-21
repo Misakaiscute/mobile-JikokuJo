@@ -7,7 +7,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.jikokujo.schedule.presentation.SchedulePage
-import com.jikokujo.profile.presentation.ProfileNavRoot
+import com.jikokujo.profile.presentation.ProfilePage
 
 sealed interface MainPage : NavKey{
     data object Schedule : MainPage
@@ -27,7 +27,7 @@ fun NavigationRoot(
                 SchedulePage(modifier)
             }
             entry<MainPage.Profile> {
-                ProfileNavRoot(modifier)
+                ProfilePage(modifier)
             }
         },
         //TODO: TRANSITION SPEC TO ADD

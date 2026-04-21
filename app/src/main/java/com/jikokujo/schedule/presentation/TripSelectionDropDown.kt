@@ -26,13 +26,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import com.jikokujo.core.utils.timeFormatter
+import com.jikokujo.map.presentation.TripAction
 import com.jikokujo.schedule.data.model.Location
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.schedule.data.model.arrivalTimeFormatted
 import com.jikokujo.schedule.data.model.getColor
-import com.jikokujo.map.presentation.TripAction
 import com.jikokujo.theme.Typography
 
 @Composable
@@ -148,7 +148,7 @@ private fun TripSelectionDropDownItem(
             }
             Text(
                 modifier = Modifier.padding(horizontal = 7.dp),
-                text = trip.stops[firstStopIdx].arrivalTimeFormatted() + " - " + trip.stops.last().arrivalTimeFormatted(),
+                text = timeFormatter(trip.stops[firstStopIdx].arrivalTime) + " - " + timeFormatter(trip.stops.last().arrivalTime),
                 style = Typography.bodyMedium.merge(
                     color = itemTextColor,
                     textAlign = TextAlign.Center

@@ -2,9 +2,9 @@ package com.jikokujo.profile.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation3.runtime.NavKey
-import com.jikokujo.core.data.remote.ApiResult
+import com.jikokujo.core.data.model.Favourite
 import com.jikokujo.core.data.model.User
+import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.core.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -14,22 +14,40 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed interface ProfilePage: NavKey {
-    data object Main: ProfilePage
-    data object Favourites: ProfilePage
+sealed interface Loadable {
+    data class Authentication(val onError: String? = null): Loadable {
+        override fun equals(other: Any?): Boolean = other is Authentication
+        override fun hashCode(): Int {
+            return super.hashCode()
+        }
+    }
+    data class User(val onError: String? = null): Loadable {
+        override fun equals(other: Any?): Boolean = other is Loadable.User
+        override fun hashCode(): Int {
+            return super.hashCode()
+        }
+    }
+    data class Favourites(val onError: String? = null): Loadable {
+        override fun equals(other: Any?): Boolean = other is Favourites
+        override fun hashCode(): Int {
+            return super.hashCode()
+        }
+    }
 }
 
 data class ProfileState(
     val user: User? = null,
-    val backStack: List<ProfilePage>? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val favourites: List<Favourite>? = null,
+    val isLoggedIn: Boolean = false,
+    val loading: Set<Loadable> = emptySet(),
+    val error: Set<Loadable> = emptySet()
 )
 sealed interface ProfileAction{
+    data object FetchUser: ProfileAction
     data object AttemptAuth: ProfileAction
-    data class Navigate(val page: ProfilePage): ProfileAction
-    data object NavigateBack: ProfileAction
     data object LogOut: ProfileAction
+    data object FetchFavourites: ProfileAction
+    data class ToggleFavourite(val favourite: Favourite): ProfileAction
 }
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -44,72 +62,80 @@ class ProfileViewModel @Inject constructor(
         }
     }
     suspend fun onAction(action: ProfileAction) = when(action){
-        is ProfileAction.AttemptAuth -> attemptAuth()
-        is ProfileAction.Navigate -> navigate(action.page)
-        is ProfileAction.NavigateBack -> navigate(null)
-        is ProfileAction.LogOut -> logout()
+        ProfileAction.AttemptAuth -> attemptAuth()
+        ProfileAction.LogOut -> logout()
+        ProfileAction.FetchFavourites -> getFavourites()
+        is ProfileAction.ToggleFavourite -> {}
+        ProfileAction.FetchUser -> getUser()
     }
     private suspend fun logout(){
         userRepository.logout()
         _state.update {
-            it.copy(
-                user = null,
-                backStack = null
-            )
+            it.copy(user = null)
         }
     }
     private suspend fun attemptAuth(){
         _state.update {
             it.copy(
-                isLoading = true,
-                error = null
+                loading = it.loading + Loadable.Authentication(),
+                error = it.error - Loadable.Authentication()
             )
         }
-        userRepository.getLoggedInUser()
-        when (userRepository.loggedInUser){
-            is ApiResult.Success -> _state.update {
-                it.copy(
-                    user = (userRepository.loggedInUser as ApiResult.Success).data,
-                    backStack = listOf(ProfilePage.Main),
-                    isLoading = false,
-                    error = null
-                )
+        if (userRepository.check()) {
+            _state.update {
+                it.copy(loading = it.loading - Loadable.Authentication())
             }
-            is ApiResult.Error -> _state.update {
+        } else {
+            _state.update {
                 it.copy(
                     user = null,
-                    backStack = null,
-                    isLoading = false,
-                    error = (userRepository.loggedInUser as ApiResult.Error).errorMsg
-                )
-            }
-            else -> _state.update {
-                it.copy(
-                    user = null,
-                    backStack = null,
-                    isLoading = false,
+                    loading = it.loading - Loadable.Authentication(),
+                    error = it.error + Loadable.Authentication("Felhasználó nincs bejelentkezve")
                 )
             }
         }
     }
-    @Throws(IllegalStateException::class)
-    private fun navigate(toPage: ProfilePage?){
-        if (_state.value.backStack == null){
-            throw IllegalStateException("Backstack must be initialized for navigation")
+    private suspend fun getFavourites(){
+        _state.update {
+            it.copy(
+                loading = it.loading + Loadable.Favourites(),
+                error = it.error - Loadable.Favourites()
+            )
         }
-        if (toPage == null){
-            val newBackStack = _state.value.backStack!!.toMutableList()
-            newBackStack.removeLastOrNull()
-
-            _state.update {
-                it.copy(backStack = newBackStack)
+        when (val result = userRepository.getFavourites()) {
+            is ApiResult.Error -> _state.update {
+                it.copy(
+                    loading = it.loading - Loadable.Favourites(),
+                    error = it.error + Loadable.Favourites(result.errorMsg)
+                )
             }
-        } else {
-            val newBackStack = _state.value.backStack!!.toMutableList()
-            newBackStack.add(toPage)
-
-            _state.update {
-                it.copy(backStack = newBackStack)
+            is ApiResult.Success -> _state.update {
+                it.copy(
+                    favourites = result.data,
+                    loading = it.loading - Loadable.Favourites()
+                )
+            }
+        }
+    }
+    private suspend fun getUser(){
+        _state.update {
+            it.copy(
+                loading = it.loading + Loadable.User(),
+                error = it.error - Loadable.User()
+            )
+        }
+        when (val result = userRepository.getUser()) {
+            is ApiResult.Error -> _state.update {
+                it.copy(
+                    loading = it.loading - Loadable.User(),
+                    error = it.error + Loadable.User(result.errorMsg)
+                )
+            }
+            is ApiResult.Success -> _state.update {
+                it.copy(
+                    user = result.data,
+                    loading = it.loading - Loadable.User()
+                )
             }
         }
     }

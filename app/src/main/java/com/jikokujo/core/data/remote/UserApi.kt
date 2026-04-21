@@ -1,17 +1,12 @@
 package com.jikokujo.core.data.remote
 
-import com.jikokujo.core.data.model.User
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
 
 interface UserApi {
     @FormUrlEncoded
@@ -23,7 +18,7 @@ interface UserApi {
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("password_confirmation") passwordConfirmation: String,
-    ): ResponseRoot<EmptyPayload>
+    ): Response<ResponseRoot<EmptyPayload>>
 
     @FormUrlEncoded
     @Headers("accept: application/json")
@@ -32,12 +27,12 @@ interface UserApi {
         @Field("email") email: String,
         @Field("password") password: String,
         @Field("remember") remember: Boolean = false
-    ): ResponseRoot<UserLoginObj>
+    ): Response<ResponseRoot<UserLoginObj>>
 
-    @GET("user/logout")
+    @POST("user/logout")
     suspend fun logout(
         @Header("Authorization") authToken: String
-    ): Response<ResponseRoot<EmptyPayload>> //TODO: Not yet implemented on the backend
+    ): Response<ResponseRoot<EmptyPayload>>
 
     @Headers("accept: application/json")
     @GET("user")
@@ -51,13 +46,13 @@ interface UserApi {
     suspend fun toggleFavourite(
         @Header("Authorization") authToken: String,
         @Field("route_id") routeId: String,
-        @Field("minutes") minutes: Int
-    ): Response<ResponseRoot<EmptyPayload>>
+        @Field("time") atMins: Int
+    ): Response<ResponseRoot<ToggleFavouriteObj>>
 
-    @Headers("accept: application/json")
     @FormUrlEncoded
-    @GET("favourites")
+    @Headers("accept: application/json")
+    @GET("user/favourites")
     suspend fun getFavourites(
         @Header("Authorization") authToken: String,
-    ): Response<ResponseRoot<EmptyPayload>> //TODO: Change to correct return type once available
+    ): Response<ResponseRoot<GetFavouritesObj>>
 }
