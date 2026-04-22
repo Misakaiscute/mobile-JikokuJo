@@ -30,6 +30,5 @@ fun NavigationRoot(
                 ProfilePage(modifier)
             }
         },
-        //TODO: TRANSITION SPEC TO ADD
     )
 }

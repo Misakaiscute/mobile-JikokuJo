@@ -155,7 +155,7 @@ private fun FavouriteItem(
             Spacer(Modifier.width(4.dp))
             IconButton(
                 onClick = {
-                    onAction(ProfileAction.ToggleFavourite(favourite = favourite))
+                    onAction(ProfileAction.ToggleFavourite(favourite.route.id, favourite.atMins))
                 },
                 shape = RoundedCornerShape(0.dp)
             ) {

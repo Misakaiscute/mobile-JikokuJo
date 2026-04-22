@@ -1,6 +1,7 @@
 package com.jikokujo.map.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.jikokujo.core.data.model.Favourite
 import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.core.data.repository.UserRepository
@@ -13,6 +14,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -63,6 +66,14 @@ class TripInfoViewModel @Inject constructor(
     private val _state = MutableStateFlow(TripInfoState())
     val state = _state.asStateFlow()
 
+    init {
+        userRepository.favourites.onEach { favourites ->
+            _state.update {
+                it.copy(favourites = favourites)
+            }
+        }.launchIn(viewModelScope)
+    }
+
     suspend fun onAction(action: TripAction) = when(action){
         is TripAction.SelectTrip -> withContext(Dispatchers.IO) {
             selectTrip(action.trip, action.routeAssociated, action.selectedThrough)
@@ -74,7 +85,7 @@ class TripInfoViewModel @Inject constructor(
         TripAction.ShowTripInfo -> _state.update {
             it.copy(tripInfoShown = true)
         }
-        is TripAction.ToggleFavourite -> toggleFavourite(action.routeId, action.atMins)
+        is TripAction.ToggleFavourite -> userRepository.toggleFavourite(action.routeId, action.atMins)
     }
 
     @Throws(IllegalStateException::class, IllegalArgumentException::class)
@@ -173,42 +184,15 @@ class TripInfoViewModel @Inject constructor(
         when (val result = userRepository.getFavourites()){
             is ApiResult.Success -> {
                 _state.update {
-                    it.copy(
-                        favourites = result.data,
-                        loading = it.loading - Loadable.Favourites(),
-                    )
+                    it.copy(loading = it.loading - Loadable.Favourites(),)
                 }
             }
             is ApiResult.Error -> {
                 _state.update {
                     it.copy(
-                        favourites = null,
                         loading = it.loading - Loadable.Favourites(),
                         error = it.error - Loadable.Trip(result.errorMsg)
                     )
-                }
-            }
-        }
-    }
-    private suspend fun toggleFavourite(forRouteId: String, atMins: Int){
-        val result = userRepository.toggleFavourite(forRouteId, atMins)
-        if (result is ApiResult.Success){
-            if (result.data == null) {
-                val filtered: List<Favourite> = _state.value.favourites!!.filterNot {
-                    return@filterNot it.route.id == forRouteId && it.atMins == atMins
-                }
-                _state.update {
-                    it.copy(favourites = filtered)
-                }
-            } else {
-                val newFavourite = Favourite(
-                    route = result.data,
-                    atMins = atMins,
-                )
-                val alteredFavourites: MutableList<Favourite> = _state.value.favourites!!.toMutableList()
-                alteredFavourites.add(newFavourite)
-                _state.update {
-                    it.copy(favourites = alteredFavourites)
                 }
             }
         }

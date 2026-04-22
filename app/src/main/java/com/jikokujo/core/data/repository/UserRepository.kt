@@ -4,8 +4,10 @@ import com.jikokujo.core.data.model.Favourite
 import com.jikokujo.core.data.model.User
 import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
+import kotlinx.coroutines.flow.MutableStateFlow
 
 interface UserRepository {
+    val favourites: MutableStateFlow<List<Favourite>?>
     var userAccessToken: String?
     companion object {
         fun String.toBearer() = "Bearer $this"

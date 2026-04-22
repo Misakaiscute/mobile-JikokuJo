@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.core.data.model.User
@@ -38,13 +39,13 @@ fun UserAccountContent(
             modifier = modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(54.dp)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = CircleShape
@@ -65,14 +66,18 @@ fun UserAccountContent(
                 Text(
                     text = "${profileState.user.firstName} ${profileState.user.lastName}",
                     style = Typography.bodyLarge.merge(
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
                 Text(
                     text = profileState.user.email,
                     style = Typography.bodySmall.merge(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    ),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
         }

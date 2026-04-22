@@ -14,7 +14,7 @@ interface QueryablesApi {
 
     @FormUrlEncoded
     @Headers("accept: application/json")
-    @GET("route/trip")
+    @POST("route/trip")
     suspend fun getTripsFromRoute(
         @Field("route_id") routeId: String,
         @Field("date") date: String,

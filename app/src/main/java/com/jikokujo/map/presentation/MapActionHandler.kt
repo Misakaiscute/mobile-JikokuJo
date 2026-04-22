@@ -17,6 +17,7 @@ import com.jikokujo.schedule.data.model.getColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.mapsforge.core.graphics.Cap
 import org.mapsforge.core.graphics.Join
@@ -24,7 +25,6 @@ import org.mapsforge.core.graphics.Paint
 import org.mapsforge.core.graphics.Style
 import org.mapsforge.core.model.LatLong
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
-import org.mapsforge.map.android.rendertheme.AssetsRenderTheme
 import org.mapsforge.map.android.util.AndroidUtil
 import org.mapsforge.map.android.view.MapView
 import org.mapsforge.map.layer.cache.TileCache
@@ -32,6 +32,7 @@ import org.mapsforge.map.layer.overlay.Marker
 import org.mapsforge.map.layer.overlay.Polyline
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
+import org.mapsforge.map.rendertheme.internal.MapsforgeThemes
 
 class MapActionHandler {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
@@ -44,9 +45,8 @@ class MapActionHandler {
         }
         this.mapView = mapView
     }
-    fun drawMapIfDoesntExist(localContext: Context, initialZoom: Byte) {
+    fun drawMapIfNotExist(localContext: Context) {
         val mapData = MapFile(localContext.rawFile(R.raw.budapest))
-
         if (mapView.layerManager.layers.isEmpty){
             try {
                 val tileCache: TileCache = AndroidUtil.createExternalStorageTileCache(
@@ -62,14 +62,14 @@ class MapActionHandler {
                     mapView.model.mapViewPosition,
                     AndroidGraphicFactory.INSTANCE
                 )
-                val mapThemeFile = AssetsRenderTheme(localContext.assets, "", "map_theme.xml")
-                tileRendererLayer.setXmlRenderTheme(mapThemeFile)
+                tileRendererLayer.setXmlRenderTheme(MapsforgeThemes.DEFAULT)
                 mapView.layerManager.layers.add(tileRendererLayer)
 
                 val boundingBox = mapData.mapFileInfo.boundingBox
                 mapView.model.mapViewPosition.mapLimit = boundingBox
                 mapView.model.mapViewPosition.center = LatLong(47.4933, 19.0533)
-                mapView.model.mapViewPosition.zoomLevel = initialZoom
+                mapView.model.mapViewPosition.zoomLevel = 15
+                mapView.model.mapViewPosition.zoomLevelMin = 8
             } catch(e: Exception) {
                 Log.e("MAPSFORGE_MAP", "Mapsforge map failed to load: ${e.message}")
             }
@@ -82,7 +82,9 @@ class MapActionHandler {
         val onlyMapVisible: Boolean = mapView.layerManager.layers.count() <= 1
         val tripAvailable: Boolean = tripInfoState.pathPoints.isNotEmpty() && tripInfoState.stops.isNotEmpty()
         if (onlyMapVisible) {
+            Log.i("INFO", "ONLY MAP VISIBLE")
             if (tripAvailable) {
+                Log.i("INFO", "TRIP AVAILABLE FOR ONLY MAP VISIBLE")
                 shownShapeId = tripInfoState.trip?.shapeId
                 val tripPolyline = async {
                     return@async produceTripPolyline(
@@ -106,11 +108,14 @@ class MapActionHandler {
                 tripStops.await().forEach {
                     mapView.layerManager.layers.add(it)
                 }
+
                 centerMapToTrip(tripInfoState.pathPoints)
                 fitMapToTrip(tripInfoState.pathPoints)
             }
         } else {
+            Log.i("INFO", "NOT ONLY MAP VISIBLE")
             if (tripAvailable) {
+                Log.i("INFO", "TRIP AVAILABLE FOR NOT ONLY MAP VISIBLE")
                 val tripIdChanged: Boolean = shownShapeId != tripInfoState.trip?.shapeId
                 if (tripIdChanged) {
                     shownShapeId = tripInfoState.trip?.shapeId
@@ -137,6 +142,7 @@ class MapActionHandler {
                     tripStops.await().forEach {
                         mapView.layerManager.layers.add(it)
                     }
+
                     centerMapToTrip(tripInfoState.pathPoints)
                     fitMapToTrip(pathPoints = tripInfoState.pathPoints)
                 }
@@ -157,17 +163,24 @@ class MapActionHandler {
         )
     }
     fun fitMapToTrip(pathPoints: List<RoutePathPoint>){
-        val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
+        var hasRun = false
 
-        var isContained: Boolean =
-            mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
-            mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+        mapView.model.frameBufferModel.addObserver {
+            if (!hasRun) {
+                hasRun = true
+                val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
 
-        while (!isContained) {
-            mapView.model.mapViewPosition.zoomOut(true)
-            isContained =
-                mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
-                mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+                var isContained =
+                    mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
+                    mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+
+                if (!isContained) {
+                    mapView.model.mapViewPosition.zoomOut(true)
+                    isContained =
+                        mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
+                        mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+                }
+            }
         }
     }
     fun produceTripStops(

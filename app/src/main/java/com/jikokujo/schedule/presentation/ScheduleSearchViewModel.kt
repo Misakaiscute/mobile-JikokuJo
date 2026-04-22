@@ -192,11 +192,14 @@ class ScheduleSearchViewModel @Inject constructor(
             throw IllegalStateException("Can't select an item when the dataset has returned with an error")
         }
     }
-    private fun unselectQueryable() = _state.update {
-        it.copy(
-            selectedQueryable = null,
-            searchString = ""
-        )
+    private fun unselectQueryable() = {
+        _state.update {
+            it.copy(
+                selectedQueryable = null,
+                searchString = ""
+            )
+        }
+        changeSearchString("")
     }
     private fun unselectTrip() = _state.update {
         it.copy(

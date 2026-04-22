@@ -53,7 +53,7 @@ fun TripSelectionDropDown(
             .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
             .verticalScroll(scrollState)
     ) {
-        if (!state.dropDownExpanded) {
+        if (!state.dropDownExpanded || state.trips.count() < 1) {
             TripSelectionDropDownItem(
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.surface)
@@ -125,7 +125,15 @@ private fun TripSelectionDropDownItem(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (trip == null){
+        if (state.trips.count() < 1){
+            Text(
+                text = "Nincsen egy elérhető indulás sem.",
+                style = Typography.bodyMedium.merge(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+            )
+        } else if (trip == null){
             Text(
                 text = "Nincs indulás kiválasztva!",
                 style = Typography.bodyMedium.merge(

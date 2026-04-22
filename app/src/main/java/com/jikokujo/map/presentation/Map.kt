@@ -38,10 +38,9 @@ fun Map(
             onAction(action)
         }
     )
-    LoadingIndicator(
-        modifier = Modifier,
-        isLoading = state.loading.contains(Loadable.Trip())
-    )
+    if (state.loading.contains(Loadable.Trip())){
+        LoadingIndicator(modifier = Modifier)
+    }
 }
 @Composable
 private fun MapsforgeMap(
@@ -65,9 +64,8 @@ private fun MapsforgeMap(
             mapView
         },
         update = {
-            mapActionHandler.drawMapIfDoesntExist(
+            mapActionHandler.drawMapIfNotExist(
                 localContext = localContext,
-                initialZoom = 15
             )
             mapActionHandler.handleTrip(
                 tripInfoState = state,
@@ -77,29 +75,25 @@ private fun MapsforgeMap(
     )
 }
 @Composable
-private fun LoadingIndicator(
-    modifier: Modifier,
-    isLoading: Boolean
-){
-    if (isLoading) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.5f))
+private fun LoadingIndicator(modifier: Modifier){
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth(1/2f)
-                        .aspectRatio(1f),
-                    color = Color.White,
-                    strokeCap = StrokeCap.Round
-                )
-            }
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth(1/2f)
+                    .aspectRatio(1f),
+                color = Color.White,
+                strokeCap = StrokeCap.Round
+            )
         }
     }
+
 }

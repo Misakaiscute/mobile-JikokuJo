@@ -10,6 +10,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -47,7 +49,7 @@ sealed interface ProfileAction{
     data object AttemptAuth: ProfileAction
     data object LogOut: ProfileAction
     data object FetchFavourites: ProfileAction
-    data class ToggleFavourite(val favourite: Favourite): ProfileAction
+    data class ToggleFavourite(val routeId: String, val atMins: Int): ProfileAction
 }
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -59,13 +61,18 @@ class ProfileViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.Default){
             attemptAuth()
+            userRepository.favourites.onEach { favourites ->
+                _state.update {
+                    it.copy(favourites = favourites)
+                }
+            }.launchIn(viewModelScope)
         }
     }
     suspend fun onAction(action: ProfileAction) = when(action){
         ProfileAction.AttemptAuth -> attemptAuth()
         ProfileAction.LogOut -> logout()
         ProfileAction.FetchFavourites -> getFavourites()
-        is ProfileAction.ToggleFavourite -> {}
+        is ProfileAction.ToggleFavourite -> userRepository.toggleFavourite(action.routeId, action.atMins)
         ProfileAction.FetchUser -> getUser()
     }
     private suspend fun logout(){
@@ -114,10 +121,7 @@ class ProfileViewModel @Inject constructor(
                 )
             }
             is ApiResult.Success -> _state.update {
-                it.copy(
-                    favourites = result.data,
-                    loading = it.loading - Loadable.Favourites()
-                )
+                it.copy(loading = it.loading - Loadable.Favourites())
             }
         }
     }
@@ -140,29 +144,6 @@ class ProfileViewModel @Inject constructor(
                     user = result.data,
                     loading = it.loading - Loadable.User()
                 )
-            }
-        }
-    }
-    private suspend fun toggleFavourite(forRouteId: String, atMins: Int){
-        val result = userRepository.toggleFavourite(forRouteId, atMins)
-        if (result is ApiResult.Success){
-            if (result.data == null) {
-                val filtered: List<Favourite> = _state.value.favourites!!.filterNot {
-                    return@filterNot it.route.id == forRouteId && it.atMins == atMins
-                }
-                _state.update {
-                    it.copy(favourites = filtered)
-                }
-            } else {
-                val newFavourite = Favourite(
-                    route = result.data,
-                    atMins = atMins,
-                )
-                val alteredFavourites: MutableList<Favourite> = _state.value.favourites!!.toMutableList()
-                alteredFavourites.add(newFavourite)
-                _state.update {
-                    it.copy(favourites = alteredFavourites)
-                }
             }
         }
     }

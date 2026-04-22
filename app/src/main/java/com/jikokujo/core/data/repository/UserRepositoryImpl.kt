@@ -13,8 +13,13 @@ import com.jikokujo.core.data.remote.UserApi
 import com.jikokujo.core.data.repository.UserRepository.Companion.toBearer
 import com.jikokujo.core.utils.errorAs
 import com.jikokujo.schedule.data.model.Queryable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
 import retrofit2.HttpException
 import javax.inject.Inject
@@ -23,7 +28,16 @@ class UserRepositoryImpl @Inject constructor(
     private val api: UserApi,
     private val dataStore: DataStore<Preferences>
 ): UserRepository {
-    private val favourites: MutableList<Favourite>? = null
+    override var favourites: MutableStateFlow<List<Favourite>?> = MutableStateFlow(null)
+
+    init {
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val initial = getFavourites()) {
+                is ApiResult.Error -> favourites.value = null
+                is ApiResult.Success -> favourites.value = initial.data
+            }
+        }
+    }
     override var userAccessToken: String? = null
     companion object{
         val userAccessTokenKey: Preferences.Key<String> = stringPreferencesKey("user_access_token")
@@ -135,8 +149,8 @@ class UserRepositoryImpl @Inject constructor(
         if (!check()){
             return ApiResult.Error("Felhasználó nincs bejelentkezve.")
         }
-        if (this.favourites != null && this.favourites.count() > 0) {
-            return ApiResult.Success(this.favourites.toImmutableList())
+        this.favourites.value?.let {
+            if (it.count() > 0) return ApiResult.Success(it.toImmutableList())
         }
 
         val response = try {
@@ -153,8 +167,7 @@ class UserRepositoryImpl @Inject constructor(
             return ApiResult.Error("Szerver nem elérhető.")
         }
 
-        this.favourites!!.clear()
-        this.favourites.addAll(response.data!!.favourites)
+        this.favourites.value = response.data!!.favourites
         return ApiResult.Success(response.data.favourites)
     }
     override suspend fun toggleFavourite(routeId: String, time: Int): ApiResult<Queryable.Route?> {
@@ -181,17 +194,17 @@ class UserRepositoryImpl @Inject constructor(
         }
 
         if (response.data!!.isCreated){
-            this.favourites!!.add(Favourite(
+            val newFavourite = Favourite(
                 route = response.data.route,
                 atMins = time
-            ))
+            )
+            this.favourites.value = this.favourites.value?.plus(newFavourite)
             return ApiResult.Success(response.data.route)
         } else {
-            val filtered: List<Favourite> = this.favourites!!.filterNot {
+            val filtered: List<Favourite> = this.favourites.value!!.filterNot {
                 return@filterNot it.route.id == response.data.route.id && it.atMins == time
             }
-            this.favourites.clear()
-            this.favourites.addAll(filtered)
+            this.favourites.value = filtered
             return ApiResult.Success(null)
         }
     }
