@@ -6,10 +6,10 @@ data class User(
     @SerializedName("id")
     val id: Int,
     @SerializedName("first_name")
-    val firstName: String? = null,
+    val firstName: String,
     @SerializedName("second_name")
-    val lastName: String? = null,
+    val lastName: String,
     @SerializedName("email")
-    val email: String? = null,
+    val email: String,
     val password: String? = null
 )

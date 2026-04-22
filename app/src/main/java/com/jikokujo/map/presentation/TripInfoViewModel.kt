@@ -1,11 +1,13 @@
 package com.jikokujo.map.presentation
 
 import androidx.lifecycle.ViewModel
+import com.jikokujo.core.data.model.Favourite
+import com.jikokujo.core.data.remote.ApiResult
+import com.jikokujo.core.data.repository.UserRepository
 import com.jikokujo.schedule.data.model.Queryable
+import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.Trip
-import com.jikokujo.core.data.remote.ApiResult
-import com.jikokujo.schedule.data.model.RoutePathPoint
 import com.jikokujo.schedule.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -15,15 +17,30 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+sealed interface Loadable {
+    data class Trip(val onError: String? = null): Loadable {
+        override fun equals(other: Any?): Boolean = other is Trip
+        override fun hashCode(): Int {
+            return super.hashCode()
+        }
+    }
+    data class Favourites(val onError: String? = null): Loadable {
+        override fun equals(other: Any?): Boolean = other is Favourites
+        override fun hashCode(): Int {
+            return super.hashCode()
+        }
+    }
+}
 data class TripInfoState(
-    val shapeId: String? = null,
+    val trip: Trip? = null,
     val selectedThrough: Queryable? = null,
     val routeAssociated: Queryable.Route? = null,
     val pathPoints: List<RoutePathPoint> = listOf(),
     val stops: List<StopWithLocationAndStopTime> = listOf(),
+    val favourites: List<Favourite>? = null,
     val tripInfoShown: Boolean = false,
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val loading: Set<Loadable> = emptySet(),
+    val error: Set<Loadable> = emptySet()
 )
 
 sealed interface TripAction{
@@ -35,11 +52,13 @@ sealed interface TripAction{
     data object UnselectTrip: TripAction
     data object ShowTripInfo: TripAction
     data object HideTripInfo: TripAction
+    data class ToggleFavourite(val routeId: String, val atMins: Int): TripAction
 }
 
 @HiltViewModel
 class TripInfoViewModel @Inject constructor(
-    private val tripsRepository: TripsRepository
+    private val tripsRepository: TripsRepository,
+    private val userRepository: UserRepository
 ): ViewModel() {
     private val _state = MutableStateFlow(TripInfoState())
     val state = _state.asStateFlow()
@@ -55,6 +74,7 @@ class TripInfoViewModel @Inject constructor(
         TripAction.ShowTripInfo -> _state.update {
             it.copy(tripInfoShown = true)
         }
+        is TripAction.ToggleFavourite -> toggleFavourite(action.routeId, action.atMins)
     }
 
     @Throws(IllegalStateException::class, IllegalArgumentException::class)
@@ -70,7 +90,10 @@ class TripInfoViewModel @Inject constructor(
         }
 
         _state.update {
-            it.copy(isLoading = true)
+            it.copy(
+                loading = it.loading + Loadable.Trip(),
+                error = it.error - Loadable.Trip()
+            )
         }
 
         tripsRepository.getShapes(trip)
@@ -82,6 +105,7 @@ class TripInfoViewModel @Inject constructor(
                 routeAssociated = routeAssociated,
                 selectedThrough = selectedThrough
             )
+            getFavourites()
         } else {
             failedTripSelect(trip)
         }
@@ -93,14 +117,13 @@ class TripInfoViewModel @Inject constructor(
     ){
         _state.update {
             it.copy(
-                shapeId = trip.shapeId,
+                trip = trip,
                 selectedThrough = selectedThrough,
                 routeAssociated = routeAssociated,
                 pathPoints = (tripsRepository.storedShapes[trip.shapeId] as ApiResult.Success).data,
                 stops = (tripsRepository.storedStops[trip.id] as ApiResult.Success).data,
                 tripInfoShown = true,
-                isLoading = false,
-                error = null
+                loading = it.loading - Loadable.Trip(),
             )
         }
     }
@@ -108,23 +131,23 @@ class TripInfoViewModel @Inject constructor(
         _state.update {
             if (tripsRepository.storedShapes[trip.shapeId] is ApiResult.Error){
                 it.copy(
-                    shapeId = null,
+                    trip = null,
                     routeAssociated = null,
                     pathPoints = listOf(),
                     stops = listOf(),
                     tripInfoShown = false,
-                    isLoading = false,
-                    error = "${(tripsRepository.storedShapes[trip.shapeId] as ApiResult.Error).errorMsg} Retry?",
+                    loading = it.loading - Loadable.Trip(),
+                    error = it.error + Loadable.Trip((tripsRepository.storedShapes[trip.shapeId] as ApiResult.Error).errorMsg)
                 )
             } else {
                 it.copy(
-                    shapeId = null,
+                    trip = null,
                     routeAssociated = null,
                     pathPoints = listOf(),
                     stops = listOf(),
                     tripInfoShown = false,
-                    isLoading = false,
-                    error = "${(tripsRepository.storedStops[trip.id] as ApiResult.Error).errorMsg} Retry?"
+                    loading = it.loading - Loadable.Trip(),
+                    error = it.error + Loadable.Trip((tripsRepository.storedStops[trip.id] as ApiResult.Error).errorMsg)
                 )
             }
         }
@@ -132,12 +155,62 @@ class TripInfoViewModel @Inject constructor(
     private fun unselectTrip() {
         _state.update {
             it.copy(
-                shapeId = null,
+                trip = null,
                 routeAssociated = null,
                 pathPoints = listOf(),
                 stops = listOf(),
-                error = null
+                error = it.error - Loadable.Trip()
             )
+        }
+    }
+    private suspend fun getFavourites(){
+        _state.update {
+            it.copy(
+                loading = it.loading + Loadable.Favourites(),
+                error = it.error - Loadable.Favourites()
+            )
+        }
+        when (val result = userRepository.getFavourites()){
+            is ApiResult.Success -> {
+                _state.update {
+                    it.copy(
+                        favourites = result.data,
+                        loading = it.loading - Loadable.Favourites(),
+                    )
+                }
+            }
+            is ApiResult.Error -> {
+                _state.update {
+                    it.copy(
+                        favourites = null,
+                        loading = it.loading - Loadable.Favourites(),
+                        error = it.error - Loadable.Trip(result.errorMsg)
+                    )
+                }
+            }
+        }
+    }
+    private suspend fun toggleFavourite(forRouteId: String, atMins: Int){
+        val result = userRepository.toggleFavourite(forRouteId, atMins)
+        if (result is ApiResult.Success){
+            if (result.data == null) {
+                val filtered: List<Favourite> = _state.value.favourites!!.filterNot {
+                    return@filterNot it.route.id == forRouteId && it.atMins == atMins
+                }
+                _state.update {
+                    it.copy(favourites = filtered)
+                }
+            } else {
+                val newFavourite = Favourite(
+                    route = result.data,
+                    atMins = atMins,
+                )
+                val alteredFavourites: MutableList<Favourite> = _state.value.favourites!!.toMutableList()
+                alteredFavourites.add(newFavourite)
+                _state.update {
+                    it.copy(favourites = alteredFavourites)
+                }
+            }
         }
     }
 }

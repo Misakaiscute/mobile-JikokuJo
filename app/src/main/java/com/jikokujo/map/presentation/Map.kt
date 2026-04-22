@@ -1,13 +1,23 @@
 package com.jikokujo.map.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
-import com.jikokujo.map.presentation.MapActionHandler
+import com.jikokujo.map.presentation.tripinfosheet.TripInfoSheet
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
 import org.mapsforge.map.android.view.MapView
 
@@ -28,9 +38,13 @@ fun Map(
             onAction(action)
         }
     )
+    LoadingIndicator(
+        modifier = Modifier,
+        isLoading = state.loading.contains(Loadable.Trip())
+    )
 }
 @Composable
-fun MapsforgeMap(
+private fun MapsforgeMap(
     modifier: Modifier,
     state: TripInfoState,
 ){
@@ -61,4 +75,31 @@ fun MapsforgeMap(
             )
         }
     )
+}
+@Composable
+private fun LoadingIndicator(
+    modifier: Modifier,
+    isLoading: Boolean
+){
+    if (isLoading) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.5f))
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth(1/2f)
+                        .aspectRatio(1f),
+                    color = Color.White,
+                    strokeCap = StrokeCap.Round
+                )
+            }
+        }
+    }
 }

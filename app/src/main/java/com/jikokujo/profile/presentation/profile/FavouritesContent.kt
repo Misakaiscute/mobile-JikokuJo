@@ -34,6 +34,7 @@ import com.jikokujo.profile.presentation.ProfileState
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.getColor
 import com.jikokujo.schedule.data.model.getIcon
+import com.jikokujo.theme.AppTheme
 import com.jikokujo.theme.Typography
 
 @Composable
@@ -114,15 +115,15 @@ private fun FavouriteItem(
     favourite: Favourite?,
     onAction: (ProfileAction) -> Unit
 ){
-    Row(
-        modifier = modifier
-            .height(40.dp)
-            .fillMaxWidth()
-            .padding(all = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        if (favourite != null){
+    if (favourite != null){
+        Row(
+            modifier = modifier
+                .height(40.dp)
+                .fillMaxWidth()
+                .padding(all = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
             Icon(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -165,23 +166,47 @@ private fun FavouriteItem(
                 )
             }
         }
+    } else {
+        Row(
+            modifier = modifier
+                .height(40.dp)
+                .fillMaxWidth()
+                .padding(all = 4.dp)
+                .loadingShimmer(
+                    durationMillis = 1000,
+                    background = MaterialTheme.colorScheme.surface
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {}
     }
 }
 @Preview(showBackground = true)
 @Composable
 private fun FavouriteItemPreview(){
-    MaterialTheme {
+    AppTheme {
         FavouriteItem(
-            modifier = Modifier.background(Color.Cyan),
+            modifier = Modifier.background(Color.White),
             favourite = Favourite(
                 route = Queryable.Route(
                     shortName = "123",
                     type = 2,
-                    color = "000000",
+                    color = "3464b3",
                     id = "111"
                 ),
                 atMins = 678
             ),
+            onAction = { _ -> }
+        )
+    }
+}
+@Preview(showBackground = true)
+@Composable
+private fun FavouriteItemLoadingPreview(){
+    AppTheme {
+        FavouriteItem(
+            modifier = Modifier.background(Color.White),
+            favourite = null,
             onAction = { _ -> }
         )
     }

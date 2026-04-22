@@ -1,4 +1,4 @@
-package com.jikokujo.map.presentation
+package com.jikokujo.map.presentation.tripinfosheet
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
@@ -11,12 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,54 +27,41 @@ import androidx.compose.ui.unit.dp
 import com.jikokujo.core.utils.darken
 import com.jikokujo.core.utils.lighten
 import com.jikokujo.core.utils.timeFormatter
+import com.jikokujo.map.presentation.TripInfoState
 import com.jikokujo.map.utils.ShapeBuilderFactory
 import com.jikokujo.schedule.data.model.Queryable
 import com.jikokujo.schedule.data.model.StopWithLocationAndStopTime
 import com.jikokujo.schedule.data.model.getColor
 import com.jikokujo.theme.Typography
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripInfoSheet(
+fun SheetContent(
     modifier: Modifier,
     state: TripInfoState,
-    onAction: (TripAction) -> Unit
 ){
-    val sheetState = rememberModalBottomSheetState()
     val scrollState = rememberScrollState()
+    val isStopSelected: Boolean = state.selectedThrough is Queryable.Stop
     val itemHeight = 50
 
-    val isStopSelected: Boolean = state.selectedThrough is Queryable.Stop
-
-    if (state.tripInfoShown) {
-        ModalBottomSheet(
-            onDismissRequest = {
-                onAction(TripAction.HideTripInfo)
-            },
-            sheetState = sheetState,
-            containerColor = MaterialTheme.colorScheme.surface,
-        ) {
-            if (isStopSelected) {
-                TripInfoWithStopSelected(
-                    modifier = modifier,
-                    scrollState = scrollState,
-                    state = state,
-                    selectedStopIds = state.selectedThrough.ids,
-                    elementHeight = itemHeight
-                )
-            } else {
-                TripInfoWithRouteSelected(
-                    modifier = modifier,
-                    scrollState = scrollState,
-                    state = state,
-                    elementHeight = itemHeight
-                )
-            }
-        }
+    if (isStopSelected) {
+        ContentForStopSelected(
+            modifier = modifier,
+            elementHeight = itemHeight,
+            scrollState = scrollState,
+            state = state,
+            selectedStopIds = state.selectedThrough.ids
+        )
+    } else {
+        ContentForRouteSelected(
+            modifier = modifier,
+            elementHeight = itemHeight,
+            scrollState = scrollState,
+            state = state
+        )
     }
 }
 @Composable
-private fun TripInfoWithStopSelected(
+private fun ContentForStopSelected(
     modifier: Modifier,
     elementHeight: Int,
     scrollState: ScrollState,
@@ -100,48 +84,61 @@ private fun TripInfoWithStopSelected(
     val routeColor = state.routeAssociated?.getColor() ?: Color.Black
 
     val startingPointColor = if (switchingStopIndex == 0) routeColor else Color.DarkGray
-    val startingPointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(startY = 0.5f, width = 12f, color = startingPointColor.toArgb())
-        .addCircle(radius = circleSize, color = startingPointColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = startingPointColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
-    val intermediateBeforePointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(width = 12f, color = Color.DarkGray.toArgb())
-        .addCircle(radius = circleSize, color = Color.DarkGray.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = Color.DarkGray.lighten(0.15f).toArgb())
-        .buildToBitmap() }
-    val intermediateAfterPointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(width = 12f, color = routeColor.toArgb())
-        .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
-    val switchingPointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(endY = 0.5f, width = 12f, color = Color.DarkGray.toArgb())
-        .addVerticalLine(startY = 0.5f, width = 12f, color = routeColor.toArgb())
-        .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
+    val startingPointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(startY = 0.5f, width = 12f, color = startingPointColor.toArgb())
+            .addCircle(radius = circleSize, color = startingPointColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = startingPointColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
+    val intermediateBeforePointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(width = 12f, color = Color.DarkGray.toArgb())
+            .addCircle(radius = circleSize, color = Color.DarkGray.darken(0.15f).toArgb())
+            .addCircle(
+                radius = circleSize - 5f,
+                color = Color.DarkGray.lighten(0.15f).toArgb()
+            )
+            .buildToBitmap()
+    }
+    val intermediateAfterPointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(width = 12f, color = routeColor.toArgb())
+            .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
+    val switchingPointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(endY = 0.5f, width = 12f, color = Color.DarkGray.toArgb())
+            .addVerticalLine(startY = 0.5f, width = 12f, color = routeColor.toArgb())
+            .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
     val endingPointColor = if (switchingStopIndex == state.stops.count() - 1) Color.DarkGray else routeColor
-    val endingPointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(endY = 0.5f, width = 12f, color = endingPointColor.toArgb())
-        .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
+    val endingPointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(endY = 0.5f, width = 12f, color = endingPointColor.toArgb())
+            .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
 
     Column(
         modifier = modifier.verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         state.stops.forEachIndexed { i, stop ->
-            TripInfoSheetItem(
+            SheetItem(
                 modifier = modifier,
                 stop = stop,
-                bitmap = when(i) {
+                bitmap = when (i) {
                     0 -> startingPointBitmap
                     switchingStopIndex -> switchingPointBitmap
                     state.stops.count() - 1 -> endingPointBitmap
@@ -154,8 +151,9 @@ private fun TripInfoWithStopSelected(
         }
     }
 }
+
 @Composable
-private fun TripInfoWithRouteSelected(
+private fun ContentForRouteSelected(
     modifier: Modifier,
     elementHeight: Int,
     scrollState: ScrollState,
@@ -165,31 +163,37 @@ private fun TripInfoWithRouteSelected(
     val circleSize = 12f
     val routeColor = state.routeAssociated?.getColor() ?: Color.Black
 
-    val startingPointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(startY = 0.5f, width = 12f, color = routeColor.toArgb())
-        .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
-    val intermediatePointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(width = 12f, color = routeColor.toArgb())
-        .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
-    val endingPointBitmap = remember { ShapeBuilderFactory
-        .size(elementHeight, elementHeight, pixelDensity)
-        .addVerticalLine(endY = 0.5f, width = 12f, color = routeColor.toArgb())
-        .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
-        .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
-        .buildToBitmap() }
+    val startingPointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(startY = 0.5f, width = 12f, color = routeColor.toArgb())
+            .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
+    val intermediatePointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(width = 12f, color = routeColor.toArgb())
+            .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
+    val endingPointBitmap = remember {
+        ShapeBuilderFactory
+            .size(elementHeight, elementHeight, pixelDensity)
+            .addVerticalLine(endY = 0.5f, width = 12f, color = routeColor.toArgb())
+            .addCircle(radius = circleSize, color = routeColor.darken(0.15f).toArgb())
+            .addCircle(radius = circleSize - 5f, color = routeColor.lighten(0.15f).toArgb())
+            .buildToBitmap()
+    }
 
     Column(
         modifier = modifier.verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         state.stops.forEachIndexed { i, stop ->
-            TripInfoSheetItem(
+            SheetItem(
                 modifier = modifier,
                 stop = stop,
                 bitmap = when (i) {
@@ -202,8 +206,9 @@ private fun TripInfoWithRouteSelected(
         }
     }
 }
+
 @Composable
-private fun TripInfoSheetItem(
+private fun SheetItem(
     modifier: Modifier,
     stop: StopWithLocationAndStopTime,
     bitmap: Bitmap,

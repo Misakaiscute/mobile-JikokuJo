@@ -143,4 +143,27 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+    private suspend fun toggleFavourite(forRouteId: String, atMins: Int){
+        val result = userRepository.toggleFavourite(forRouteId, atMins)
+        if (result is ApiResult.Success){
+            if (result.data == null) {
+                val filtered: List<Favourite> = _state.value.favourites!!.filterNot {
+                    return@filterNot it.route.id == forRouteId && it.atMins == atMins
+                }
+                _state.update {
+                    it.copy(favourites = filtered)
+                }
+            } else {
+                val newFavourite = Favourite(
+                    route = result.data,
+                    atMins = atMins,
+                )
+                val alteredFavourites: MutableList<Favourite> = _state.value.favourites!!.toMutableList()
+                alteredFavourites.add(newFavourite)
+                _state.update {
+                    it.copy(favourites = alteredFavourites)
+                }
+            }
+        }
+    }
 }

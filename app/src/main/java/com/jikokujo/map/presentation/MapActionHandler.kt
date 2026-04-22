@@ -32,7 +32,6 @@ import org.mapsforge.map.layer.overlay.Marker
 import org.mapsforge.map.layer.overlay.Polyline
 import org.mapsforge.map.layer.renderer.TileRendererLayer
 import org.mapsforge.map.reader.MapFile
-import kotlin.collections.forEach
 
 class MapActionHandler {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
@@ -84,7 +83,7 @@ class MapActionHandler {
         val tripAvailable: Boolean = tripInfoState.pathPoints.isNotEmpty() && tripInfoState.stops.isNotEmpty()
         if (onlyMapVisible) {
             if (tripAvailable) {
-                shownShapeId = tripInfoState.shapeId
+                shownShapeId = tripInfoState.trip?.shapeId
                 val tripPolyline = async {
                     return@async produceTripPolyline(
                         pathPoints = tripInfoState.pathPoints,
@@ -112,9 +111,9 @@ class MapActionHandler {
             }
         } else {
             if (tripAvailable) {
-                val tripIdChanged: Boolean = shownShapeId != tripInfoState.shapeId
+                val tripIdChanged: Boolean = shownShapeId != tripInfoState.trip?.shapeId
                 if (tripIdChanged) {
-                    shownShapeId = tripInfoState.shapeId
+                    shownShapeId = tripInfoState.trip?.shapeId
                     clearLayersAboveMap()
                     val tripPolyline = async {
                         return@async produceTripPolyline(
@@ -178,29 +177,29 @@ class MapActionHandler {
         pixelDensity: Float
     ): List<Marker> {
         val markerSize = 19f
-        val markerBitmapAfterStop = ShapeBuilderFactory.Companion
+        val markerBitmapAfterStop = ShapeBuilderFactory
             .size(38, 38, pixelDensity)
             .addCircle(
                 radius = markerSize,
-                color = routeAssociated?.getColor()?.darken(0.15f)?.toArgb() ?: Color.Companion.DarkGray.lighten(0.15f).toArgb()
+                color = routeAssociated?.getColor()?.darken(0.15f)?.toArgb() ?: Color.DarkGray.lighten(0.15f).toArgb()
             )
             .addCircle(
                 radius = markerSize - 5f,
-                color = routeAssociated?.getColor()?.lighten(0.15f)?.toArgb() ?: Color.Companion.DarkGray.darken(0.15f).toArgb()
+                color = routeAssociated?.getColor()?.lighten(0.15f)?.toArgb() ?: Color.DarkGray.darken(0.15f).toArgb()
             )
             .buildToMapsforgeBitmap()
         val markers: MutableList<Marker> = mutableListOf()
         val wasStopSelected = selectedThrough as? Queryable.Stop != null
         if (wasStopSelected) {
-            val markerBitmapBeforeStop = ShapeBuilderFactory.Companion
+            val markerBitmapBeforeStop = ShapeBuilderFactory
                 .size(38, 38, pixelDensity)
                 .addCircle(
                     radius = markerSize,
-                    color = Color.Companion.DarkGray.darken(0.15f).toArgb()
+                    color = Color.DarkGray.darken(0.15f).toArgb()
                 )
                 .addCircle(
                     radius = markerSize - 5f,
-                    color = Color.Companion.DarkGray.lighten(0.15f).toArgb()
+                    color = Color.DarkGray.lighten(0.15f).toArgb()
                 )
                 .buildToMapsforgeBitmap()
             var selectedStopSeen = false
@@ -284,7 +283,7 @@ class MapActionHandler {
         stroke: Float
     ): List<Polyline>{
         val paintBeforeStop: Paint = AndroidGraphicFactory.INSTANCE.createPaint().apply {
-            color = Color.Companion.DarkGray.toArgb()
+            color = Color.DarkGray.toArgb()
             strokeWidth = stroke
             setStyle(Style.STROKE)
             setStrokeCap(Cap.ROUND)

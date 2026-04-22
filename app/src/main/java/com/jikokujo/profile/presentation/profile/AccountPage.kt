@@ -21,7 +21,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.jikokujo.R
-import com.jikokujo.core.data.model.User
 import com.jikokujo.profile.presentation.ProfileAction
 import com.jikokujo.profile.presentation.ProfileState
 import com.jikokujo.theme.AppTheme
@@ -54,6 +53,10 @@ fun ProfilePage(
     ) {
         Spacer(Modifier.height(10.dp))
         SectionHeading(Modifier, "Adataim", R.drawable.my_data)
+        UserAccountContent(
+            modifier = Modifier,
+            profileState = state,
+        )
         Spacer(Modifier.height(10.dp))
         SectionHeading(Modifier, "Kedvencek", R.drawable.favourites_star)
         FavouritesContent(
@@ -72,13 +75,6 @@ fun ProfilePage(
         )
         Spacer(Modifier.height(20.dp))
     }
-}
-@Composable
-private fun UserDataContent(
-    modifier: Modifier,
-    user: User?
-){
-
 }
 @Composable
 private fun Logout(
