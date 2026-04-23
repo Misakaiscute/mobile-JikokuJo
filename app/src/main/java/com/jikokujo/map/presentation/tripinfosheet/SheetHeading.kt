@@ -100,7 +100,7 @@ private fun Title(
                 text = state.routeAssociated.shortName,
                 style = MaterialTheme.typography.titleSmall.merge(
                     fontSize = 16.sp,
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1

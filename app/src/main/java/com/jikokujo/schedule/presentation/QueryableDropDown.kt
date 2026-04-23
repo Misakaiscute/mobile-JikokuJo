@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -39,14 +40,11 @@ fun QueryableDropDown(
 ){
     val itemHeight = 40
     val maxItems = 5
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = modifier
-            .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
-            .verticalScroll(scrollState)
+    LazyColumn (
+        modifier = modifier.heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
     ) {
-        for (i in 0 ..< state.queryables.count()){
-            if (i > 0){
+        items(state.queryables.count()) { index ->
+            if (index > 0){
                 HorizontalDivider(
                     modifier = modifier,
                     thickness = 2.dp,
@@ -55,20 +53,21 @@ fun QueryableDropDown(
             }
             QueryableDropDownItem(
                 modifier = modifier
-                    .background(if (i % 2 == 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
+                    .background(if (index % 2 == 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
                     .clickable(
                         enabled = !state.isLoading,
                         onClick = {
-                            when (state.queryables[i]){
-                                is Queryable.Route -> onAction(ScheduleAction.SelectRoute(state.queryables[i] as Queryable.Route))
-                                is Queryable.Stop -> onAction(ScheduleAction.SelectStop(state.queryables[i] as Queryable.Stop))
+                            when (state.queryables[index]){
+                                is Queryable.Route -> onAction(ScheduleAction.SelectRoute(state.queryables[index] as Queryable.Route))
+                                is Queryable.Stop -> onAction(ScheduleAction.SelectStop(state.queryables[index] as Queryable.Stop))
                             }
                         }
                     ),
-                item = state.queryables[i],
+                item = state.queryables[index],
                 itemHeight = itemHeight
             )
         }
+
     }
 }
 @Composable

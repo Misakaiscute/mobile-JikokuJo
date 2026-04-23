@@ -98,32 +98,50 @@ class ScheduleSearchViewModel @Inject constructor(
         _state.update {
             it.copy(searchString = toValue)
         }
-        _queryableFilteringJob = viewModelScope.launch {
+        _queryableFilteringJob = viewModelScope.launch(Dispatchers.Default) {
             delay(500)
             filterQueryables(toValue)
         }
     }
-    private fun filterQueryables(currentSearchString: String) = _state.update {
+    private fun filterQueryables(currentSearchString: String) {
         if (currentSearchString.isBlank()){
-            it.copy(
-                queryables = listOf(),
-                selectedQueryable = null,
-                dropDownShown = DropDowns.QueryableSelection,
-                dropDownExpanded = false
-            )
+            _state.update {
+                it.copy(
+                    queryables = listOf(),
+                    dropDownShown = DropDowns.QueryableSelection,
+                    dropDownExpanded = false
+                )
+            }
         } else {
             val filteredItems = (queryableRepository.queryables as ApiResult.Success).data.filter { queryable ->
                 when(queryable){
                     is Queryable.Stop -> queryable.name.contains(currentSearchString, ignoreCase = true)
                     is Queryable.Route -> queryable.shortName.contains(currentSearchString, ignoreCase = true)
                 }
-            }.take(100)
-            it.copy(
-                queryables = filteredItems,
-                selectedQueryable = null,
-                dropDownShown = DropDowns.QueryableSelection,
-                dropDownExpanded = !filteredItems.isEmpty()
-            )
+            }
+            val queryableName: String? = when (_state.value.selectedQueryable) {
+                is Queryable.Route -> (_state.value.selectedQueryable as Queryable.Route).shortName
+                is Queryable.Stop -> (_state.value.selectedQueryable as Queryable.Stop).name
+                else -> null
+            }
+            if (_state.value.searchString == queryableName){
+                _state.update {
+                    it.copy(
+                        queryables = filteredItems,
+                        dropDownShown = DropDowns.QueryableSelection,
+                        dropDownExpanded = false
+                    )
+                }
+            } else {
+                _state.update {
+                    it.copy(
+                        queryables = filteredItems,
+                        selectedQueryable = null,
+                        dropDownShown = DropDowns.QueryableSelection,
+                        dropDownExpanded = it.selectedQueryable == null
+                    )
+                }
+            }
         }
     }
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
@@ -192,14 +210,14 @@ class ScheduleSearchViewModel @Inject constructor(
             throw IllegalStateException("Can't select an item when the dataset has returned with an error")
         }
     }
-    private fun unselectQueryable() = {
+    private fun unselectQueryable() {
         _state.update {
             it.copy(
                 selectedQueryable = null,
-                searchString = ""
+                searchString = "",
+                queryables = emptyList()
             )
         }
-        changeSearchString("")
     }
     private fun unselectTrip() = _state.update {
         it.copy(
@@ -236,7 +254,6 @@ class ScheduleSearchViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     dropDownExpanded = false,
-                    dropDownShown = DropDowns.TripSelection,
                     error = null,
                     isLoading = true,
                 )
@@ -252,6 +269,7 @@ class ScheduleSearchViewModel @Inject constructor(
                     is ApiResult.Error -> {
                         it.copy(
                             trips = listOf(),
+                            dropDownShown = DropDowns.TripSelection,
                             error = "${(tripsRepository.trips as ApiResult.Error).errorMsg} Retry?",
                             isLoading = false
                         )
@@ -261,6 +279,7 @@ class ScheduleSearchViewModel @Inject constructor(
                             trips = (tripsRepository.trips as ApiResult.Success).data.sortedBy { trip ->
                                 trip.stops[0].arrivalTime
                             },
+                            dropDownShown = DropDowns.TripSelection,
                             dropDownExpanded = true,
                             isLoading = false
                         )

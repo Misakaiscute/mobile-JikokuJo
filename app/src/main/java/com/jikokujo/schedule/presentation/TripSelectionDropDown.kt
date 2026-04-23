@@ -49,7 +49,7 @@ fun TripSelectionDropDown(
 
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(topEnd = 20f, topStart = 20f, bottomStart = 0f, bottomEnd = 20f))
+            .clip(RoundedCornerShape(topEnd = 0f, topStart = 0f, bottomStart = 0f, bottomEnd = 20f))
             .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
             .verticalScroll(scrollState)
     ) {

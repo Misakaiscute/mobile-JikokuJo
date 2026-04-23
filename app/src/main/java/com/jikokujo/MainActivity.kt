@@ -16,10 +16,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,7 +35,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AppTheme {
-                val backstack = rememberSaveable { mutableStateListOf<MainPage>(MainPage.Schedule) }
+                val backstack = remember { mutableStateListOf<MainPage>(MainPage.Schedule) }
                 Scaffold(
                     topBar = {
                         TopAppBar(

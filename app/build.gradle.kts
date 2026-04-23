@@ -15,9 +15,14 @@ val realApi: String =
     gradleLocalProperties(rootDir, providers).getProperty("api_port", "8000") + '/' +
     gradleLocalProperties(rootDir, providers).getProperty("api_suffix", "")
 
+private val hostOnEmu: String = if (gradleLocalProperties(rootDir, providers).getProperty("api_host", "localhost") == "localhost") {
+        "10.0.2.2"
+    } else {
+        gradleLocalProperties(rootDir, providers).getProperty("api_host", "localhost")
+    }
 val emuApi: String =
     gradleLocalProperties(rootDir, providers).getProperty("api_protocol", "http") + "://" +
-    "10.0.2.2" + ':' +
+    hostOnEmu + ':' +
     gradleLocalProperties(rootDir, providers).getProperty("api_port", "8000") + '/' +
     gradleLocalProperties(rootDir, providers).getProperty("api_suffix", "")
 
