@@ -30,7 +30,8 @@
 
 ### Android Studio:
 
-- #### It's highly recommended to use [Android Studio](https://developer.android.com/studio) for running the app. The installation instuctions will be utilizing Android Studio as well.
+- #### It's highly recommended to use [Android Studio](https://developer.android.com/studio) for running the app.
+- #### The installation instructions will be utilizing Android Studio as well. The minimum required version in 2025.2.3
 
 ### Installation process:
 
