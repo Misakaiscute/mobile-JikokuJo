@@ -17,7 +17,6 @@ import com.jikokujo.schedule.data.model.getColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.mapsforge.core.graphics.Cap
 import org.mapsforge.core.graphics.Join
@@ -163,23 +162,19 @@ class MapActionHandler {
         )
     }
     fun fitMapToTrip(pathPoints: List<RoutePathPoint>){
-        var hasRun = false
-
         mapView.model.frameBufferModel.addObserver {
-            if (!hasRun) {
-                hasRun = true
-                val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
+            val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
 
-                var isContained =
+            var isContained =
+                mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
+                mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+
+
+            while (!isContained) {
+                mapView.model.mapViewPosition.zoomOut(true)
+                isContained =
                     mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
                     mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
-
-                if (!isContained) {
-                    mapView.model.mapViewPosition.zoomOut(true)
-                    isContained =
-                        mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
-                        mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
-                }
             }
         }
     }
