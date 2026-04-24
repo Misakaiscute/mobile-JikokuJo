@@ -20,6 +20,7 @@ import com.jikokujo.map.presentation.Map
 import com.jikokujo.map.presentation.TripInfoViewModel
 import com.jikokujo.theme.Typography
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun SchedulePage(modifier: Modifier){
@@ -29,7 +30,7 @@ fun SchedulePage(modifier: Modifier){
         modifier = modifier,
         color = MaterialTheme.colorScheme.background
     ) {
-        if (scheduleSearchViewModel.state.collectAsStateWithLifecycle().value.error != null){
+        if (scheduleSearchViewModel.state.collectAsStateWithLifecycle().value.error.isNotEmpty()){
             OnError(
                 modifier = Modifier,
                 state = scheduleSearchViewModel.state.collectAsStateWithLifecycle().value,
@@ -62,9 +63,9 @@ fun SchedulePage(modifier: Modifier){
                         tripInfoViewModel.onAction(action)
                     }
                 },
-                getRoute = { routeId ->
+                getRoute = { routeId -> runBlocking {
                     scheduleSearchViewModel.getRoute(routeId)
-                },
+                }},
             )
         }
     }
@@ -91,8 +92,13 @@ private fun OnError(
                 onAction(ScheduleAction.RetryFetchInitialData)
             }
         ) {
+            val text: String = try {
+                state.error.first().onError ?: "Valami hiba történt."
+            } catch (_: Exception) {
+                "Valami hiba történt."
+            }
             Text(
-                text = state.error!!,
+                text = "$text Újrapróbálás?",
                 style = Typography.bodyLarge.merge(
                     textAlign = TextAlign.Center
                 )

@@ -13,21 +13,23 @@ import kotlin.collections.forEach
 import kotlin.collections.mutableListOf
 
 class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
-    override var storedStops: MutableMap<String, ApiResult<List<StopWithLocationAndStopTime>>> = mutableMapOf()
-    override var storedShapes: MutableMap<String, ApiResult<List<RoutePathPoint>>> = mutableMapOf()
+    private val storedStops: MutableMap<String, ApiResult<List<StopWithLocationAndStopTime>>> = mutableMapOf()
+    private val storedShapes: MutableMap<String, ApiResult<List<RoutePathPoint>>> = mutableMapOf()
     override lateinit var trips: ApiResult<List<Trip>>
 
-    override suspend fun getShapes(trip: Trip) {
-        if (!this.storedShapes.containsKey(trip.shapeId)){
+    override suspend fun getShapes(trip: Trip): List<RoutePathPoint> {
+        if (this.storedShapes.containsKey(trip.shapeId) && this.storedShapes[trip.shapeId] is ApiResult.Success){
+            return (this.storedShapes[trip.shapeId] as ApiResult.Success).data
+        } else {
             val response = try {
                 api.getShapesForTrip(trip.id)
             } catch (e: Exception) {
                 this.storedShapes[trip.shapeId] = ApiResult.Error("Something went wrong.")
                 Log.e("EXCEPTION", e.toString())
                 e.printStackTrace()
-                return
+                return (this.storedShapes[trip.shapeId] as ApiResult.Success).data
             }
-            response.data?.let {
+            response.data!!.let {
                 val shapesSanitized: MutableList<RoutePathPoint> = mutableListOf()
                 shapesSanitized.add(it.shapes[0])
                 for (i in 1..<it.shapes.count()){
@@ -38,21 +40,24 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
                     }
                 }
                 this.storedShapes[trip.shapeId] = ApiResult.Success(shapesSanitized.toList())
+                return (this.storedShapes[trip.shapeId] as ApiResult.Success).data
             }
         }
     }
 
-    override suspend fun getStops(trip: Trip) {
-        if (!this.storedStops.containsKey(trip.id)){
+    override suspend fun getStops(trip: Trip): List<StopWithLocationAndStopTime> {
+        if (this.storedStops.containsKey(trip.id) && this.storedStops[trip.id] is ApiResult.Success) {
+            return (this.storedStops[trip.id] as ApiResult.Success).data
+        } else {
             val response = try {
                 api.getStopsForTrip(trip.id)
             } catch (e: Exception){
                 this.storedStops[trip.id] = ApiResult.Error("Something went wrong.")
                 Log.e("EXCEPTION", e.toString())
                 e.printStackTrace()
-                return
+                return (this.storedStops[trip.id] as ApiResult.Success).data
             }
-            response.data?.let {
+            response.data!!.let {
                 val stopIds: MutableList<String> = mutableListOf()
                 val stopsSanitized: MutableList<StopWithLocationAndStopTime> = mutableListOf()
                 it.stops.forEach { stop ->
@@ -62,6 +67,7 @@ class TripsRepositoryImpl(private val api: QueryablesApi): TripsRepository {
                     }
                 }
                 this.storedStops[trip.id] = ApiResult.Success(stopsSanitized.toList())
+                return (this.storedStops[trip.id] as ApiResult.Success).data
             }
         }
     }

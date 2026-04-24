@@ -6,7 +6,9 @@ import com.jikokujo.core.data.model.Favourite
 import com.jikokujo.core.data.model.User
 import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.core.data.repository.UserRepository
+import com.jikokujo.core.di.IoDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,26 +16,21 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface Loadable {
     data class Authentication(val onError: String? = null): Loadable {
         override fun equals(other: Any?): Boolean = other is Authentication
-        override fun hashCode(): Int {
-            return super.hashCode()
-        }
+        override fun hashCode(): Int = this::class.hashCode()
     }
     data class User(val onError: String? = null): Loadable {
         override fun equals(other: Any?): Boolean = other is Loadable.User
-        override fun hashCode(): Int {
-            return super.hashCode()
-        }
+        override fun hashCode(): Int = this::class.hashCode()
     }
     data class Favourites(val onError: String? = null): Loadable {
         override fun equals(other: Any?): Boolean = other is Favourites
-        override fun hashCode(): Int {
-            return super.hashCode()
-        }
+        override fun hashCode(): Int = this::class.hashCode()
     }
 }
 
@@ -42,7 +39,7 @@ data class ProfileState(
     val favourites: List<Favourite>? = null,
     val isLoggedIn: Boolean = false,
     val loading: Set<Loadable> = emptySet(),
-    val error: Set<Loadable> = emptySet()
+    val error: Set<Loadable> = emptySet(),
 )
 sealed interface ProfileAction{
     data object FetchUser: ProfileAction
@@ -53,14 +50,17 @@ sealed interface ProfileAction{
 }
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ): ViewModel() {
     private val _state = MutableStateFlow(ProfileState())
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch(Dispatchers.Default){
+        viewModelScope.launch(ioDispatcher) {
             attemptAuth()
+        }
+        viewModelScope.launch {
             userRepository.favourites.onEach { favourites ->
                 _state.update {
                     it.copy(favourites = favourites)
@@ -69,16 +69,21 @@ class ProfileViewModel @Inject constructor(
         }
     }
     suspend fun onAction(action: ProfileAction) = when(action){
-        ProfileAction.AttemptAuth -> attemptAuth()
+        ProfileAction.AttemptAuth -> withContext(ioDispatcher) { attemptAuth() }
         ProfileAction.LogOut -> logout()
-        ProfileAction.FetchFavourites -> getFavourites()
-        is ProfileAction.ToggleFavourite -> userRepository.toggleFavourite(action.routeId, action.atMins)
-        ProfileAction.FetchUser -> getUser()
+        ProfileAction.FetchFavourites -> withContext(ioDispatcher) { getFavourites() }
+        is ProfileAction.ToggleFavourite -> withContext(ioDispatcher) { userRepository.toggleFavourite(action.routeId, action.atMins) }
+        ProfileAction.FetchUser -> withContext(ioDispatcher) { getUser() }
     }
     private suspend fun logout(){
         userRepository.logout()
         _state.update {
-            it.copy(isLoggedIn = false)
+            userRepository.favourites.update { null }
+            it.copy(
+                isLoggedIn = false,
+                user = null,
+                favourites = null
+            )
         }
     }
     private suspend fun attemptAuth(){
@@ -101,7 +106,7 @@ class ProfileViewModel @Inject constructor(
                 it.copy(
                     isLoggedIn = false,
                     loading = it.loading - Loadable.Authentication(),
-                    error = it.error + Loadable.Authentication("Felhasználó nincs bejelentkezve")
+                    error = it.error + Loadable.Authentication("Felhasználó nincs bejelentkezve"),
                 )
             }
         }

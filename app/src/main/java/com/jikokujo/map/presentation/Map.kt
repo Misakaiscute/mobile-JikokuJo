@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import com.jikokujo.core.utils.EmulatorDetector
 import com.jikokujo.map.presentation.tripinfosheet.TripInfoSheet
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory
 import org.mapsforge.map.android.view.MapView
@@ -58,7 +59,7 @@ private fun MapsforgeMap(
             val mapView = MapView(context).apply {
                 isClickable = true
                 mapScaleBar.isVisible = true
-                setBuiltInZoomControls(false)
+                setBuiltInZoomControls(EmulatorDetector.isEmulator)
             }
             mapActionHandler.bindMapView(mapView)
             mapView
@@ -95,5 +96,4 @@ private fun LoadingIndicator(modifier: Modifier){
             )
         }
     }
-
 }

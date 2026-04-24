@@ -4,7 +4,5 @@ import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.schedule.data.model.Queryable
 
 interface QueryablesRepository {
-    var queryables: ApiResult<List<Queryable>>
-
-    suspend fun getQueryables()
+    suspend fun getQueryables(): ApiResult<List<Queryable>>
 }

@@ -55,7 +55,7 @@ fun ScheduleSearch(
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        if (state.isLoading){
+        if (state.loading.contains(Loadable.Queryables())){
             Row(
                 modifier = modifier
                     .height(70.dp)

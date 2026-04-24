@@ -87,7 +87,7 @@ fun TripSelectionDropDown(
                     modifier = modifier
                         .background(itemBackgroundColor)
                         .clickable(
-                            enabled = !state.isLoading,
+                            enabled = !state.loading.contains(Loadable.Trips()),
                             onClick = {
                                 onScheduleAction(ScheduleAction.SelectTrip(trip = state.trips[i]))
                                 onTripAction(TripAction.SelectTrip(

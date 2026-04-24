@@ -3,7 +3,6 @@ package com.jikokujo.schedule.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +52,7 @@ fun QueryableDropDown(
                 modifier = modifier
                     .background(if (index % 2 == 0) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface)
                     .clickable(
-                        enabled = !state.isLoading,
+                        enabled = !state.loading.contains(Loadable.Queryables()),
                         onClick = {
                             when (state.queryables[index]){
                                 is Queryable.Route -> onAction(ScheduleAction.SelectRoute(state.queryables[index] as Queryable.Route))

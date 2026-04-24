@@ -8,10 +8,8 @@ import com.jikokujo.schedule.data.model.Trip
 import java.time.LocalDateTime
 
 interface TripsRepository {
-    var storedStops: MutableMap<String, ApiResult<List<StopWithLocationAndStopTime>>>
-    var storedShapes: MutableMap<String, ApiResult<List<RoutePathPoint>>>
     var trips: ApiResult<List<Trip>>
-    suspend fun getShapes(trip: Trip)
-    suspend fun getStops(trip: Trip)
+    suspend fun getShapes(trip: Trip): List<RoutePathPoint>
+    suspend fun getStops(trip: Trip): List<StopWithLocationAndStopTime>
     suspend fun getTrips(dateTime: LocalDateTime, selected: Queryable)
 }

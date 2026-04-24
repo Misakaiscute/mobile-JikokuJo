@@ -36,7 +36,8 @@ import org.mapsforge.map.rendertheme.internal.MapsforgeThemes
 class MapActionHandler {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private lateinit var mapView: MapView
-    private var shownShapeId: String? = null
+    private var shownTripId: String? = null
+    private var adjustmentRequired: Boolean = false
 
     fun bindMapView(mapView: MapView) {
         if (this::mapView.isInitialized){
@@ -81,10 +82,9 @@ class MapActionHandler {
         val onlyMapVisible: Boolean = mapView.layerManager.layers.count() <= 1
         val tripAvailable: Boolean = tripInfoState.pathPoints.isNotEmpty() && tripInfoState.stops.isNotEmpty()
         if (onlyMapVisible) {
-            Log.i("INFO", "ONLY MAP VISIBLE")
             if (tripAvailable) {
-                Log.i("INFO", "TRIP AVAILABLE FOR ONLY MAP VISIBLE")
-                shownShapeId = tripInfoState.trip?.shapeId
+                adjustmentRequired = true
+                shownTripId = tripInfoState.trip?.id
                 val tripPolyline = async {
                     return@async produceTripPolyline(
                         pathPoints = tripInfoState.pathPoints,
@@ -112,12 +112,11 @@ class MapActionHandler {
                 fitMapToTrip(tripInfoState.pathPoints)
             }
         } else {
-            Log.i("INFO", "NOT ONLY MAP VISIBLE")
             if (tripAvailable) {
-                Log.i("INFO", "TRIP AVAILABLE FOR NOT ONLY MAP VISIBLE")
-                val tripIdChanged: Boolean = shownShapeId != tripInfoState.trip?.shapeId
+                val tripIdChanged: Boolean = shownTripId != tripInfoState.trip?.id
                 if (tripIdChanged) {
-                    shownShapeId = tripInfoState.trip?.shapeId
+                    adjustmentRequired = true
+                    shownTripId = tripInfoState.trip?.id
                     clearLayersAboveMap()
                     val tripPolyline = async {
                         return@async produceTripPolyline(
@@ -146,7 +145,8 @@ class MapActionHandler {
                     fitMapToTrip(pathPoints = tripInfoState.pathPoints)
                 }
             } else {
-                shownShapeId = null
+                adjustmentRequired = false
+                shownTripId = null
                 clearLayersAboveMap()
             }
         }
@@ -163,18 +163,20 @@ class MapActionHandler {
     }
     fun fitMapToTrip(pathPoints: List<RoutePathPoint>){
         mapView.model.frameBufferModel.addObserver {
-            val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
+            if (adjustmentRequired){
+                val (minLocation, maxLocation) = MapUtils.findPathBoundaries(pathPoints)
 
-            var isContained =
-                mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
-                mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
-
-
-            while (!isContained) {
-                mapView.model.mapViewPosition.zoomOut(true)
-                isContained =
+                var isContained =
                     mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
                     mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+
+                while (!isContained) {
+                    mapView.model.mapViewPosition.zoomOut(true)
+                    isContained =
+                        mapView.boundingBox.contains(minLocation.lat, minLocation.lon) &&
+                        mapView.boundingBox.contains(maxLocation.lat, maxLocation.lon)
+                }
+                adjustmentRequired = false
             }
         }
     }

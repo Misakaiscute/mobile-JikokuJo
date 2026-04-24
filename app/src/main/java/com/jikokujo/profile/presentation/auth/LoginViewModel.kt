@@ -2,8 +2,8 @@ package com.jikokujo.profile.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import com.jikokujo.core.data.remote.ApiResult
-import com.jikokujo.profile.utils.validateEmail
 import com.jikokujo.core.data.repository.UserRepository
+import com.jikokujo.profile.utils.Validator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,9 +49,9 @@ class LoginViewModel @Inject constructor(
     private fun validateInputs() {
         if (_state.value.password.isBlank() || _state.value.email.isBlank()) {
             throw InputException.MissingFieldException("Töltse ki az összes mezőt!")
-        } else if (validateEmail(_state.value.email)) {
+        } else if (!Validator.validateEmail(_state.value.email)) {
             throw InputException.InvalidEmailException("Adjon meg valós email címet!")
-        } else if (_state.value.password.count() < 8) {
+        } else if (!Validator.validatePassword(_state.value.password)) {
             throw InputException.InvalidPasswordException("A jelszónak legalább 8 karakter hosszúnak kell lennie!")
         }
     }

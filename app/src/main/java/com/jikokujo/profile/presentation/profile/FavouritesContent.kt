@@ -134,7 +134,7 @@ private fun FavouriteItem(
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                modifier = Modifier.width(20.dp),
+                modifier = Modifier.width(80.dp),
                 text = favourite.route.shortName,
                 style = Typography.bodyMedium.merge(
                     color = favourite.route.getColor(),
