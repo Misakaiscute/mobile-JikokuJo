@@ -96,7 +96,9 @@ fun FavouritesContent(
                     )
                 }
             } else {
-                profileState.favourites.forEach { fav ->
+                profileState.favourites.sortedBy {
+                    it.atMins
+                }.forEach { fav ->
                     FavouriteItem(
                         modifier = Modifier,
                         favourite = fav,

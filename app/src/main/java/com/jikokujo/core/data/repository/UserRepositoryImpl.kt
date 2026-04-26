@@ -19,6 +19,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
 import retrofit2.HttpException
@@ -167,8 +168,10 @@ class UserRepositoryImpl @Inject constructor(
             return ApiResult.Error("Szerver nem elérhető.")
         }
 
-        this.favourites.value = response.data!!.favourites
-        return ApiResult.Success(response.data.favourites)
+        this.favourites.update {
+            response.data!!.favourites
+        }
+        return ApiResult.Success(response.data!!.favourites)
     }
     override suspend fun toggleFavourite(routeId: String, time: Int): ApiResult<Queryable.Route?> {
         if (!check()){
@@ -198,13 +201,15 @@ class UserRepositoryImpl @Inject constructor(
                 route = response.data.route,
                 atMins = time
             )
-            this.favourites.value = this.favourites.value?.plus(newFavourite)
+            this.favourites.update {
+                this.favourites.value?.plus(newFavourite)
+            }
             return ApiResult.Success(response.data.route)
         } else {
             val filtered: List<Favourite> = this.favourites.value!!.filterNot {
                 return@filterNot it.route.id == response.data.route.id && it.atMins == time
             }
-            this.favourites.value = filtered
+            this.favourites.update { filtered }
             return ApiResult.Success(null)
         }
     }

@@ -34,12 +34,8 @@ fun ProfilePage(
     onAction: (ProfileAction) -> Unit
 ){
     LaunchedEffect(true) {
-        launch {
-            onAction(ProfileAction.FetchUser)
-        }
-        launch {
-            onAction(ProfileAction.FetchFavourites)
-        }
+        onAction(ProfileAction.FetchUser)
+        onAction(ProfileAction.FetchFavourites)
     }
 
     val scrollState = rememberScrollState()

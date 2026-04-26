@@ -60,13 +60,11 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch(ioDispatcher) {
             attemptAuth()
         }
-        viewModelScope.launch {
-            userRepository.favourites.onEach { favourites ->
-                _state.update {
-                    it.copy(favourites = favourites)
-                }
-            }.launchIn(viewModelScope)
-        }
+        userRepository.favourites.onEach { favourites ->
+            _state.update {
+                it.copy(favourites = favourites)
+            }
+        }.launchIn(viewModelScope)
     }
     suspend fun onAction(action: ProfileAction) = when(action){
         ProfileAction.AttemptAuth -> withContext(ioDispatcher) { attemptAuth() }
@@ -126,7 +124,10 @@ class ProfileViewModel @Inject constructor(
                 )
             }
             is ApiResult.Success -> _state.update {
-                it.copy(loading = it.loading - Loadable.Favourites())
+                it.copy(
+                    favourites = result.data,
+                    loading = it.loading - Loadable.Favourites()
+                )
             }
         }
     }
