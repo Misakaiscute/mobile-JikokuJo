@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
+import com.jikokujo.core.utils.loadingShimmer
 import com.jikokujo.core.utils.timeFormatter
 import com.jikokujo.map.presentation.TripAction
 import com.jikokujo.schedule.data.model.Location
@@ -53,7 +54,7 @@ fun TripSelectionDropDown(
             .heightIn(max = (((itemHeight + 2) * maxItems) - 2).dp)
             .verticalScroll(scrollState)
     ) {
-        if (!state.dropDownExpanded || state.trips.count() < 1) {
+        if (!state.dropDownExpanded) {
             TripSelectionDropDownItem(
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.surface)
@@ -67,42 +68,63 @@ fun TripSelectionDropDown(
                 itemTextColor = MaterialTheme.colorScheme.onSurface
             )
         } else {
-            for (i in 0 ..< state.trips.count()){
-                val itemBackgroundColor: Color = if (state.selectedTrip?.id == state.trips[i].id){
-                    MaterialTheme.colorScheme.primary
-                } else if (i % 2 == 0) {
-                    MaterialTheme.colorScheme.surface
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant
+            if (state.loading.contains(Loadable.Trips())){
+                for (i in 0..5){
+                    if (i > 0){
+                        HorizontalDivider(
+                            modifier = modifier,
+                            thickness = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Row(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .height(itemHeight.dp)
+                            .loadingShimmer(
+                                durationMillis = 1000,
+                                background = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                    ){}
                 }
+            } else {
+                for (i in 0 ..< state.trips.count()){
+                    val itemBackgroundColor: Color = if (state.selectedTrip?.id == state.trips[i].id){
+                        MaterialTheme.colorScheme.primary
+                    } else if (i % 2 == 0) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
 
-                if (i > 0){
-                    HorizontalDivider(
-                        modifier = modifier,
-                        thickness = 2.dp,
-                        color = MaterialTheme.colorScheme.primary
+                    if (i > 0){
+                        HorizontalDivider(
+                            modifier = modifier,
+                            thickness = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    TripSelectionDropDownItem(
+                        modifier = modifier
+                            .background(itemBackgroundColor)
+                            .clickable(
+                                enabled = !state.loading.contains(Loadable.Trips()),
+                                onClick = {
+                                    onScheduleAction(ScheduleAction.SelectTrip(trip = state.trips[i]))
+                                    onTripAction(TripAction.SelectTrip(
+                                        trip = state.trips[i],
+                                        routeAssociated = getRoute(state.trips[i].routeId),
+                                        selectedThrough = state.selectedQueryable!!
+                                    ))
+                                }
+                            ),
+                        state = state,
+                        trip = state.trips[i],
+                        getRoute = getRoute,
+                        itemHeight = itemHeight,
+                        itemTextColor = if (state.selectedTrip?.id == state.trips[i].id) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                     )
                 }
-                TripSelectionDropDownItem(
-                    modifier = modifier
-                        .background(itemBackgroundColor)
-                        .clickable(
-                            enabled = !state.loading.contains(Loadable.Trips()),
-                            onClick = {
-                                onScheduleAction(ScheduleAction.SelectTrip(trip = state.trips[i]))
-                                onTripAction(TripAction.SelectTrip(
-                                    trip = state.trips[i],
-                                    routeAssociated = getRoute(state.trips[i].routeId),
-                                    selectedThrough = state.selectedQueryable!!
-                                ))
-                            }
-                        ),
-                    state = state,
-                    trip = state.trips[i],
-                    getRoute = getRoute,
-                    itemHeight = itemHeight,
-                    itemTextColor = if (state.selectedTrip?.id == state.trips[i].id) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                )
             }
         }
     }
