@@ -26,11 +26,31 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                1001
+            )
+        }
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+
+                if (!task.isSuccessful) {
+                    Log.e("FCM", "Fetching token failed", task.exception)
+                    return@addOnCompleteListener
+                }
+
+                val token = task.result
+
+                Log.d("FCM_TOKEN", token)
+            }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
