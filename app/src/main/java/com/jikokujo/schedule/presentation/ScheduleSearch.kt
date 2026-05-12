@@ -49,6 +49,22 @@ fun ScheduleSearch(
             }
         }
     }
+    Content(
+        modifier = modifier,
+        state = state,
+        onScheduleAction = onScheduleAction,
+        onTripAction = onTripAction,
+        getRoute = getRoute
+    )
+}
+@Composable
+private fun Content(
+    modifier: Modifier,
+    state: ScheduleSearchState,
+    onScheduleAction: (ScheduleAction) -> Unit,
+    onTripAction: (TripAction) -> Unit,
+    getRoute: (String) -> Queryable.Route,
+){
     Column(
         modifier = modifier
             .padding(all = 10.dp)
@@ -73,66 +89,94 @@ fun ScheduleSearch(
             }
         } else {
             when (state.dropDownShown){
-                DropDowns.QueryableSelection -> {
-                    SearchBar(
-                        modifier = modifier,
-                        state = state,
-                        onAction = onScheduleAction
-                    )
-                    if (state.dropDownExpanded) {
-                        QueryableDropDown(
-                            modifier = modifier,
-                            state = state,
-                            onAction = onScheduleAction
-                        )
-                    }
-                    Row(
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .height(30.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        ExpanderArrow(
-                            modifier = modifier.fillMaxHeight(),
-                            isExpanded = state.dropDownExpanded,
-                            onClick = {
-                                onScheduleAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded))
-                            }
-                        )
-                        Spacer(modifier.weight(1f))
-                        DateTimePicker(
-                            modifier = modifier.fillMaxHeight(),
-                            state = state,
-                            onAction = onScheduleAction
-                        )
-                    }
-                }
-                DropDowns.TripSelection -> {
-                    TripSelectionDropDown(
-                        modifier = modifier,
-                        state = state,
-                        onScheduleAction = onScheduleAction,
-                        onTripAction = onTripAction,
-                        getRoute = getRoute,
-                    )
-                    Row(
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .height(30.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        ExpanderArrow(
-                            modifier = modifier,
-                            isExpanded = state.dropDownExpanded,
-                            onClick = {
-                                onScheduleAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded))
-                            }
-                        )
-                    }
-                }
+                DropDowns.QueryableSelection -> ScheduleSearchContent(
+                    modifier = modifier,
+                    state = state,
+                    onScheduleAction = onScheduleAction
+                )
+                DropDowns.TripSelection -> TripSelectionContent(
+                    modifier = Modifier,
+                    state = state,
+                    onScheduleAction = onScheduleAction,
+                    onTripAction = onTripAction,
+                    getRoute = getRoute
+                )
             }
+        }
+    }
+}
+@Composable
+private fun ScheduleSearchContent(
+    modifier: Modifier,
+    state: ScheduleSearchState,
+    onScheduleAction: (ScheduleAction) -> Unit,
+){
+    SearchBar(
+        modifier = modifier,
+        state = state,
+        onAction = onScheduleAction
+    )
+    if (state.dropDownExpanded) {
+        QueryableDropDown(
+            modifier = modifier,
+            state = state,
+            onAction = onScheduleAction
+        )
+    }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(30.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        if (state.loading.isEmpty()){
+            ExpanderArrow(
+                modifier = modifier.fillMaxHeight(),
+                isExpanded = state.dropDownExpanded,
+                onClick = {
+                    onScheduleAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded))
+                }
+            )
+        }
+        Spacer(modifier.weight(1f))
+        DateTimePicker(
+            modifier = modifier.fillMaxHeight(),
+            state = state,
+            onAction = onScheduleAction
+        )
+    }
+}
+@Composable
+private fun TripSelectionContent(
+    modifier: Modifier,
+    state: ScheduleSearchState,
+    onScheduleAction: (ScheduleAction) -> Unit,
+    onTripAction: (TripAction) -> Unit,
+    getRoute: (String) -> Queryable.Route,
+){
+    TripSelectionDropDown(
+        modifier = modifier,
+        state = state,
+        onScheduleAction = onScheduleAction,
+        onTripAction = onTripAction,
+        getRoute = getRoute,
+    )
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(30.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        if (state.loading.isEmpty()){
+            ExpanderArrow(
+                modifier = modifier,
+                isExpanded = state.dropDownExpanded,
+                onClick = {
+                    onScheduleAction(ScheduleAction.ChangeDropDownState(!state.dropDownExpanded))
+                }
+            )
         }
     }
 }
