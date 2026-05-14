@@ -15,7 +15,6 @@ import com.jikokujo.core.utils.errorAs
 import com.jikokujo.schedule.data.model.Queryable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
