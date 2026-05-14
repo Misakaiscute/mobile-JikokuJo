@@ -214,6 +214,31 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun assignFirebaseToken(token: String): ApiResult<Nothing?> {
+        if (!check()){
+            return ApiResult.Error("Felhasználó nincs bejelentkezve.")
+        }
+
+        try {
+            api.assignFirebaseToken(
+                authToken = this.userAccessToken!!.toBearer(),
+                token = token
+            )
+        } catch (e: HttpException) {
+            return try {
+                ApiResult.Error(e.errorAs<EmptyPayload>().errors.firstOrNull() ?: "Valami hiba történt.")
+            } catch (_: Exception) {
+                ApiResult.Error("Valami hiba történt.")
+            }
+        } catch (e: Exception) {
+            Log.e("EXCEPTION", e.message.toString())
+            e.printStackTrace()
+            return ApiResult.Error("Szerver nem elérhető.")
+        }
+
+        return ApiResult.Success(null)
+    }
+
     private suspend fun storeAccessToken(token: String) {
         dataStore.edit { preferences ->
             preferences[userAccessTokenKey] = token

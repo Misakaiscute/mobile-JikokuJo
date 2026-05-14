@@ -39,18 +39,6 @@ class MainActivity : ComponentActivity() {
                 1001
             )
         }
-        FirebaseMessaging.getInstance().token
-            .addOnCompleteListener { task ->
-
-                if (!task.isSuccessful) {
-                    Log.e("FCM", "Fetching token failed", task.exception)
-                    return@addOnCompleteListener
-                }
-
-                val token = task.result
-
-                Log.d("FCM_TOKEN", token)
-            }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

@@ -1,13 +1,19 @@
 package com.jikokujo.profile.presentation
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.messaging.FirebaseMessaging
 import com.jikokujo.core.data.model.Favourite
 import com.jikokujo.core.data.model.User
 import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.core.data.repository.UserRepository
 import com.jikokujo.core.di.IoDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,6 +58,7 @@ sealed interface ProfileAction{
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @param:ApplicationContext private val context: Context? = null
 ): ViewModel() {
     private val _state = MutableStateFlow(ProfileState())
     val state = _state.asStateFlow()
@@ -59,6 +66,9 @@ class ProfileViewModel @Inject constructor(
     init {
         viewModelScope.launch(ioDispatcher) {
             attemptAuth()
+            if (_state.value.isLoggedIn){
+                assignFirebaseTokenOnNotificationEnabled(context)
+            }
         }
         userRepository.favourites.onEach { favourites ->
             _state.update {
@@ -66,6 +76,16 @@ class ProfileViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
     }
+    private suspend fun assignFirebaseTokenOnNotificationEnabled(context: Context?){
+        if (context != null && ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED){
+            val token: String = FirebaseMessaging.getInstance().token.result
+            userRepository.assignFirebaseToken(token = token)
+        }
+    }
+
     suspend fun onAction(action: ProfileAction) = when(action){
         ProfileAction.AttemptAuth -> withContext(ioDispatcher) { attemptAuth() }
         ProfileAction.LogOut -> logout()

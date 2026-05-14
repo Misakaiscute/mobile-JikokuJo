@@ -53,4 +53,8 @@ class MockUserRepository() : UserRepository {
     override suspend fun login(
         email: String, password: String, remember: Boolean
     ) = ApiResult.Success(null)
+
+    override suspend fun assignFirebaseToken(token: String): ApiResult<Nothing?> {
+        return ApiResult.Success(null)
+    }
 }

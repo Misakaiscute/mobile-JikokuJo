@@ -54,4 +54,12 @@ interface UserApi {
     suspend fun getFavourites(
         @Header("Authorization") authToken: String,
     ): ResponseRoot<GetFavouritesObj>
+
+    @FormUrlEncoded
+    @Headers("accept: application/json")
+    @GET("user/device-token")
+    suspend fun assignFirebaseToken(
+        @Header("Authorization") authToken: String,
+        @Field("token") token: String
+    ): ResponseRoot<EmptyPayload>
 }
