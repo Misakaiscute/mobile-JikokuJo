@@ -56,7 +56,7 @@ interface UserApi {
 
     @FormUrlEncoded
     @Headers("accept: application/json")
-    @GET("user/device-token")
+    @POST("user/device-token")
     suspend fun assignFirebaseToken(
         @Header("Authorization") authToken: String,
         @Field("token") token: String

@@ -1,10 +1,16 @@
 package com.jikokujo.profile.presentation.auth
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.google.firebase.messaging.FirebaseMessaging
 import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.core.data.repository.UserRepository
 import com.jikokujo.profile.utils.Validator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,7 +34,8 @@ sealed interface LoginAction{
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    @param:ApplicationContext private val context: Context? = null
 ): ViewModel() {
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
@@ -36,6 +43,16 @@ class LoginViewModel @Inject constructor(
     suspend fun onAction(action: LoginAction) = when(action){
         is LoginAction.ChangeValue -> changeValue(action.newState)
         is LoginAction.Submit -> withContext(Dispatchers.IO) { submit(action.onSuccess) }
+    }
+
+    private suspend fun assignFirebaseTokenOnNotificationEnabled(context: Context?){
+        if (context != null && ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED){
+            val token: String = FirebaseMessaging.getInstance().token.result
+            userRepository.assignFirebaseToken(token = token)
+        }
     }
 
     private fun changeValue(newState: LoginState) = _state.update {
@@ -90,6 +107,7 @@ class LoginViewModel @Inject constructor(
                 _state.update {
                     LoginState()
                 }
+                assignFirebaseTokenOnNotificationEnabled(context)
                 onSuccess()
             }
         }
