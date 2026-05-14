@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "703896821400",
+    "project_id": "jikokujo",
+    "storage_bucket": "jikokujo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:703896821400:android:8e063ca1e5940ac4c2baed",
+        "android_client_info": {
+          "package_name": "com.jikokuj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZuu2eeX43hfb0Z1UiDKGPR21YF5qRG10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:703896821400:android:fdde2849a2bc506bc2baed",
+        "android_client_info": {
+          "package_name": "com.jikokujo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZuu2eeX43hfb0Z1UiDKGPR21YF5qRG10"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
