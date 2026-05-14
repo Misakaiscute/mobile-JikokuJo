@@ -97,6 +97,8 @@ dependencies {
 
     implementation(libs.datastore)
 
+    implementation(libs.firebase.messaging)
+
     testImplementation(libs.coroutine.testing)
     testImplementation(libs.junit)
 
@@ -106,6 +108,4 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-    implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
 }
