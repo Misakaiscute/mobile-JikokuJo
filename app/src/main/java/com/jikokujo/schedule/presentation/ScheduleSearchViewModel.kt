@@ -273,7 +273,7 @@ class ScheduleSearchViewModel @Inject constructor(
                     loading = it.loading + Loadable.Trips(),
                 )
             }
-
+            delay(2000L)
             tripsRepository.getTrips(
                 dateTime = _state.value.tripTimeConstraint,
                 selected = _state.value.selectedQueryable!!
