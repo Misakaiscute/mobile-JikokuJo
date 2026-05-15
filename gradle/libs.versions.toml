@@ -17,6 +17,8 @@ junitJupiter = "5.14.0"
 nav3Version = "1.1.0-alpha02"
 datastoreVersion = "1.2.0"
 coroutineTestingVersion = "1.10.2"
+firebaseVersion = "24.1.0"
+googleServicesVersion = "4.4.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +59,7 @@ navigation-ui = { group = "androidx.navigation3", name = "navigation3-ui", versi
 datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastoreVersion"}
 
 coroutine-testing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutineTestingVersion" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -64,3 +67,4 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersion" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesVersion" }

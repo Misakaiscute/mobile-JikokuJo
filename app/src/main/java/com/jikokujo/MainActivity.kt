@@ -15,15 +15,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberNavBackStack
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,72 +28,88 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AppTheme {
-                val backstack = remember { mutableStateListOf<MainPage>(MainPage.Schedule) }
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            navigationIcon = {
-                                IconButton(
-                                    onClick = { onBackPressedDispatcher.onBackPressed() },
-                                    shape = RoundedCornerShape(size = 0.dp),
-                                ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(1f),
-                                        painter = painterResource(R.drawable.navigate_back),
-                                        contentDescription = "back button",
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            },
-                            title = {
-                                Icon(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    painter = painterResource(R.drawable.jikokujo),
-                                    contentDescription = "app logo",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            },
-                            actions = {
-                                IconButton(
-                                    onClick = {
-                                        when (backstack.last()){
-                                            is MainPage.Profile -> backstack.add(MainPage.Schedule)
-                                            else -> backstack.add(MainPage.Profile)
-                                        }
-                                    },
-                                    shape = RoundedCornerShape(size = 0.dp)
-                                ) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .aspectRatio(1f),
-                                        painter = painterResource(when (backstack.last()){
-                                            is MainPage.Profile -> R.drawable.schedule_icon
-                                            else -> R.drawable.profile
-                                        }),
-                                        contentDescription = "back button",
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors().copy(
-                                containerColor = MaterialTheme.colorScheme.surface,
-                            ),
+            Content(
+                onBackPressed = { onBackPressedDispatcher.onBackPressed() }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Content(onBackPressed: () -> Unit){
+    AppTheme {
+        val backstack = remember { mutableStateListOf<MainPage>(MainPage.Schedule) }
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(
+                            onClick = onBackPressed,
+                            shape = RoundedCornerShape(size = 0.dp),
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f),
+                                painter = painterResource(R.drawable.navigate_back),
+                                contentDescription = "back button",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    title = {
+                        Icon(
+                            modifier = Modifier.fillMaxWidth(),
+                            painter = painterResource(R.drawable.jikokujo),
+                            contentDescription = "app logo",
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
-                    }
-                ) { innerPadding ->
-                    NavigationRoot(
-                        backstack = backstack,
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                when (backstack.last()) {
+                                    is MainPage.Profile -> backstack.add(MainPage.Schedule)
+                                    else -> backstack.add(MainPage.Profile)
+                                }
+                            },
+                            shape = RoundedCornerShape(size = 0.dp)
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f),
+                                painter = painterResource(
+                                    when (backstack.last()) {
+                                        is MainPage.Profile -> R.drawable.schedule_icon
+                                        else -> R.drawable.profile
+                                    }
+                                ),
+                                contentDescription = "back button",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors().copy(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
+                )
             }
+        ) { innerPadding ->
+            NavigationRoot(
+                backstack = backstack,
+                modifier = Modifier.padding(innerPadding)
+            )
         }
     }
 }

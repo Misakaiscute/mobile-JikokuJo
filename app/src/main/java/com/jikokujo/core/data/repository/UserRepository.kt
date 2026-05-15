@@ -32,4 +32,7 @@ interface UserRepository {
         routeId: String,
         time: Int
     ): ApiResult<Queryable.Route?>
+    suspend fun assignFirebaseToken(
+        token: String
+    ): ApiResult<Nothing?>
 }

@@ -15,7 +15,6 @@ import com.jikokujo.core.utils.errorAs
 import com.jikokujo.schedule.data.model.Queryable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -212,6 +211,31 @@ class UserRepositoryImpl @Inject constructor(
             this.favourites.update { filtered }
             return ApiResult.Success(null)
         }
+    }
+
+    override suspend fun assignFirebaseToken(token: String): ApiResult<Nothing?> {
+        if (!check()){
+            return ApiResult.Error("Felhasználó nincs bejelentkezve.")
+        }
+
+        try {
+            api.assignFirebaseToken(
+                authToken = this.userAccessToken!!.toBearer(),
+                token = token
+            )
+        } catch (e: HttpException) {
+            return try {
+                ApiResult.Error(e.errorAs<EmptyPayload>().errors.firstOrNull() ?: "Valami hiba történt.")
+            } catch (_: Exception) {
+                ApiResult.Error("Valami hiba történt.")
+            }
+        } catch (e: Exception) {
+            Log.e("EXCEPTION", e.message.toString())
+            e.printStackTrace()
+            return ApiResult.Error("Szerver nem elérhető.")
+        }
+
+        return ApiResult.Success(null)
     }
 
     private suspend fun storeAccessToken(token: String) {

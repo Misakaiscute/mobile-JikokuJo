@@ -51,7 +51,7 @@ sealed interface ProfileAction{
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ): ViewModel() {
     private val _state = MutableStateFlow(ProfileState())
     val state = _state.asStateFlow()
@@ -66,6 +66,7 @@ class ProfileViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
     }
+
     suspend fun onAction(action: ProfileAction) = when(action){
         ProfileAction.AttemptAuth -> withContext(ioDispatcher) { attemptAuth() }
         ProfileAction.LogOut -> logout()

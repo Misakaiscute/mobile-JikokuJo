@@ -1,6 +1,5 @@
 package com.jikokujo.core.data.remote
 
-import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -54,4 +53,12 @@ interface UserApi {
     suspend fun getFavourites(
         @Header("Authorization") authToken: String,
     ): ResponseRoot<GetFavouritesObj>
+
+    @FormUrlEncoded
+    @Headers("accept: application/json")
+    @POST("user/device-token")
+    suspend fun assignFirebaseToken(
+        @Header("Authorization") authToken: String,
+        @Field("token") token: String
+    ): ResponseRoot<EmptyPayload>
 }

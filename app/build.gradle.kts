@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.devtools.ksp)
     alias(libs.plugins.dagger.hilt.android)
+    id("com.google.gms.google-services")
 }
 
 val realApi: String =
@@ -95,6 +96,8 @@ dependencies {
     implementation(libs.navigation.runtime)
 
     implementation(libs.datastore)
+
+    implementation(libs.firebase.messaging)
 
     testImplementation(libs.coroutine.testing)
     testImplementation(libs.junit)
