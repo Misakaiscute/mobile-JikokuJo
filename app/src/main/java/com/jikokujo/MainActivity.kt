@@ -1,7 +1,5 @@
 package com.jikokujo
 
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.jikokujo.profile.services.FirebaseNotificationTokenUpdater
 import com.jikokujo.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -43,23 +40,6 @@ class MainActivity : ComponentActivity() {
             Content(
                 onBackPressed = { onBackPressedDispatcher.onBackPressed() }
             )
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String?>,
-        grantResults: IntArray,
-        deviceId: Int
-    ) {
-        when (requestCode) {
-            0 -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Intent(applicationContext, FirebaseNotificationTokenUpdater::class.java).also{
-                        startService(it)
-                    }
-                }
-            }
         }
     }
 }

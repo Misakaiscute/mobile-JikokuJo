@@ -59,7 +59,11 @@ fun TripSelectionDropDown(
                 modifier = modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .clickable(
-                        onClick = { onTripAction(TripAction.ShowTripInfo) }
+                        onClick = {
+                            if (state.selectedTrip != null){
+                                onTripAction(TripAction.ShowTripInfo)
+                            }
+                        }
                     ),
                 state = state,
                 trip = state.selectedTrip,
