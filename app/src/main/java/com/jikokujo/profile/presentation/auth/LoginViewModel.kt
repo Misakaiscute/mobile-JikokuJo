@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
 import com.jikokujo.core.data.remote.ApiResult
 import com.jikokujo.core.data.repository.UserRepository
@@ -15,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -45,13 +47,17 @@ class LoginViewModel @Inject constructor(
         is LoginAction.Submit -> withContext(Dispatchers.IO) { submit(action.onSuccess) }
     }
 
-    private suspend fun assignFirebaseTokenOnNotificationEnabled(context: Context?){
+    private fun assignFirebaseTokenOnNotificationEnabled(context: Context?){
         if (context != null && ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED){
-            val token: String = FirebaseMessaging.getInstance().token.result
-            userRepository.assignFirebaseToken(token = token)
+            FirebaseMessaging.getInstance().token.addOnCompleteListener{ task ->
+                val token = task.result
+                viewModelScope.launch {
+                    userRepository.assignFirebaseToken(token = token)
+                }
+            }
         }
     }
 
